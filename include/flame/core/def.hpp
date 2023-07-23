@@ -13,15 +13,6 @@
 #define _FLAME_DEFINITIOIN_HPP_
 
 
-/* Configuration file keys for components */
-#define _CONFIG_ENV_KEY_ "environments"
-#define _CONFIG_PATH_KEY_ "path"
-#define _CONFIG_REQ_KEY_  "required"
-#define _CONFIG_COMPONENTS_KEY_ "components"
-
-#define _PROFILE_CONFIGURATIONS_KEY_ "configurations"
-
-
 /* File Extensions */
 #define _FILE_EXT_CONFIG_     ".config"
 #define _FILE_EXT_PROFILE_    ".profile"
