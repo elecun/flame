@@ -2,10 +2,14 @@
 #include "instance.hpp"
 #include <flame/log.hpp>
 #include <flame/sys/cpu.hpp>
+#include <flame/util/file.hpp>
 #include <flame/core/profile.hpp>
-
+#include <flame/core/profile_def.hpp>
+#include <flame/core/registry.hpp>
+#include <flame/core/manager.hpp>
 
 using namespace std;
+using namespace flame;
 
 namespace flame::app {
 
@@ -30,10 +34,11 @@ namespace flame::app {
                 return false;
             }
 
+            // read profile from file
             std::ifstream file(conf_file);
             file >> config;
         }
-        catch(const json::exception& e){
+        catch(const profile_data::exception& e){
             spdlog::error("Configuration file load failed : {}", e.what());
             return false;
         }
@@ -42,15 +47,43 @@ namespace flame::app {
             return false;
         }
 
+        // set environments with profile
+        if(config.find(_CONFIG_ENV_KEY_)!=config.end()){
+            
+            /* Set path (Absolute) */
+            if(config[_CONFIG_ENV_KEY_].find(_CONFIG_PATH_KEY_)!=config[_CONFIG_ENV_KEY_].end()){
+                for(profile_data::iterator it = config[_CONFIG_ENV_KEY_][_CONFIG_PATH_KEY_].begin(); it != config[_CONFIG_ENV_KEY_][_CONFIG_PATH_KEY_].end(); ++it){
+                    if(it.value().is_string()){
+                        registry->insert(it.key(), std::make_any<std::string>(config[_CONFIG_ENV_KEY_][_CONFIG_PATH_KEY_][it.key()].get<std::string>()));
+                        console::info("+ Register Path : {}={}", it.key(),(registry->get<std::string>(it.key())));
+                    }
+                }
+            }   
+        }
+
+        /* required */
+        if(config.find(_CONFIG_REQ_KEY_)!=config.end()){
+
+            /* components */
+            if(config[_CONFIG_REQ_KEY_].find(_CONFIG_COMPONENTS_KEY_)!=config[_CONFIG_REQ_KEY_].end()){
+                vector<string> required_components = config[_CONFIG_REQ_KEY_][_CONFIG_COMPONENTS_KEY_].get<std::vector<string>>();
+                for(string& component:required_components){
+                    manager->install(component.c_str());
+                }
+                console::info("Totally installed : {}", manager->size());
+            }
+        }
+
         return true;
     }
 
     void run(){
+        manager->run();
         
     }
 
     void cleanup(){
-        
+        manager->uninstall();
     }
 
 } /** namespace */
