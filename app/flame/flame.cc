@@ -14,11 +14,28 @@
 #include <string>
 #include <csignal>
 #include <flame/log.hpp>
+#include <flame/core.hpp>
 #include <3rdparty/cxxopts.hpp>
+#include <sys/mman.h>
 
 #include "instance.hpp"
 
 using namespace std;
+
+/* signal callback */
+void signal_callback(int sig) {
+    switch(sig){
+        case SIGSEGV: { console::warn("Signal : Segmentation violation"); } break;
+        case SIGABRT: { console::warn("Signal : Abnormal termination"); } break;
+        case SIGKILL: { console::warn("Signal : Process killed"); } break;
+        case SIGBUS: { console::warn("Signal : Bus Error"); } break;
+        case SIGTERM: { console::warn("Signal : Termination requested"); } break;
+        case SIGINT: { console::warn("Signal : Interrupted"); } break;
+        default:
+        console::info("Cleaning up the program");
+    }
+    ::terminate(); 
+}
 
 int main(int argc, char* argv[])
 {
@@ -41,7 +58,7 @@ int main(int argc, char* argv[])
 
     const int signals[] = { SIGINT, SIGTERM, SIGBUS, SIGKILL, SIGABRT, SIGSEGV };
     for(const int& s:signals)
-        signal(s, cleanup);
+        signal(s, signal_callback);
 
     sigset_t sigmask;
     if(!sigfillset(&sigmask)){
@@ -82,8 +99,8 @@ int main(int argc, char* argv[])
 
     try{
         if(!_config.empty()){
-            if(app::initialize(_config.c_str())){
-                app::run();
+            if(flame::app::initialize(_config.c_str())){
+                flame::app::run();
                 pause(); //wait until getting SIGINT
             }
         }

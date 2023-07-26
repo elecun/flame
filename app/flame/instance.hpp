@@ -12,7 +12,7 @@
 #ifndef _FLAME_INSTANCE_HPP_
 #define _FLAME_INSTANCE_HPP_
 
-namespace flame {
+namespace flame::app {
 
     /**
      * @brief 
