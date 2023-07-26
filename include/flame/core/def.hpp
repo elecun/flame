@@ -17,6 +17,8 @@
 #define _FILE_EXT_CONFIG_     ".config"
 #define _FILE_EXT_PROFILE_    ".profile"
 #define _FILE_EXT_COMPONENT_  ".comp"
+#define _FILE_EXT_TASK_  ".task"
+#define _FILE_EXT_SERVICE_  ".service"
 
 
 #endif
