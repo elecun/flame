@@ -15,19 +15,18 @@
 #include <flame/arch/singleton.hpp>
 #include <flame/util/uuid.hpp>
 #include <flame/core/driver.hpp>
-#include <openedge/core/driver.hpp>
-#include <openedge/core/task.hpp>
-#include <openedge/core/def.hpp>
+#include <flame/core/task.hpp>
+#include <flame/core/def.hpp>
 #include <string>
 #include <map>
 
 using namespace std;
 
-namespace oe::core {
+namespace flame::core {
 
-    class task_manager : public oe::arch::singleton<task_manager> {
+    class task_manager : public flame::arch::singleton<task_manager> {
         public:
-            typedef map<util::uuid_t, oe::core::task::driver*> task_container_t;
+            typedef map<util::uuid_t, flame::core::task::driver*> task_container_t;
 
             task_manager();
             virtual ~task_manager();
@@ -40,7 +39,7 @@ namespace oe::core {
              * @return true if sucessfully installed
              * @return false if failed
              */
-            bool install(const char* taskname, oe::core::task::runnable* instance = nullptr);
+            bool install(const char* taskname, flame::core::task::runnable* instance = nullptr);
 
             void uninstall(const char* taskname = nullptr); //install without system configuration
 
@@ -51,8 +50,8 @@ namespace oe::core {
 
             int size() const { return _task_container.size(); }
 
-            oe::core::task::driver* get_driver(const char* taskname = nullptr);
-            oe::core::task::runnable* get_task(const char* taskname = nullptr);
+            flame::core::task::driver* get_driver(const char* taskname = nullptr);
+            flame::core::task::runnable* get_task(const char* taskname = nullptr);
 
         protected:
             //task_manager(const task_manager&) = delete;
@@ -65,6 +64,6 @@ namespace oe::core {
     }; //end class
 } /* namespace */
 
-#define manager oe::core::task_manager::instance()
+#define manager flame::core::task_manager::instance()
 
 #endif
