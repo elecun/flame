@@ -20,5 +20,9 @@
 #define _FILE_EXT_TASK_  ".task"
 #define _FILE_EXT_SERVICE_  ".service"
 
+#define _PATH_HOME_DIR_       "HOME_DIR"
+#define _PATH_BIN_DIR_        "BIN_DIR"
+#define _PATH_CONFIG_DIR_     "CONFIG_DIR"
+
 
 #endif

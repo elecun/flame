@@ -4,6 +4,7 @@
 #include <flame/util/file.hpp>
 #include <flame/core/registry.hpp>
 #include <flame/core/def.hpp>
+#include <flame/core/profile_def.hpp>
 #include <filesystem>
 
 namespace fs = std::filesystem;
@@ -39,18 +40,18 @@ namespace flame::core {
             }
 
             // 1. check file existance
-            if(registry->find(PATH_BIN_DIR)){
-                fs::path _bin = registry->get<string>(PATH_BIN_DIR);
-                fs::path _task = _bin / fs::path{fmt::format("{}{}",taskname, FILE_EXT_COMPONENT)};
-                fs::path _profile = _bin / fs::path{fmt::format("{}{}",taskname, FILE_EXT_PROFILE)};
+            if(registry->find(_PATH_BIN_DIR_)){
+                fs::path _bin = registry->get<string>(_PATH_BIN_DIR_);
+                fs::path _task = _bin / fs::path{fmt::format("{}{}",taskname, _FILE_EXT_COMPONENT_)};
+                fs::path _profile = _bin / fs::path{fmt::format("{}{}",taskname, _FILE_EXT_PROFILE_)};
 
                 if(!fs::exists(_task)){
-                    console::error("{}{} doest not exist. please check path or task file.", taskname, FILE_EXT_COMPONENT);
+                    console::error("{}{} doest not exist. please check path or task file.", taskname, _FILE_EXT_COMPONENT_);
                     return false;
                 }
 
                 if(!fs::exists(_profile)){
-                    console::error("{}{} doest not exist. please check path or profile file.", taskname, FILE_EXT_PROFILE);
+                    console::error("{}{} doest not exist. please check path or profile file.", taskname, _FILE_EXT_PROFILE_);
                     return false;
                 }
             }
