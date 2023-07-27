@@ -15,22 +15,22 @@
 namespace flame::app {
 
     /**
-     * @brief 
+     * @brief load configration file to prepare for running
      * 
-     * @param conf_file 
-     * @return true 
-     * @return false 
+     * @param conf_file_path configuration file path
+     * @return true if success
+     * @return false if failed
      */
-    bool initialize(const char* conf_file);
+    bool initialize(const char* conf_file_path);
 
     /**
-     * @brief 
+     * @brief start to run all components
      * 
      */
     void run();
 
     /**
-     * @brief 
+     * @brief cleanup the all process
      * 
      */
     void cleanup();
