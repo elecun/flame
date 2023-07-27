@@ -42,12 +42,14 @@ endif
 
 $(shell mkdir -p $(OUTDIR))
 $(shell mkdir -p $(BUILDDIR))
+REV_COUNT = $(shell git rev-list --all --count)
+$(info $(REV_COUNT))
 
 #if release(-O3), debug(-O0)
 CXXFLAGS = -O3 -fPIC -Wall -std=c++17 -D__cplusplus=201703L
 
 #custom definitions
-CXXFLAGS += -D__MAJOR__=0 -D__MINOR__=0 -D__REV__=6
+CXXFLAGS += -D__MAJOR__=0 -D__MINOR__=0 -D__REV__=$(REV_COUNT)
 RM	= rm -rf
 
 #directories
