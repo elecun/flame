@@ -1,5 +1,6 @@
 
 #include "instance.hpp"
+#include <filesystem>
 #include <flame/log.hpp>
 #include <flame/sys/cpu.hpp>
 #include <flame/util/file.hpp>
@@ -20,7 +21,7 @@ namespace flame::app {
      * @return true if initialize success
      * @return false initialize failed
      */
-    bool initialize(const char* conf_file){
+    bool initialize(const char* conf_file_path){
 
         /* system information summary */
         console::info("Process Id = {}", getpid());
@@ -29,13 +30,15 @@ namespace flame::app {
 
         profile_data config;
         try {
-            if(!util::exist(conf_file)){
-                spdlog::error("Configuration file does not exist");
+            filesystem::path _conf_path(conf_file_path);
+            console::info("Configuration file : {}", filesystem::canonical(_conf_path).string());
+            if(!filesystem::exists(_conf_path)){
+                console::error("Configuration file does not exist.");
                 return false;
             }
 
             // read profile from file
-            std::ifstream file(conf_file);
+            std::ifstream file(_conf_path.string());
             file >> config;
         }
         catch(const profile_data::exception& e){
@@ -44,6 +47,10 @@ namespace flame::app {
         }
         catch(std::ifstream::failure& e){
             spdlog::error("Configuration file load failed : {}", e.what());
+            return false;
+        }
+        catch(filesystem::filesystem_error& e){
+            console::error("Configuration file load failed : {}", e.what());
             return false;
         }
 
