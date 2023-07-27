@@ -32,6 +32,7 @@ namespace flame::app {
         try {
             filesystem::path _conf_path(conf_file_path);
             console::info("Configuration file : {}", filesystem::canonical(_conf_path).string());
+            console::info("Parent path : {}", filesystem::canonical(_conf_path).parent_path().string());
             if(!filesystem::exists(_conf_path)){
                 console::error("Configuration file does not exist.");
                 return false;

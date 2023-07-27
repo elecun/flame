@@ -13,15 +13,20 @@
 #define _FLAME_COMPONENT_RPI_I2C_READER_HPP_
 
 #include <flame/core.hpp>
-#include <flame/net.hpp>
+
+#include <unistd.h>				//Needed for I2C port
+#include <fcntl.h>				//Needed for I2C port
+#include <sys/ioctl.h>			//Needed for I2C port
+#include <linux/i2c-dev.h>
+
 
 using namespace flame;
 using namespace std;
 
-class rpi_i2c_reader : public core::task::runnable_rt, private mosqpp::mosquittopp {
+class rpi_i2c_reader : public core::task::runnable_rt {
 
     public:
-        rpi_i2c_reader():mosqpp::mosquittopp(){};
+        rpi_i2c_reader() = default;
         ~rpi_i2c_reader() = default;
 
         /* basic interface functions for nt */
@@ -33,25 +38,12 @@ class rpi_i2c_reader : public core::task::runnable_rt, private mosqpp::mosquitto
         virtual void resume() override;
 
     private:
-        //MQTT Callback functions
-        virtual void on_connect(int rc) override;
-		virtual void on_disconnect(int rc) override;
-		virtual void on_publish(int mid) override;
-		virtual void on_message(const struct mosquitto_message* message) override;
-		virtual void on_subscribe(int mid, int qos_count, const int* granted_qos) override;
-		virtual void on_unsubscribe(int mid) override;
-		virtual void on_log(int level, const char* str) override;
-		virtual void on_error() override;
-        
+        bool open_i2c(const char* bus);
+        long read_i2c(const char* addresss, int len);
 
     private:
-        bool _mqtt_connected = false;
-        string _broker_address { "127.0.0.1" };
-        int _broker_port {1883};
-        string _pub_topic = {"undefined"};
-        int _pub_qos = 2;
-        int _keep_alive = {60};
-        vector<string> _sub_topics;
+        string _i2c_address = {""};
+        int _f_bus = 0;
         
 
 }; /* end class */
