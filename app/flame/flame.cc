@@ -13,6 +13,7 @@
 #include <iostream>
 #include <string>
 #include <csignal>
+#include <vector>
 #include <flame/log.hpp>
 #include <flame/core.hpp>
 #include <3rdparty/cxxopts.hpp>
@@ -22,7 +23,7 @@
 
 using namespace std;
 
-/* signal callback */
+/* signal callback functions */
 void signal_callback(int sig) {
     switch(sig){
         case SIGSEGV: { console::warn("Signal : Segmentation violation"); } break;
@@ -39,13 +40,10 @@ void signal_callback(int sig) {
 
 int main(int argc, char* argv[])
 {
-    string desc = fmt::format("Ver. {} (built {}/{})", _FLAME_VER_, __DATE__, __TIME__);
-    cxxopts::Options options("OpenEdge Framework Engine", desc.c_str());
+    string desc = fmt::format("Version {} (built {}/{})", _FLAME_VER_, __DATE__, __TIME__);
+    cxxopts::Options options("Execution Engine with Flame Dev. Framework", desc.c_str());
     options.add_options()
         ("c,config", "Application start with configuration file(*.conf)", cxxopts::value<string>())
-        ("i,install", "Install Components", cxxopts::value<vector<string>>())
-        ("u,uninstall", "Uninstall Components", cxxopts::value<vector<string>>())
-        ("l,logfile", "Logging to file", cxxopts::value<string>())
         ("h,help", "Print usage");
 
     auto optval = options.parse(argc, argv);
@@ -54,8 +52,9 @@ int main(int argc, char* argv[])
         exit(EXIT_SUCCESS);
     }
 
-    console::stdout_color_st("console");
+    console::stdout_color_st("console"); // for log printing on console
 
+    // signal connect to callback
     const int signals[] = { SIGINT, SIGTERM, SIGBUS, SIGKILL, SIGABRT, SIGSEGV };
     for(const int& s:signals)
         signal(s, signal_callback);
@@ -76,25 +75,13 @@ int main(int argc, char* argv[])
     }
 
     mlockall(MCL_CURRENT|MCL_FUTURE); //avoid memory swaping
-
     
     /* option arguments */
     string _config {""};
     vector<string> _comps;
-    string _logfile = {""};
 
     if(optval.count("config")){
         _config = optval["config"].as<string>();
-    }
-    else if(optval.count("install")){
-        _comps = optval["install"].as<vector<string>>();
-    }
-    else if(optval.count("uninstall")){
-        _comps = optval["uninstall"].as<vector<string>>();
-    }
-    else if(optval.count("logfile")){
-        _logfile = optval["logfile"].as<string>();
-        console::info("Logging to file : {}, but not support yet.", _logfile);
     }
 
     try{
