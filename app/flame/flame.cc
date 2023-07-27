@@ -23,6 +23,11 @@
 
 using namespace std;
 
+void terminate(){
+    app::cleanup();
+    exit(EXIT_SUCCESS);
+}
+
 /* signal callback functions */
 void signal_callback(int sig) {
     switch(sig){
