@@ -7,8 +7,8 @@
 OS := $(shell uname)
 
 #Set Architecutre
-#ARCH := armhf
-ARCH := x86_64
+ARCH := armhf
+#ARCH := x86_64
 
 CURRENT_DIR:=$(shell dirname $(realpath $(firstword $(MAKEFILE_LIST))))
 CURRENT_DIR_NAME := $(notdir $(patsubst %/,%,$(dir $(CURRENT_DIR))))
@@ -19,8 +19,8 @@ COMPONENT_NAME = rpi.i2c.reader
 
 #Compilers
 ifeq ($(ARCH),armhf)
-	CC := /usr/bin/arm-linux-gnueabihf-g++-8
-	GCC := /usr/bin/arm-linux-gnueabihf-gcc-8
+	CC := /usr/bin/arm-linux-gnueabihf-g++-10
+	GCC := /usr/bin/arm-linux-gnueabihf-gcc-10
 	LD_LIBRARY_PATH += -L./lib/armhf
 	OUTDIR		= $(CURRENT_DIR)/../../bin/armhf/
 	BUILDDIR		= $(CURRENT_DIR)/../../bin/armhf/

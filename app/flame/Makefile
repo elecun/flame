@@ -9,15 +9,24 @@ OS := $(shell uname)
 
 #Set Architecutre
 #ARCH := armhf
-ARCH := x86_64
+ARCH := arm64
+#ARCH := x86_64
 
 CURRENT_DIR:=$(shell dirname $(realpath $(firstword $(MAKEFILE_LIST))))
 CURRENT_DIR_NAME := $(notdir $(patsubst %/,%,$(dir $(CURRENT_DIR))))
 
 #Compilers
-ifeq ($(ARCH),armhf)
-	CC := /usr/bin/arm-linux-gnueabihf-g++-8
-	GCC := /usr/bin/arm-linux-gnueabihf-gcc-8
+ifeq ($(ARCH),arm64)
+	CC := /usr/bin/aarch64-linux-gnu-g++
+	GCC := /usr/bin/aarch64-linux-gnu-g++
+	LD_LIBRARY_PATH += -L./lib/arm64
+	OUTDIR		= $(CURRENT_DIR)/../../bin/arm64/
+	BUILDDIR		= $(CURRENT_DIR)/../../bin/arm64/
+	INCLUDE_DIR = -I./ -I$(CURRENT_DIR)/ -I$(CURRENT_DIR)/../../include/ -I$(CURRENT_DIR)/../../include/3rdparty/
+	LD_LIBRARY_PATH += -L/usr/local/lib -L./lib/arm64
+else ifeq ($(ARCH), armhf)
+	CC := /usr/bin/arm-linux-gnueabihf-g++-9
+	GCC := /usr/bin/arm-linux-gnueabihf-gcc-9
 	LD_LIBRARY_PATH += -L./lib/armhf
 	OUTDIR		= $(CURRENT_DIR)/../../bin/armhf/
 	BUILDDIR		= $(CURRENT_DIR)/../../bin/armhf/
@@ -36,7 +45,7 @@ endif
 # OS
 ifeq ($(OS),Linux) #for Linux
 	LDFLAGS = -Wl,--export-dynamic -Wl,-rpath=$(LD_LIBRARY_PATH)
-	LDLIBS = -pthread -lrt -ldl -lm -lstdc++fs
+	LDLIBS = -pthread -lrt -ldl -lm 
 	GTEST_LDLIBS = -lgtest
 endif
 

@@ -2,5 +2,6 @@
     "cmake.configureOnOpen": false,
     "files.associations": {
         "iosfwd": "cpp"
-    }
+    },
+    "cmake.sourceDirectory": "/home/hwang-exp/dev/flame/include/3rdparty/mosquitto"
 }
