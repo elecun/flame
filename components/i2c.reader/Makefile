@@ -7,14 +7,13 @@
 OS := $(shell uname)
 
 #Set Architecutre
-#ARCH := armhf
-#ARCH := x86_64
 ARCH := arm64
+#ARCH := x86_64
 
 CURRENT_DIR:=$(shell dirname $(realpath $(firstword $(MAKEFILE_LIST))))
 CURRENT_DIR_NAME := $(notdir $(patsubst %/,%,$(dir $(CURRENT_DIR))))
 FLAME_INCLUDE_DIR = $(CURRENT_DIR)/../../include/flame
-COMPONENT_NAME = simple.example
+COMPONENT_NAME = i2c.reader
 
 
 
@@ -28,8 +27,8 @@ ifeq ($(ARCH),arm64)
 	INCLUDE_DIR = -I./ -I$(CURRENT_DIR)/ -I$(CURRENT_DIR)/../../include/ -I$(CURRENT_DIR)/../../include/3rdparty/
 	LD_LIBRARY_PATH += -L/usr/local/lib -L./lib/arm64
 else ifeq ($(ARCH),armhf)
-	CC := /usr/bin/arm-linux-gnueabihf-g++-8
-	GCC := /usr/bin/arm-linux-gnueabihf-gcc-8
+	CC := /usr/bin/arm-linux-gnueabihf-g++-9
+	GCC := /usr/bin/arm-linux-gnueabihf-gcc-9
 	LD_LIBRARY_PATH += -L./lib/armhf
 	OUTDIR		= $(CURRENT_DIR)/../../bin/armhf/
 	BUILDDIR		= $(CURRENT_DIR)/../../bin/armhf/
@@ -70,11 +69,14 @@ SOURCE_FILES = .
 
 
 # Components
-$(COMPONENT_NAME).comp:	$(BUILDDIR)$(COMPONENT_NAME).o
+$(COMPONENT_NAME).comp:	$(BUILDDIR)$(COMPONENT_NAME).o\
+						$(BUILDDIR)i2c.o
 						$(CC) $(LDFLAGS) $(LD_LIBRARY_PATH) -shared -o $(BUILDDIR)$@ $^ $(LDLIBS)
 
 $(BUILDDIR)$(COMPONENT_NAME).o:	$(CURRENT_DIR)/$(COMPONENT_NAME).cc
 								$(CC) $(CXXFLAGS) $(INCLUDE_DIR) -c $^ -o $@
+$(BUILDDIR)i2c.o: $(INCLUDE_FILES)/3rdparty/device/i2c.cc
+	$(CC) $(CXXFLAGS) $(INCLUDE_DIR) -c $^ -o $@
 
 all : components
 components : $(COMPONENT_NAME).comp

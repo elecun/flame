@@ -33,6 +33,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 #include <flame/core/version.hpp>
 #include <flame/core/def.hpp>
 #include <flame/core/task.hpp>
+#include <flame/core/profile_def.hpp>
 
 
 using namespace flame;
