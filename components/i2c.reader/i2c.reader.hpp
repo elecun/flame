@@ -45,8 +45,10 @@ class i2c_reader : public core::task::runnable_rt {
     private:
         I2CDevice _device;
 
+        string _i2c_dev_model = "";
         unsigned char _i2c_chip_address = 0x00;
-        unsigned char _i2c_data_address = 0x00;
+        unsigned char _i2c_conversion_register = 0x00;
+        unsigned char _i2c_config_register = 0x00;
         unsigned short _i2c_set_configure = 0x0000;
         int _f_bus = -1;
         

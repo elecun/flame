@@ -4,7 +4,7 @@
         "taskname":"i2c.reader",
         "version":"0.0.1",
         "cpu_affinity":1,
-        "cycle_ns":1000000000,
+        "cycle_ns":10000000,
         "policy":{
             "check_jitter":false,
             "check_overrun":false,
@@ -12,9 +12,11 @@
         }
     },
     "configurations":{
+        "model":"ADS1115",
         "bus":"/dev/i2c-1",
         "chip_address":"0x48",
-        "data_address":"0x01",
-        "configure":"0xc385"
+        "conversion_register":"0x00",
+        "config_register":"0x01",
+        "configure":"0xc424"
     }
 }
