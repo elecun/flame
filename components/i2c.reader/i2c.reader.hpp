@@ -14,17 +14,32 @@
 
 #include <flame/core.hpp>
 
-#include <unistd.h>				//Needed for I2C port
-#include <fcntl.h>				//Needed for I2C port
-#include <sys/ioctl.h>			//Needed for I2C port
-#include <linux/i2c-dev.h>
+// #include <unistd.h>				//Needed for I2C port
+// #include <fcntl.h>				//Needed for I2C port
+// #include <sys/ioctl.h>			//Needed for I2C port
+// #include <linux/i2c-dev.h>
 #include <3rdparty/device/i2c.h>
+#include <flame/log.hpp>
 #include <3rdparty/paho.mqtt/async_client.h> // for paho mqtt
 
 
 using namespace flame;
 using namespace std;
 using namespace mqtt;
+
+class mq_callback : public virtual mqtt::callback{
+    public:
+        void connection_lost(const string& cause) override {
+            if(!cause.empty()){
+                console::warn("Connection lost : {}", cause);
+            }
+        }
+
+        void delivery_complete(mqtt::delivery_token_ptr tok) override {
+            // cout << "\tDelivery complete for token: "
+            //     << (tok ? tok->get_message_id() : -1) << endl;
+        }
+};
 
 class i2c_reader : public core::task::runnable_rt{
 
@@ -42,12 +57,17 @@ class i2c_reader : public core::task::runnable_rt{
 
     private: //for MQTT
         mqtt::async_client* _mq_client = nullptr;
+
+        string _mq_broker_address {""};
+        string _mq_pub_topic_prefix {""};
+        string _mq_client_id {""};
+        int _mq_qos {0};
         
 
     private: //for I2C
         I2CDevice _device;
 
-        string _i2c_dev_model = "";
+        string _i2c_dev_model {""};
         unsigned char _i2c_chip_address = 0x00;
         unsigned char _i2c_conversion_register = 0x00;
         unsigned char _i2c_config_register = 0x00;

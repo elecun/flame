@@ -1,5 +1,4 @@
 #include "i2c.reader.hpp"
-#include <flame/log.hpp>
 #include<sstream>
 #include <vector>
 
@@ -36,8 +35,8 @@ bool i2c_reader::configure(){
             json config = profile[_PROFILE_CONFIGURATIONS_KEY_];
 
             //check configuration keys requires
-            vector<string> required_keys {"bus", "model", "chip_address", "conversion_register", "config_register", "configure"};
-            for(string key:required_keys){
+            vector<string> required_conf_keys {"bus", "model", "chip_address", "conversion_register", "config_register", "configure"};
+            for(string key:required_conf_keys){
                 if(!config.contains(key)){
                     console::error(fmt::format("'{}' should be defined in this profile", key));
                     return false;
@@ -78,17 +77,44 @@ bool i2c_reader::configure(){
             _device.iaddr_bytes = 1;
             _device.page_bytes = 16;
 
-            // configuration
+            // i2c configuration
             unsigned char set_config[2] = {0x00, };
             set_config[0] = _i2c_set_configure & 0xff;
             set_config[1] = (_i2c_set_configure>>8) & 0xff;
             if((i2c_write(&_device, _i2c_config_register, set_config, sizeof(set_config)))!=sizeof(set_config)){
                 console::error("I2C Set Error");
             }
+        }
+
+        //for mqtt configuration
+        if(profile.contains("mqtt")){
+            json mqtt_config = profile["mqtt"];
+
+            //mqtt configuration
+            vector<string> required_mqtt_keys {"broker", "id", "qos", "pub_prefix"};
+            for(string key:required_mqtt_keys){
+                if(!mqtt_config.contains(key)){
+                    console::error(fmt::format("'{}' should be defined in this profile", key));
+                    return false;
+                }
+            }
+
+            _mq_broker_address = mqtt_config["broker"].get<string>();
+            _mq_client_id = mqtt_config["id"].get<string>();
+            _mq_qos = mqtt_config["qos"].get<int>();
+            _mq_pub_topic_prefix = mqtt_config["pub_prefix"].get<string>();
+
+            try{
+                if(!_mq_client)
+                    _mq_client = new mqtt::async_client(_mq_broker_address, _mq_client_id, "./persist");
+            }
+            catch(const mqtt::exception& e){
+                console::error("{}", e.what());
+                return false;
+            }
 
         }
 
-        
     }
     catch(const json::exception& e){
         console::error("Profile read/access error : {}", e.what());
@@ -100,6 +126,11 @@ bool i2c_reader::configure(){
 
 void i2c_reader::cleanup(){
     i2c_close(_f_bus);
+
+    if(_mq_client->is_connected()){
+        _mq_client->disconnect()->wait();
+        delete _mq_client;
+    }
 
 }
 
