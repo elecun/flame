@@ -35,7 +35,7 @@ bool i2c_reader::configure(){
         if(profile.contains(_PROFILE_CONFIGURATIONS_KEY_)){
             json config = profile[_PROFILE_CONFIGURATIONS_KEY_];
 
-            //check profile keys requires
+            //check configuration keys requires
             vector<string> required_keys {"bus", "model", "chip_address", "conversion_register", "config_register", "configure"};
             for(string key:required_keys){
                 if(!config.contains(key)){
@@ -109,23 +109,4 @@ void i2c_reader::pause(){
 
 void i2c_reader::resume(){
     
-}
-
-bool i2c_reader::open_i2c(const char* bus){
-    _f_bus = open(bus, O_RDWR);
-    if(_f_bus<0){
-        console::error("Failed to open the I2C Bus {}", bus);
-        return false;
-    }
-    return true;
-}
-
-long i2c_reader::read_i2c(const unsigned char address, int len){
-
-    if(ioctl(_f_bus, I2C_SLAVE, _i2c_chip_address)<0){
-        console::error("Failed to acquire bus access and/or talk to slave");
-        return false;
-    }
-
-    return 0;
 }

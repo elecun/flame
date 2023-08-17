@@ -19,12 +19,14 @@
 #include <sys/ioctl.h>			//Needed for I2C port
 #include <linux/i2c-dev.h>
 #include <3rdparty/device/i2c.h>
+#include <3rdparty/paho.mqtt/async_client.h> // for paho mqtt
 
 
 using namespace flame;
 using namespace std;
+using namespace mqtt;
 
-class i2c_reader : public core::task::runnable_rt {
+class i2c_reader : public core::task::runnable_rt{
 
     public:
         i2c_reader() = default;
@@ -38,11 +40,11 @@ class i2c_reader : public core::task::runnable_rt {
         virtual void pause() override;
         virtual void resume() override;
 
-    private:
-        bool open_i2c(const char* bus);
-        long read_i2c(const unsigned char addresss, int len);
+    private: //for MQTT
+        mqtt::async_client* _mq_client = nullptr;
+        
 
-    private:
+    private: //for I2C
         I2CDevice _device;
 
         string _i2c_dev_model = "";

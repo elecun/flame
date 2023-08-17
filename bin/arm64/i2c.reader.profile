@@ -18,5 +18,9 @@
         "conversion_register":"0x00",
         "config_register":"0x01",
         "configure":"0xc424"
+    },
+    "mqtt":{
+        "broker":"127.0.0.1",
+        "id":"flame-i2c"
     }
 }
