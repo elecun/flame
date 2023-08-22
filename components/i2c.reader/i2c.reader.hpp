@@ -61,6 +61,7 @@ class i2c_reader : public core::task::runnable_rt{
         string _mq_broker_address {""};
         string _mq_pub_topic_prefix {""};
         string _mq_client_id {""};
+        mqtt::connect_options _mq_option;
         int _mq_qos {0};
         
 

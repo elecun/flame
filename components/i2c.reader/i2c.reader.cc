@@ -1,6 +1,7 @@
 #include "i2c.reader.hpp"
 #include<sstream>
 #include <vector>
+#include <map>
 
 
 
@@ -16,6 +17,15 @@ void i2c_reader::execute(){
         if((i2c_read(&_device, _i2c_conversion_register, rcv_buffer, sizeof(rcv_buffer))) == sizeof(rcv_buffer)) {
             short value = rcv_buffer[0] << 8 | rcv_buffer[1];
             console::info(fmt::format("ADC : {}", value));
+
+            if(_mq_client->is_connected()){
+                string data = fmt::format("value:{}", value);
+                auto msg = make_message(_mq_pub_topic_prefix, data, 0, false);
+                _mq_client->publish(msg);
+            }
+            else{
+                console::warn("Not connected to Broker");
+            }
         }
         
     }
@@ -106,8 +116,20 @@ bool i2c_reader::configure(){
             _mq_pub_topic_prefix = mqtt_config["pub_prefix"].get<string>();
 
             try{
-                if(!_mq_client)
+                if(!_mq_client){
+                    console::info("Connect to {} ({})", _mq_broker_address, _mq_client_id);
                     _mq_client = new mqtt::async_client(_mq_broker_address, _mq_client_id, "./persist");
+                    _mq_option.set_clean_session(true);
+                    _mq_option.set_keep_alive_interval(60);
+                    _mq_option.set_automatic_reconnect(true);
+
+                    try {
+                        _mq_client->connect(_mq_option)->wait();
+                        }
+                    catch (const mqtt::exception& e){
+                        console::error("Message Broker Connection error : {}", e.what());
+                    }
+                }
             }
             catch(const mqtt::exception& e){
                 console::error("{}", e.what());

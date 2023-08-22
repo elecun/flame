@@ -20,7 +20,7 @@
         "configure":"0xc424"
     },
     "mqtt":{
-        "broker":"tcp://localhost:1883",
+        "broker":"tcp://192.168.0.8:1883",
         "id":"flame-i2c",
         "qos":0,
         "pub_prefix":"flame/vibration"

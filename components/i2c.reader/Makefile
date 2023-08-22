@@ -25,7 +25,7 @@ ifeq ($(ARCH),arm64)
 	OUTDIR		= $(CURRENT_DIR)/../../bin/arm64/
 	BUILDDIR		= $(CURRENT_DIR)/../../bin/arm64/
 	INCLUDE_DIR = -I./ -I$(CURRENT_DIR)/ -I$(CURRENT_DIR)/../../include/ -I$(CURRENT_DIR)/../../include/3rdparty/
-	LD_LIBRARY_PATH += -L/usr/local/lib -L./lib/arm64
+	LD_LIBRARY_PATH += -L/usr/local/lib -L$(CURRENT_DIR)/../../lib/arm64
 else ifeq ($(ARCH),armhf)
 	CC := /usr/bin/arm-linux-gnueabihf-g++-9
 	GCC := /usr/bin/arm-linux-gnueabihf-gcc-9
@@ -47,7 +47,7 @@ endif
 # OS
 ifeq ($(OS),Linux) #for Linux
 	LDFLAGS = -Wl,--export-dynamic -Wl,-rpath=$(LD_LIBRARY_PATH)
-	LDLIBS = -pthread -lrt -ldl -lm -lpaho-mqttpp3
+	LDLIBS = -pthread -lrt -ldl -lm -lpaho-mqtt3a -lpaho-mqttpp3
 	GTEST_LDLIBS = -lgtest
 endif
 
