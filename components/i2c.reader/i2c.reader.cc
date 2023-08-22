@@ -14,7 +14,8 @@ void i2c_reader::execute(){
         unsigned char rcv_buffer[2] = {0x00, 0x00};
 
         if((i2c_read(&_device, _i2c_conversion_register, rcv_buffer, sizeof(rcv_buffer))) == sizeof(rcv_buffer)) {
-            console::info(fmt::format("{},{}", rcv_buffer[0], rcv_buffer[1]));
+            short value = rcv_buffer[0] << 8 | rcv_buffer[1];
+            console::info(fmt::format("ADC : {}", value));
         }
         
     }
