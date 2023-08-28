@@ -26,10 +26,11 @@ void i2c_reader::execute(){
             unsigned char rcv_buffer[2] = {0x00, 0x00};
             if((i2c_read(&_device, _i2c_conversion_register, rcv_buffer, sizeof(rcv_buffer))) == sizeof(rcv_buffer)) {
                 short value = rcv_buffer[0] << 8 | rcv_buffer[1];
-                console::info(fmt::format("ADC : {}", value));
+                double scaled_value = (double)value*_fsr/65535;
+                console::info(fmt::format("{} Value : {}", ch.first, scaled_value));
 
                 if(_datalog.is_open()){
-                    _datalog << value;
+                    _datalog << scaled_value;
                     _datalog << "\n";
                 }
 
@@ -37,9 +38,6 @@ void i2c_reader::execute(){
                     string data = fmt::format("value:{}", value);
                     auto msg = make_message(_mq_pub_topic_prefix, data, 0, false);
                     _mq_client->publish(msg);
-                }
-                else{
-                    console::warn("Not connected to Broker");
                 }
             }
 
@@ -93,12 +91,15 @@ bool i2c_reader::configure(){
             console::info(fmt::format("> I2C Config Register Address : {}", (int)_i2c_config_register));
 
             json conf_set = config["configure"];
-            map<string, string> _conf_set_raw = config["configure"].get<std::map<string, string>>();
-
-            for(auto& c:_conf_set_raw){
-                _i2c_set_configures[c.first] = (unsigned short)stoi(c.second, nullptr, 16);
-                console::info(fmt::format("> I2C Configured : {}-{}", c.first, c.second));
+            for(auto& c:conf_set){
+                map<string, string> ci = c.get<std::map<std::string, std::string>>();
+                for(auto it=ci.begin();it!=ci.end();it++){
+                    _i2c_set_configures[it->first] = (unsigned short)stoi(it->second, nullptr, 16);
+                }
             }
+
+            _fsr = config["fsr"].get<unsigned int>();
+            console::info(fmt::format("> I2C Config FSR : {}", _fsr));
 
             // I2C device initialize
             memset(&_device, 0, sizeof(_device));
@@ -110,12 +111,12 @@ bool i2c_reader::configure(){
             _device.page_bytes = 16;
 
             // i2c configuration
-            unsigned char set_config[2] = {0x00, };
-            set_config[0] = _i2c_set_configure & 0xff;
-            set_config[1] = (_i2c_set_configure>>8) & 0xff;
-            if((i2c_write(&_device, _i2c_config_register, set_config, sizeof(set_config)))!=sizeof(set_config)){
-                console::error("I2C Set Error");
-            }
+            // unsigned char set_config[2] = {0x00, };
+            // set_config[0] = _i2c_set_configure & 0xff;
+            // set_config[1] = (_i2c_set_configure>>8) & 0xff;
+            // if((i2c_write(&_device, _i2c_config_register, set_config, sizeof(set_config)))!=sizeof(set_config)){
+            //     console::error("I2C Set Error");
+            // }
         }
 
         //for mqtt configuration

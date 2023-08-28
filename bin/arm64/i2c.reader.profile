@@ -18,10 +18,7 @@
         "conversion_register":"0x00",
         "config_register":"0x01",
         "configure":[
-            {"channel_0":"0xc483"},
-            {"channel_1":"0xd483"},
-            {"channel_2":"0xe583"},
-            {"channel_3":"0xf583"}
+            {"channel_0":"0xc483"}
         ],
         "fsr":2048
     },

@@ -70,6 +70,7 @@ class i2c_reader : public core::task::runnable_rt{
         unsigned char _i2c_conversion_register = 0x00;
         unsigned char _i2c_config_register = 0x00;
         map<string, unsigned short> _i2c_set_configures;
+        unsigned int _fsr = {2048};
         int _f_bus = -1;
 
     private:
