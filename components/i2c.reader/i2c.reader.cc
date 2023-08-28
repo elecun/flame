@@ -4,7 +4,6 @@
 #include <map>
 
 
-
 //static component instance that has only single instance
 static i2c_reader* _instance = nullptr;
 core::task::runnable* create(){ if(!_instance) _instance = new i2c_reader(); return _instance; }
@@ -17,6 +16,10 @@ void i2c_reader::execute(){
         if((i2c_read(&_device, _i2c_conversion_register, rcv_buffer, sizeof(rcv_buffer))) == sizeof(rcv_buffer)) {
             short value = rcv_buffer[0] << 8 | rcv_buffer[1];
             console::info(fmt::format("ADC : {}", value));
+            if(_datalog.is_open()){
+                _datalog << value;
+                _datalog << "\n";
+            }
 
             if(_mq_client->is_connected()){
                 string data = fmt::format("value:{}", value);
@@ -144,6 +147,8 @@ bool i2c_reader::configure(){
         return false;
     }
 
+    _datalog.open("data.txt");
+
     return true;
 }
 
@@ -154,6 +159,8 @@ void i2c_reader::cleanup(){
         _mq_client->disconnect()->wait();
         delete _mq_client;
     }
+
+    _datalog.close();
 
 }
 

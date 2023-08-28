@@ -21,6 +21,7 @@
 #include <3rdparty/device/i2c.h>
 #include <flame/log.hpp>
 #include <3rdparty/paho.mqtt/async_client.h> // for paho mqtt
+#include <fstream>
 
 
 using namespace flame;
@@ -74,6 +75,11 @@ class i2c_reader : public core::task::runnable_rt{
         unsigned char _i2c_config_register = 0x00;
         unsigned short _i2c_set_configure = 0x0000;
         int _f_bus = -1;
+
+    private:
+        std::ofstream _datalog;
+
+
         
 
 }; /* end class */
