@@ -13,15 +13,11 @@
 #define _FLAME_COMPONENT_I2C_READER_HPP_
 
 #include <flame/core.hpp>
-
-// #include <unistd.h>				//Needed for I2C port
-// #include <fcntl.h>				//Needed for I2C port
-// #include <sys/ioctl.h>			//Needed for I2C port
-// #include <linux/i2c-dev.h>
 #include <3rdparty/device/i2c.h>
 #include <flame/log.hpp>
 #include <3rdparty/paho.mqtt/async_client.h> // for paho mqtt
 #include <fstream>
+#include <map>
 
 
 using namespace flame;
@@ -73,7 +69,7 @@ class i2c_reader : public core::task::runnable_rt{
         unsigned char _i2c_chip_address = 0x00;
         unsigned char _i2c_conversion_register = 0x00;
         unsigned char _i2c_config_register = 0x00;
-        unsigned short _i2c_set_configure = 0x0000;
+        map<string, unsigned short> _i2c_set_configures;
         int _f_bus = -1;
 
     private:

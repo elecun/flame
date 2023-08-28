@@ -17,7 +17,13 @@
         "chip_address":"0x48",
         "conversion_register":"0x00",
         "config_register":"0x01",
-        "configure":"0xc424"
+        "configure":[
+            {"channel_0":"0xc483"},
+            {"channel_1":"0xd483"},
+            {"channel_2":"0xe583"},
+            {"channel_3":"0xf583"}
+        ],
+        "fsr":2048
     },
     "mqtt":{
         "broker":"tcp://192.168.0.8:1883",

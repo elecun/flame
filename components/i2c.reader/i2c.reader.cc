@@ -11,25 +11,39 @@ void release(){ if(_instance){ delete _instance; _instance = nullptr; }}
 
 void i2c_reader::execute(){
     if(_f_bus){
-        unsigned char rcv_buffer[2] = {0x00, 0x00};
+        
+        //single shot (write)
+        for(auto& ch:_i2c_set_configures){
 
-        if((i2c_read(&_device, _i2c_conversion_register, rcv_buffer, sizeof(rcv_buffer))) == sizeof(rcv_buffer)) {
-            short value = rcv_buffer[0] << 8 | rcv_buffer[1];
-            console::info(fmt::format("ADC : {}", value));
-            if(_datalog.is_open()){
-                _datalog << value;
-                _datalog << "\n";
+            unsigned char set_config[2] = {0x00, };
+            set_config[0] = ch.second & 0xff;
+            set_config[1] = (ch.second>>8) & 0xff;
+
+            if((i2c_write(&_device, _i2c_config_register, set_config, sizeof(set_config)))!=sizeof(set_config)){
+                console::error("I2C Set Error");
             }
 
-            if(_mq_client->is_connected()){
-                string data = fmt::format("value:{}", value);
-                auto msg = make_message(_mq_pub_topic_prefix, data, 0, false);
-                _mq_client->publish(msg);
+            unsigned char rcv_buffer[2] = {0x00, 0x00};
+            if((i2c_read(&_device, _i2c_conversion_register, rcv_buffer, sizeof(rcv_buffer))) == sizeof(rcv_buffer)) {
+                short value = rcv_buffer[0] << 8 | rcv_buffer[1];
+                console::info(fmt::format("ADC : {}", value));
+
+                if(_datalog.is_open()){
+                    _datalog << value;
+                    _datalog << "\n";
+                }
+
+                if(_mq_client->is_connected()){
+                    string data = fmt::format("value:{}", value);
+                    auto msg = make_message(_mq_pub_topic_prefix, data, 0, false);
+                    _mq_client->publish(msg);
+                }
+                else{
+                    console::warn("Not connected to Broker");
+                }
             }
-            else{
-                console::warn("Not connected to Broker");
-            }
-        }
+
+        }        
         
     }
     else {
@@ -49,7 +63,7 @@ bool i2c_reader::configure(){
             json config = profile[_PROFILE_CONFIGURATIONS_KEY_];
 
             //check configuration keys requires
-            vector<string> required_conf_keys {"bus", "model", "chip_address", "conversion_register", "config_register", "configure"};
+            vector<string> required_conf_keys {"bus", "model", "chip_address", "conversion_register", "config_register", "configure", "fsr"};
             for(string key:required_conf_keys){
                 if(!config.contains(key)){
                     console::error(fmt::format("'{}' should be defined in this profile", key));
@@ -78,9 +92,13 @@ bool i2c_reader::configure(){
             _i2c_config_register = (unsigned char)stoi(config_reg_address, nullptr, 16);
             console::info(fmt::format("> I2C Config Register Address : {}", (int)_i2c_config_register));
 
-            string conf_value = config["configure"].get<string>();
-            _i2c_set_configure = (unsigned short)stoi(conf_value, nullptr, 16);
-            console::info(fmt::format("> I2C Configured : {}", conf_value));
+            json conf_set = config["configure"];
+            map<string, string> _conf_set_raw = config["configure"].get<std::map<string, string>>();
+
+            for(auto& c:_conf_set_raw){
+                _i2c_set_configures[c.first] = (unsigned short)stoi(c.second, nullptr, 16);
+                console::info(fmt::format("> I2C Configured : {}-{}", c.first, c.second));
+            }
 
             // I2C device initialize
             memset(&_device, 0, sizeof(_device));
