@@ -6,6 +6,7 @@ import csv
 import scipy.fftpack
 import math
 import scipy.signal
+from scipy import signal
 
 
 if __name__ == "__main__":
@@ -38,10 +39,10 @@ if __name__ == "__main__":
     plt.ylabel('Magnitude')
 
     plt.subplot(2, 1, 2)                # nrows=2, ncols=1, index=2
-    plt.specgram(_source_data, Fs=_sampling_freq)
+    f, tt, Sxx = signal.spectrogram(_source_data, fs=_sampling_freq)
+    plt.pcolormesh(tt, f, Sxx, shading='gouraud')
     plt.title('Spectogram')
     plt.xlabel('Time(s)')
-    plt.ylabel('Frequency')
-
+    plt.ylabel('Frequency(Hz)')
     plt.tight_layout()
     plt.show()
