@@ -25,11 +25,35 @@ import matplotlib.pyplot as plt
 import io
 from PIL import Image
 from scipy import signal
+from PIL.ImageQt import ImageQt
+
+import matplotlib
+matplotlib.use('agg')
 
 WORKING_PATH = pathlib.Path(__file__).parent # working path
 APP_UI = WORKING_PATH / "MainWindow.ui" # Qt-based UI file
 APP_NAME = "vib-sensor-monitor" # application name
 
+def create_matplotlib_image():
+    # Matplotlib 그래프 생성 예제
+    fig, ax = plt.subplots()
+    ax.plot([1, 2, 3, 4], [1, 4, 2, 3])
+    ax.set_xlabel('X-axis')
+    ax.set_ylabel('Y-axis')
+    ax.set_title('Matplotlib Graph')
+
+    # 그래프를 이미지로 렌더링
+    fig.canvas.draw()
+
+    # QImage로 변환
+    width, height = fig.canvas.get_width_height()
+    print(width, height)
+    image = QImage(fig.canvas.buffer_rgba(), width, height, QImage.Format.Format_RGBA8888)
+    
+    # qimage = ImageQt(image2)
+    # pixmap = QtGui.QPixmap.fromImage(qimage)
+
+    return image
 
 class SensorMonitor(QMainWindow):
     def __init__(self, broker_ip:str):
@@ -56,7 +80,8 @@ class SensorMonitor(QMainWindow):
             _fs = payload["fs"]
             _ts = 1/_fs
         
-        if "data" in payload.keys():
+        if "data" in payload.keys():        
+            
             _data = np.array(payload["data"])
             _data_mean = _data.mean()
             _normalized_data = _data - _data_mean
@@ -67,32 +92,28 @@ class SensorMonitor(QMainWindow):
             peak_frequency = frequency[amplitude.argmax()]
             print(f"Peak Frequenct : {peak_frequency}")
             
-            plt.clf()
-            plt.subplot(2, 1, 1)                # nrows=2, ncols=1, index=1
-            plt.plot(_normalized_data, '-')
-            plt.title('Vibration Raw Data')
-            plt.xlabel(f"Time({_ts}sec)")
-            plt.ylabel('Magnitude')
-
-            plt.subplot(2, 1, 2)                # nrows=2, ncols=1, index=2
-            f, tt, Sxx = signal.spectrogram(_normalized_data, fs=_fs)
-            plt.pcolormesh(tt, f, Sxx, shading='gouraud')
-            plt.title('Spectogram')
-            plt.xlabel('Time(s)')
-            plt.ylabel('Frequency(Hz)')
-            plt.tight_layout()
-            #plt.show()
+            fig, ax = plt.subplots(2,1, dpi=200)
+            ax[0].plot(_normalized_data, '-')
+            ax[0].set_title('Vibration Raw Data')
+            ax[0].set_xlabel(f"Time({_ts}sec)")
+            ax[0].set_ylabel('Magnitude')
             
-            buf = io.BytesIO()
-            plt.savefig(buf, format='png')
-            buf.seek(0)
-            im = Image.open(buf)
-            buf.close()
+            f, tt, Sxx = signal.spectrogram(_normalized_data, fs=_fs, nperseg=_fs)
+            c = ax[1].pcolormesh(tt, f, Sxx, shading='gouraud', cmap='RdBu')
+            ax[1].set_title('Spectogram')
+            ax[1].set_xlabel('Time(s)')
+            ax[1].set_ylabel('Frequency(Hz)')
+            fig.tight_layout()
+            fig.canvas.draw()
             
-            pixmap = QImage(im, 800, 600, QImage.Format.Format_ARGB32)
-            self.canvas.setPixmap(pixmap)
-            self.setCentralWidget(self.canvas)
-            self.resize(pixmap.width(), pixmap.height())            
+            fig.savefig("test.png")
+            
+            width, height = fig.canvas.get_width_height()
+            image = QImage(fig.canvas.buffer_rgba(), width, height, QImage.Format.Format_RGBA8888)
+            
+            pixmap = QPixmap.fromImage(image)
+            window = self.findChild(QLabel, "canvas")
+            window.setPixmap(pixmap.scaled(window.size(), Qt.AspectRatioMode.KeepAspectRatio))   
         
         
      # show message on status bar
@@ -112,10 +133,10 @@ class SensorMonitor(QMainWindow):
         for topic in self.message_api.keys():
             self.mq_client.subscribe(topic, 0)
         
-        self.show_on_statusbar("Connected to Broker({})".format(str(rc)))
+        self.show_on_statusbar(f"Connected to Broker({str(rc)})")
         
     def on_mqtt_disconnect(self, mqttc, userdata, rc):
-        self.show_on_statusbar("Disconnected to Broker({})".format(str(rc)))
+        self.show_on_statusbar(f"Disconnected to Broker({str(rc)})")
         
     def on_mqtt_message(self, mqttc, userdata, msg):
         mapi = str(msg.topic)
