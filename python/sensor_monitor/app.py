@@ -34,26 +34,59 @@ WORKING_PATH = pathlib.Path(__file__).parent # working path
 APP_UI = WORKING_PATH / "MainWindow.ui" # Qt-based UI file
 APP_NAME = "vib-sensor-monitor" # application name
 
-def create_matplotlib_image():
-    # Matplotlib 그래프 생성 예제
-    fig, ax = plt.subplots()
-    ax.plot([1, 2, 3, 4], [1, 4, 2, 3])
-    ax.set_xlabel('X-axis')
-    ax.set_ylabel('Y-axis')
-    ax.set_title('Matplotlib Graph')
-
-    # 그래프를 이미지로 렌더링
-    fig.canvas.draw()
-
-    # QImage로 변환
-    width, height = fig.canvas.get_width_height()
-    print(width, height)
-    image = QImage(fig.canvas.buffer_rgba(), width, height, QImage.Format.Format_RGBA8888)
+def gaussian_spectrogram(x, fs, window_dur=0.005, step_dur=None, dyn_range=120, 
+                         cmap=None, ax=None):
+    from scipy.signal import spectrogram, gaussian
+    from matplotlib.colors import LogNorm
+    from matplotlib.cm import get_cmap
     
-    # qimage = ImageQt(image2)
-    # pixmap = QtGui.QPixmap.fromImage(qimage)
+    # set default for step_dur, if unspecified. This value is optimal for Gaussian windows.
+    if step_dur is None:
+        step_dur = window_dur / np.sqrt(np.pi) / 8.
+    
+    # convert window & step durations from seconds to numbers of samples (which is what
+    # scipy.signal.spectrogram takes as input).
+    window_nsamp = int(window_dur * fs * 2)
+    step_nsamp = int(step_dur * fs)
+    
+    # make the window. A Gaussian filter needs a minimum of 6σ - 1 samples, so working
+    # backward from window_nsamp we can calculate σ.
+    window_sigma = (window_nsamp + 1) / 6
+    window = gaussian(window_nsamp, window_sigma)
+    
+    # convert step size into number of overlapping samples in adjacent analysis frames
+    noverlap = window_nsamp - step_nsamp
+    
+    # compute the power spectral density
+    freqs, times, power = spectrogram(x, detrend=False, mode='psd', fs=fs,
+                                      scaling='density', noverlap=noverlap,
+                                      window=window, nperseg=window_nsamp)
 
-    return image
+    p_ref = 2e-5  # 20 μPa, the standard reference pressure for sound in air
+
+    # set lower bound of colormap (vmin) from dynamic range. The upper bound defaults
+    # to the largest value in the spectrogram, so we don't need to set it explicitly.
+    dB_max = 10 * np.log10(power.max() / (p_ref ** 2))
+    vmin = p_ref * 10 ** ((dB_max - dyn_range) / 10)
+
+    # set default colormap, if none specified
+    if cmap is None:
+        cmap = get_cmap('Greys')
+    # or if cmap is a string, get the actual object
+    elif isinstance(cmap, str):
+        cmap = get_cmap(cmap)
+
+    # create the figure if needed
+    if ax is None:
+        fig, ax = plt.subplots()
+
+    # other arguments to the figure
+    extent = (times.min(), times.max(), freqs.min(), freqs.max())
+
+    # plot
+    ax.imshow(power, origin='lower', aspect='auto', cmap=cmap,
+              norm=LogNorm(), extent=extent, vmin=vmin, vmax=None)
+    return ax
 
 class SensorMonitor(QMainWindow):
     def __init__(self, broker_ip:str):
@@ -79,10 +112,11 @@ class SensorMonitor(QMainWindow):
         if "fs" in payload.keys():
             _fs = payload["fs"]
             _ts = 1/_fs
+            print(f"Sample Frequency : {_fs}")
         
         if "data" in payload.keys():        
-            
             _data = np.array(payload["data"])
+            print(f"Data size : {_data.size}")
             _data_mean = _data.mean()
             _normalized_data = _data - _data_mean
             
@@ -98,8 +132,9 @@ class SensorMonitor(QMainWindow):
             ax[0].set_xlabel(f"Time({_ts}sec)")
             ax[0].set_ylabel('Magnitude')
             
-            f, tt, Sxx = signal.spectrogram(_normalized_data, fs=_fs, nperseg=_fs)
-            c = ax[1].pcolormesh(tt, f, Sxx, shading='gouraud', cmap='RdBu')
+            freqs, times, power = signal.spectrogram(_normalized_data, detrend=False, mode='psd', fs=_fs, nperseg=_fs, scaling='density', noverlap=1)
+            c = ax[1].pcolormesh(times, freqs, power, shading='gouraud', cmap='plasma')
+            
             ax[1].set_title('Spectogram')
             ax[1].set_xlabel('Time(s)')
             ax[1].set_ylabel('Frequency(Hz)')
