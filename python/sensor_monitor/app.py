@@ -132,7 +132,7 @@ class SensorMonitor(QMainWindow):
             ax[0].set_xlabel(f"Time({_ts}sec)")
             ax[0].set_ylabel('Magnitude')
             
-            freqs, times, power = signal.spectrogram(_normalized_data, detrend=False, mode='psd', fs=_fs, nperseg=_fs, scaling='density', noverlap=1)
+            freqs, times, power = signal.spectrogram(_normalized_data, detrend=False, mode='psd', fs=_fs, nperseg=int(_fs/4), scaling='density', noverlap=1)
             c = ax[1].pcolormesh(times, freqs, power, shading='gouraud', cmap='plasma')
             
             ax[1].set_title('Spectogram')
@@ -148,7 +148,10 @@ class SensorMonitor(QMainWindow):
             
             pixmap = QPixmap.fromImage(image)
             window = self.findChild(QLabel, "canvas")
-            window.setPixmap(pixmap.scaled(window.size(), Qt.AspectRatioMode.KeepAspectRatio))   
+            window.setPixmap(pixmap.scaled(window.size(), Qt.AspectRatioMode.KeepAspectRatio))
+            
+            label_fs = self.findChild(QLabel, "value_fs")
+            label_fs.setText(_fs)
         
         
      # show message on status bar
