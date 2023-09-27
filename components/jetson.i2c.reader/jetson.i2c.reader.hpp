@@ -1,5 +1,5 @@
 /**
- * @file i2c.reader.hpp
+ * @file jetson.i2c.reader.hpp
  * @author Byunghun Hwang(bh.hwang@iae.re.kr)
  * @brief ADC data reader from I2C on Jetson Xavier NX
  * @version 0.1
