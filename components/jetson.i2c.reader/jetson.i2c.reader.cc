@@ -1,15 +1,15 @@
-#include "i2c.reader.hpp"
+#include "jetson.i2c.reader.hpp"
 #include<sstream>
 #include <vector>
 #include <map>
 
 
 //static component instance that has only single instance
-static i2c_reader* _instance = nullptr;
-core::task::runnable* create(){ if(!_instance) _instance = new i2c_reader(); return _instance; }
+static jetson_i2c_reader* _instance = nullptr;
+core::task::runnable* create(){ if(!_instance) _instance = new jetson_i2c_reader(); return _instance; }
 void release(){ if(_instance){ delete _instance; _instance = nullptr; }}
 
-void i2c_reader::execute(){
+void jetson_i2c_reader::execute(){
     if(_f_bus){
         
         //single shot (write)
@@ -50,11 +50,11 @@ void i2c_reader::execute(){
     
 }
 
-void i2c_reader::stop(){
+void jetson_i2c_reader::stop(){
 
 }
 
-bool i2c_reader::configure(){
+bool jetson_i2c_reader::configure(){
     try {
         const json& profile = this->get_profile()->raw();
         if(profile.contains(_PROFILE_CONFIGURATIONS_KEY_)){
@@ -171,7 +171,7 @@ bool i2c_reader::configure(){
     return true;
 }
 
-void i2c_reader::cleanup(){
+void jetson_i2c_reader::cleanup(){
     i2c_close(_f_bus);
 
     if(_mq_client->is_connected()){
@@ -183,10 +183,10 @@ void i2c_reader::cleanup(){
 
 }
 
-void i2c_reader::pause(){
+void jetson_i2c_reader::pause(){
     
 }
 
-void i2c_reader::resume(){
+void jetson_i2c_reader::resume(){
     
 }

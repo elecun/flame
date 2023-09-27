@@ -1,7 +1,7 @@
 /**
  * @file i2c.reader.hpp
  * @author Byunghun Hwang(bh.hwang@iae.re.kr)
- * @brief ADC data reader from I2C on RPi board
+ * @brief ADC data reader from I2C on Jetson Xavier NX
  * @version 0.1
  * @date 2023-08-16
  * 
@@ -9,8 +9,8 @@
  * 
  */
 
-#ifndef _FLAME_COMPONENT_I2C_READER_HPP_
-#define _FLAME_COMPONENT_I2C_READER_HPP_
+#ifndef _FLAME_COMPONENT_JETSON_I2C_READER_HPP_
+#define _FLAME_COMPONENT_JETSON_I2C_READER_HPP_
 
 #include <flame/core.hpp>
 #include <3rdparty/device/i2c.h>
@@ -38,11 +38,11 @@ class mq_callback : public virtual mqtt::callback{
         }
 };
 
-class i2c_reader : public core::task::runnable_rt{
+class jetson_i2c_reader : public core::task::runnable_rt{
 
     public:
-        i2c_reader() = default;
-        ~i2c_reader() = default;
+        jetson_i2c_reader() = default;
+        ~jetson_i2c_reader() = default;
 
         /* basic interface functions for nt */
         virtual void execute() override;

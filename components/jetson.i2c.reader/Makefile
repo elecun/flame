@@ -13,7 +13,7 @@ ARCH := arm64
 CURRENT_DIR:=$(shell dirname $(realpath $(firstword $(MAKEFILE_LIST))))
 CURRENT_DIR_NAME := $(notdir $(patsubst %/,%,$(dir $(CURRENT_DIR))))
 FLAME_INCLUDE_DIR = $(CURRENT_DIR)/../../include/flame
-COMPONENT_NAME = i2c.reader
+COMPONENT_NAME = jetson.i2c.reader
 
 
 
