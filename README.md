@@ -17,3 +17,7 @@ $ apt-get install g++-aarch64-linux-gnu gcc-aarch64-linux-gnu
 ./flame: /lib/aarch64-linux-gnu/libc.so.6: version `GLIBC_2.32' not found (required by ./flame)
 ./flame: /lib/aarch64-linux-gnu/libc.so.6: version `GLIBC_2.34' not found (required by ./flame)
 ./flame: /lib/aarch64-linux-gnu/libstdc++.so.6: version `GLIBCXX_3.4.29' not found (required by ./flame)
+
+
+# Dependencies
+ - libsqlite-dev 3.37.2
