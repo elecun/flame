@@ -1,21 +1,26 @@
 /**
  * @file log.hpp
- * @author Byunghun Hwang (bh.hwang@iae.re.kr)
- * @brief Print log data on console
+ * @author Byunghun Hwang <bh.hwang@iae.re.kr>
+ * @brief Logger interface
  * @version 0.1
- * @date 2023-07-20
+ * @date 2024-04-18
  * 
- * @copyright Copyright (c) 2023
+ * @copyright Copyright (c) 2024
  * 
  */
 
-#ifndef _FLAME_INCLUDE_LOG_HPP_
-#define _FLAME_INCLUDE_LOG_HPP_
+#ifndef FLAME_LOG_HPP_INCLUDED
+#define FLAME_LOG_HPP_INCLUDED
 
-#include <3rdparty/spdlog/spdlog.h>
-#include <3rdparty/spdlog/sinks/stdout_color_sinks.h>
-#include <3rdparty/spdlog/sinks/basic_file_sink.h>
+/* pre-defined & editable */
+#define _USE_SPDLOG_
 
+#ifdef _USE_SPDLOG_
+#include <dep/spdlog/spdlog.h>
+#include <dep/spdlog/sinks/stdout_color_sinks.h>
+#include <dep/spdlog/sinks/basic_file_sink.h>
 namespace console = spdlog;
+#endif
+
 
 #endif

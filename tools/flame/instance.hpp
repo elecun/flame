@@ -20,9 +20,7 @@ namespace flame::tools {
     void cleanup_and_exit();
     void cleanup();
     void signal_callback(int sig);
-
-    void run_bundle();
-
+    void run_bundle(const char* bundle = nullptr);
 
 } /* namespace */
 

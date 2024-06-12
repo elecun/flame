@@ -8,74 +8,47 @@
  * @copyright Copyright (c) 2023
  * 
  */
-#ifndef _FLAME_CORE_DRIVER_HPP_
-#define _FLAME_CORE_DRIVER_HPP_
 
-#include <flame/core/task.hpp>
-#include <flame/core/profile.hpp>
+#ifndef FLAME_DRIVER_HPP_INCLUDED
+#define FLAME_DRIVER_HPP_INCLUDED
 
-#include <string>
-#include <thread>
-#include <signal.h>
-#include <mutex>
-#include <filesystem> // requried c++17
+#include <filesystem>
+#include <csignal>
+#include <flame/core/component.hpp>
 
 using namespace std;
-namespace fs = std::filesystem;
 
-namespace flame::core::task {
-
-    //RT timer jitter data
-    typedef struct _time_jitter_t {
-        unsigned long long max {0};
-        unsigned long long min {1000000000};
-        void set(unsigned long long val){
-            if(val>max) max=val;
-            if(val<min) min=val;
-        }   
-    } time_jitter;
+namespace flame {
 
     class driver {
         public:
-            driver(const char* taskname);
-            driver(task::runnable* instance);
+            driver(const char* component_name);
+            driver(flame::component* instance);
             driver(const fs::path component);
-            virtual ~driver();
 
-            bool configure();   /* drive a task to configure before execution */
-            void execute();     /* drive a task to run periodically */
-            void cleanup();     /* drive a task to terminate */
-            void pause();       /* drive a task to pause*/
-            void resume();      /* drive a paused task to resume */
+            void on_init();
+            void on_loop();
+            void on_close();
 
-            /* get the name of task */
+            // driver service function
             const char* get_name() {
-                if(_taskImpl)
-                    return _taskImpl->get_name();
+                if(_componentImpl)
+                    return _componentImpl->get_name();
                 return nullptr;
             }
 
-            bool good(){ return (_taskImpl)?true:false; }
+        private:
+            bool load(const char* component_name);
+            void unload();
 
         private:
-            bool load(const char* taskname);    /* load task with by name, true is success  */
-            void unload();  /* unload task */
-            void do_process();  /* call the concrete task execution */
-
-            //set task time spec. 
-            void set_rt_timer(unsigned long long nsec);
-
-        private:
-            task::runnable* _taskImpl = nullptr;    //concrete implementation
-            void* _task_handle = nullptr;   //for dl
-            std::thread* _ptrThread = nullptr;
-            std::mutex _mutex;
-            timer_t _timer_id {0};
-            struct sigevent _sig_evt;
+            flame::component* _componentImpl { nullptr };
+            void* _component_handle { nullptr };
+            struct sigevent _signal_event;
             struct itimerspec _time_spec;
-            _time_jitter_t _jitter;
-            bool _overrun { false };
-    };
-} //namespace
+
+    }; /* class*/
+
+} /* namespace */
 
 #endif

@@ -13,7 +13,7 @@
 #define FLAME_TOOLS_DEF_HPP_INCLUDED
 
 
-#define __CONFIG_KEY_ACCESS__ "access"
-#define __CONFIG_KEY_REQUIRED__ "required"
-    #define __CONFIG_KEY_REQUIRED_BUNDLE__ "bundle"
+#define __CONFIG_KEY_ACCESS__ "accessible"
+#define __CONFIG_KEY_BUNDLE__ "bundle"
+
 #endif

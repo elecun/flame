@@ -26,18 +26,19 @@
 using namespace std;
 
 
-
 int main(int argc, char* argv[])
 {
     console::stdout_color_st("console");
 
-    string desc = fmt::format("Flame Execution Engine {} (built {}/{})", _FLAME_VER_, __DATE__, __TIME__);
+    string desc = fmt::format("FLAME Execution Engine {} (built {}/{})", _FLAME_VER_, __DATE__, __TIME__);
     console::info("{}",desc);
 
-    cxxopts::Options options("Burner options", desc.c_str());
+    cxxopts::Options options("Flame options", desc.c_str());
 
     options.add_options()
+        ("b,bundle", "Service bundle path to perform", cxxopts::value<string>())
         ("c,config", "Global Configuration File(*.conf)", cxxopts::value<string>())
+        ("r,repository", "Service Bundle Repository(Local path)", cxxopts::value<string>())
         ("h,help", "Print usage");
 
     auto optval = options.parse(argc, argv);
@@ -58,27 +59,31 @@ int main(int argc, char* argv[])
     }
     else {
         console::error("Signal Handling Error");
-        ::terminate(); //if failed, do termination
+        flame::tools::cleanup_and_exit();
     }
 
     if(pthread_sigmask(SIG_SETMASK, &sigmask, nullptr)!=0){ // signal masking for main thread
         console::error("Signal Masking Error");
-        ::terminate();
+        flame::tools::cleanup_and_exit();
     }
 
     mlockall(MCL_CURRENT|MCL_FUTURE); //avoid memory swaping
 
     /* option arguments */
     string _config {""};
-    vector<string> _comps;
+    string _bundle {""};
 
-    if(optval.count("config")){
-        _config = optval["config"].as<string>();
-    }
+    if(optval.count("config")){ _config = optval["config"].as<string>(); }
+    if(optval.count("bundle")){ _bundle = optval["bundle"].as<string>(); }
 
     try{
-        if(!_config.empty()){
+        if(!_bundle.empty()){
+            flame::tools::run_bundle(_bundle.c_str());
+            console::info("Start Flame with the bundle {}...", _bundle);
+        }
+        else if(!_config.empty()){
             if(flame::tools::init(_config.c_str())){
+                console::info("Start Flame with user custom configurations {}...", _config);
                 flame::tools::run_bundle();
             }
         }

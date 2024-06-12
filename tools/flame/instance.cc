@@ -8,7 +8,7 @@
 
 #include <dep/json.hpp>
 #include <dep/libzmq/zmq.hpp>
-#include <flame/interface/log.hpp>
+#include <flame/log.hpp>
 
 
 using namespace std;
@@ -86,76 +86,39 @@ namespace flame::tools {
         if(config.find(__CONFIG_KEY_ACCESS__)!=config.end()){
             int access_port = config[__CONFIG_KEY_ACCESS__].get<int>();
             // _cli = new remote_cli("tcp", access_port);
-            console::info("Start supporting CLI...");
+        }
+
+        /* bundle name */
+        if(config.find(__CONFIG_KEY_BUNDLE__)!=config.end()){
+
         }
 
         return true;
 
-
-        // /* system information summary */
-        // console::info("Process Id = {}", getpid());
-        // console::info("System CPUs = {}", get_nprocs());
-        // console::info("System Clock Ticks = {}", sysconf(_SC_CLK_TCK));
-
-        // profile_data config;
-        // try {
-        //     filesystem::path _conf_path(conf_file_path);
-        //     console::info("Configuration file : {}", filesystem::canonical(_conf_path).string());
-        //     console::info("Parent path : {}", filesystem::canonical(_conf_path).parent_path().string());
-        //     if(!filesystem::exists(_conf_path)){
-        //         console::error("Configuration file does not exist.");
-        //         return false;
-        //     }
-
-        //     // read profile from file
-        //     std::ifstream file(_conf_path.string());
-        //     file >> config;
-        // }
-        // catch(const profile_data::exception& e){
-        //     spdlog::error("Configuration file load failed : {}", e.what());
-        //     return false;
-        // }
-        // catch(std::ifstream::failure& e){
-        //     spdlog::error("Configuration file load failed : {}", e.what());
-        //     return false;
-        // }
-        // catch(filesystem::filesystem_error& e){
-        //     console::error("Configuration file load failed : {}", e.what());
-        //     return false;
-        // }
-
-        // // set environments with profile
-        // if(config.find(_CONFIG_ENV_KEY_)!=config.end()){
-            
-        //     /* Set path (Absolute) */
-        //     if(config[_CONFIG_ENV_KEY_].find(_CONFIG_PATH_KEY_)!=config[_CONFIG_ENV_KEY_].end()){
-        //         for(profile_data::iterator it = config[_CONFIG_ENV_KEY_][_CONFIG_PATH_KEY_].begin(); it != config[_CONFIG_ENV_KEY_][_CONFIG_PATH_KEY_].end(); ++it){
-        //             if(it.value().is_string()){
-        //                 registry->insert(it.key(), std::make_any<std::string>(config[_CONFIG_ENV_KEY_][_CONFIG_PATH_KEY_][it.key()].get<std::string>()));
-        //                 console::info("+ Register Path : {}={}", it.key(),(registry->get<std::string>(it.key())));
-        //             }
-        //         }
-        //     }   
-        // }
-
-        // /* required */
-        // if(config.find(_CONFIG_REQ_KEY_)!=config.end()){
-
-        //     /* components */
-        //     if(config[_CONFIG_REQ_KEY_].find(_CONFIG_COMPONENTS_KEY_)!=config[_CONFIG_REQ_KEY_].end()){
-        //         vector<string> required_components = config[_CONFIG_REQ_KEY_][_CONFIG_COMPONENTS_KEY_].get<std::vector<string>>();
-        //         for(string& component:required_components){
-        //             manager->install(component.c_str());
-        //         }
-        //         console::info("Totally installed : {}", manager->size());
-        //     }
-        // }
-
-        // return true;
     }
 
-    void run_bundle(){
+    void run_bundle(const char* bundle){
+        if(bundle){ //bundle name was selected
+            filesystem::path _bundle_path(bundle);
+            if(filesystem::exists(_bundle_path)){
+                if(filesystem::is_regular_file(_bundle_path)){
+                    // if bundle is file(tarball-based package)
+                }
+                else if(filesystem::is_directory(_bundle_path)){
+                    
+                }
+                else {
+                    console::warn("No bundle to perform.");
+                }
+            }
 
+
+            filesystem::canonical(_bundle_path).parent_path().string();
+            console::info("Parent path : {}", filesystem::canonical(_bundle_path).parent_path().string());
+        }
+        else {
+            
+        }
     }
 
 } /** namespace */

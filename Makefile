@@ -74,40 +74,19 @@ $(BUILDDIR)flame.o:	$(CURRENT_DIR)/tools/flame/flame.cc
 $(BUILDDIR)instance.o: $(CURRENT_DIR)/tools/flame/instance.cc
 						$(CC) $(CXXFLAGS) $(INCLUDE_DIR) -c $^ -o $@
 
-# $(BUILDDIR)driver.o:	$(INCLUDES)/flame/core/driver.cc
-# 						$(CC) $(CXXFLAGS) $(INCLUDE_DIR) -c $^ -o $@
 
-# # edge include files
-# $(BUILDDIR)rt_trigger.o:	$(INCLUDE_DIR)/flame/core/rt_trigger.cc
-# 							$(CC) $(CXXFLAGS) $(INCLUDE_DIR) -c $^ -o $@
-# $(BUILDDIR)rt_timer.o:		$(INCLUDES)/flame/core/rt_timer.cc
-# 							$(CC) $(CXXFLAGS) $(INCLUDE_DIR) -c $^ -o $@
-# $(BUILDDIR)profile.o:	$(INCLUDES)/flame/core/profile.cc
-# 						$(CC) $(CXXFLAGS) $(INCLUDE_DIR) -c $^ -o $@
-# $(BUILDDIR)uuid.o:	$(INCLUDES)/flame/util/uuid.cc
-# 					$(CC) $(CXXFLAGS) $(INCLUDE_DIR) -c $^ -o $@
-# $(BUILDDIR)general.o:	$(INCLUDES)/flame/device/general.cc
-# 						$(CC) $(CXXFLAGS) $(INCLUDE_DIR) -c $^ -o $@
-# $(BUILDDIR)info.o:	$(INCLUDES)/flame/sys/info.cc
-# 					$(CC) $(CXXFLAGS) $(INCLUDE_DIR) -c $^ -o $@
-# $(BUILDDIR)cpu.o:	$(INCLUDES)/flame/sys/cpu.cc
-# 						$(CC) $(CXXFLAGS) $(INCLUDE_DIR) -c $^ -o $@
-# $(BUILDDIR)network.o:	$(INCLUDES)/flame/sys/network.cc
-# 						$(CC) $(CXXFLAGS) $(INCLUDE_DIR) -c $^ -o $@
-# $(BUILDDIR)network_perf.o:	$(INCLUDES)/flame/sys/network_perf.cc
-# 						$(CC) $(CXXFLAGS) $(INCLUDE_DIR) -c $^ -o $@
-# $(BUILDDIR)memory.o:	$(INCLUDES)/flame/sys/memory.cc
-# 						$(CC) $(CXXFLAGS) $(INCLUDE_DIR) -c $^ -o $@
-# $(BUILDDIR)system.o:	$(INCLUDES)/flame/sys/system.cc
-# 						$(CC) $(CXXFLAGS) $(INCLUDE_DIR) -c $^ -o $@
-# $(BUILDDIR)taskmanager.o:	$(INCLUDES)/flame/core/taskmanager.cc
-# 						$(CC) $(CXXFLAGS) $(INCLUDE_DIR) -c $^ -o $@
+# components
+device.uvccam.multi.comp:	$(BUILDDIR)device.uvccam.multi.o
+							$(CC) $(LDFLAGS) $(LD_LIBRARY_PATH) -shared -o $(BUILDDIR)$@ $^ $(LDLIBS)
+$(BUILDDIR)device.uvccam.multi.o:	$(CURRENT_DIR)/components/device.uvccam.multi/device.uvccam.multi.cc
+									$(CC) $(CXXFLAGS) $(INCLUDE_DIR) -c $^ -o $@
 
 
 all : flame
+components : device.uvccam.multi.comp
 
 deploy : FORCE
-	cp $(BUILDDIR)*.task $(BUILDDIR)flame $(BINDIR)
+	cp $(BUILDDIR)*.comp $(BUILDDIR)flame $(BINDIR)
 clean : FORCE 
 		$(RM) $(BUILDDIR)*.o $(BUILDDIR)flame
 FORCE : 
