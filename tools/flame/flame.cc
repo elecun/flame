@@ -9,60 +9,47 @@
  * 
  */
 
-
+#include <cstdlib>
 #include <iostream>
 #include <string>
-#include <csignal>
 #include <vector>
-#include <flame/log.hpp>
-#include <flame/core.hpp>
-#include <3rdparty/cxxopts.hpp>
 #include <sys/mman.h>
+#include <csignal>
+
+#include <dep/cxxopts.hpp>
+#include <flame/interface.hpp>
+#include <flame/version.hpp>
 
 #include "instance.hpp"
+#include "def.hpp"
 
 using namespace std;
 
-void terminate(){
-    app::cleanup();
-    exit(EXIT_SUCCESS);
-}
 
-/* signal callback functions */
-void signal_callback(int sig) {
-    switch(sig){
-        case SIGSEGV: { console::warn("Signal : Segmentation violation"); } break;
-        case SIGABRT: { console::warn("Signal : Abnormal termination"); } break;
-        case SIGKILL: { console::warn("Signal : Process killed"); } break;
-        case SIGBUS: { console::warn("Signal : Bus Error"); } break;
-        case SIGTERM: { console::warn("Signal : Termination requested"); } break;
-        case SIGINT: { console::warn("Signal : Interrupted"); } break;
-        default:
-        console::info("Cleaning up the program");
-    }
-    ::terminate(); 
-}
 
 int main(int argc, char* argv[])
 {
-    string desc = fmt::format("Version {} (built {}/{})", _FLAME_VER_, __DATE__, __TIME__);
-    cxxopts::Options options("Execution Engine with Flame Dev. Framework", desc.c_str());
+    console::stdout_color_st("console");
+
+    string desc = fmt::format("Flame Execution Engine {} (built {}/{})", _FLAME_VER_, __DATE__, __TIME__);
+    console::info("{}",desc);
+
+    cxxopts::Options options("Burner options", desc.c_str());
+
     options.add_options()
-        ("c,config", "Application start with configuration file(*.conf)", cxxopts::value<string>())
+        ("c,config", "Global Configuration File(*.conf)", cxxopts::value<string>())
         ("h,help", "Print usage");
 
     auto optval = options.parse(argc, argv);
     if(optval.count("help")){
-        std::cout << options.help() << std::endl;
+        cout << options.help() << endl;
         exit(EXIT_SUCCESS);
     }
-
-    console::stdout_color_st("console"); // for log printing on console
 
     // signal connect to callback
     const int signals[] = { SIGINT, SIGTERM, SIGBUS, SIGKILL, SIGABRT, SIGSEGV };
     for(const int& s:signals)
-        signal(s, signal_callback);
+        signal(s, flame::tools::signal_callback);
 
     sigset_t sigmask;
     if(!sigfillset(&sigmask)){
@@ -80,7 +67,7 @@ int main(int argc, char* argv[])
     }
 
     mlockall(MCL_CURRENT|MCL_FUTURE); //avoid memory swaping
-    
+
     /* option arguments */
     string _config {""};
     vector<string> _comps;
@@ -91,16 +78,19 @@ int main(int argc, char* argv[])
 
     try{
         if(!_config.empty()){
-            if(flame::app::initialize(_config.c_str())){
-                flame::app::run();
-                pause(); //wait until getting SIGINT
+            if(flame::tools::init(_config.c_str())){
+                flame::tools::run_bundle();
             }
         }
+        else{
+            console::warn("No Arguments. Burner will run with default configuration");
+        }
+        pause(); //wait until getting SIGINT
     }
     catch(const std::exception& e){
         console::error("Exception : {}", e.what());
     }
 
-    ::terminate();
+    flame::tools::cleanup_and_exit();
     return EXIT_SUCCESS;
 }
