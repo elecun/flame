@@ -1,124 +1,102 @@
 
 #include "instance.hpp"
-#include "def.hpp"
 
 #include <csignal>
 #include <filesystem>
 #include <fstream>
+#include <memory>
 
 #include <dep/json.hpp>
 #include <dep/libzmq/zmq.hpp>
-#include <flame/log.hpp>
 
+#include <flame/log.hpp>
+#include <flame/config.hpp>
+#include <flame/config_def.hpp>
+#include "manager.hpp"
 
 using namespace std;
-using namespace flame;
 using json = nlohmann::json;
 
-namespace flame::tools {
+static flame::config_loader* _config_loader = nullptr;
 
-    /**
-     * @brief cleanup and termination
-     * 
-     */
-    void cleanup(){
 
+/**
+ * @brief cleanup and termination
+ * 
+ */
+void cleanup(){
+    if(_config_loader)
+        delete _config_loader;
+}
+
+void cleanup_and_exit(){
+    cleanup();
+    console::info("Process will be terminated");
+    exit(EXIT_SUCCESS);
+}
+
+/**
+ * @brief signal event callback functions
+ * 
+ * @param sig signal number
+ */
+void signal_callback(int sig) {
+    switch(sig){
+        case SIGSEGV: { console::warn("Segmentation violation"); } break;
+        case SIGABRT: { console::warn("Abnormal termination"); } break;
+        case SIGKILL: { console::warn("Process killed"); } break;
+        case SIGBUS: { console::warn("Bus Error"); } break;
+        case SIGTERM: { console::warn("Termination requested"); } break;
+        case SIGINT: { console::warn("Interrupted"); } break;
+        default:
+        console::info("Cleaning up the program");
     }
-    void cleanup_and_exit(){
-        flame::tools::cleanup();
-        console::info("Process will be terminated");
-        exit(EXIT_SUCCESS);
-    }
+    cleanup_and_exit();
+}
 
-    /**
-     * @brief signal event callback functions
-     * 
-     * @param sig signal number
-     */
-    void signal_callback(int sig) {
-        switch(sig){
-            case SIGSEGV: { console::warn("Segmentation violation"); } break;
-            case SIGABRT: { console::warn("Abnormal termination"); } break;
-            case SIGKILL: { console::warn("Process killed"); } break;
-            case SIGBUS: { console::warn("Bus Error"); } break;
-            case SIGTERM: { console::warn("Termination requested"); } break;
-            case SIGINT: { console::warn("Interrupted"); } break;
-            default:
-            console::info("Cleaning up the program");
+bool init(const char* config_path){
+
+    try{
+        _config_loader = new flame::config_loader(config_path);
+        if(install_bundle()){
+            console::info("Successfully installed");
+            run_bundle();
         }
-        cleanup_and_exit();
+    }
+    catch (const std::exception& e){
+        console::critical("{}", e.what());
+        return false;
     }
 
-    bool init(const char* config_path){
+    return true;
 
-        // 1. read configuration file(*.conf as JSON)
-        filesystem::path _conf_path(config_path);
-        json config;
+}
 
-        try {
-            console::info("Config file path(absolute) : {}", filesystem::canonical(_conf_path).string());
-            console::info("Parent path : {}", filesystem::canonical(_conf_path).parent_path().string());
+bool install_bundle(const char* bundle){
 
-            /* file existance check */
-            if(!filesystem::exists(_conf_path)){
-                console::error("Configuration file does not exist.");
-                return false;
-            }
+    // install by configuration file
+    if(!bundle && _config_loader){
+        fs::path _bundle_path = _config_loader->get_config_path().parent_path() / fs::path(_config_loader->get_bundle_name());
+        if(fs::is_directory(_bundle_path)){
+            console::info("Now installing '{}' bundle..", _config_loader->get_bundle_name());
 
-            /* read configurations from file*/
-            std::ifstream file(_conf_path.string());
-            file >> config;
+            // install bundle
+            manager->install(_bundle_path);
+
         }
-        catch(const json::exception& e){
-            console::error("configuration file load failed : {}", e.what());
+        else{
+            console::critical("{} bundle cannot be found. Check your configurations.", _config_loader->get_bundle_name());
             return false;
         }
-        catch(const std::ifstream::failure& e){
-            console::error("configuration file load failed : {}", e.what());
-            return false;
-        }
-        catch(const filesystem::filesystem_error& e){
-            console::error("configuration file load failed : {}", e.what());
-            return false;
-        }
-
-        /* zmq cli server creation */
-        if(config.find(__CONFIG_KEY_ACCESS__)!=config.end()){
-            int access_port = config[__CONFIG_KEY_ACCESS__].get<int>();
-            // _cli = new remote_cli("tcp", access_port);
-        }
-
-        /* bundle name */
-        if(config.find(__CONFIG_KEY_BUNDLE__)!=config.end()){
-
-        }
-
-        return true;
-
+    }
+    else{
+        console::warn("Manual installation does not support yet.");
+        return false;
     }
 
-    void run_bundle(const char* bundle){
-        if(bundle){ //bundle name was selected
-            filesystem::path _bundle_path(bundle);
-            if(filesystem::exists(_bundle_path)){
-                if(filesystem::is_regular_file(_bundle_path)){
-                    // if bundle is file(tarball-based package)
-                }
-                else if(filesystem::is_directory(_bundle_path)){
-                    
-                }
-                else {
-                    console::warn("No bundle to perform.");
-                }
-            }
+    return true;
+}
 
+void run_bundle(){
 
-            filesystem::canonical(_bundle_path).parent_path().string();
-            console::info("Parent path : {}", filesystem::canonical(_bundle_path).parent_path().string());
-        }
-        else {
-            
-        }
-    }
-
-} /** namespace */
+}

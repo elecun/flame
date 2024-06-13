@@ -4,7 +4,9 @@
         "iosfwd": "cpp",
         "csignal": "cpp",
         "exception": "cpp",
-        "filesystem": "cpp"
+        "filesystem": "cpp",
+        "chrono": "cpp",
+        "unordered_map": "cpp"
     },
     "cmake.sourceDirectory": "/home/hwang-exp/dev/flame/include/3rdparty/mosquitto"
 }

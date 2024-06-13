@@ -66,12 +66,21 @@ SOURCE_FILES = .
 
 # flame service engine
 flame:	$(BUILDDIR)flame.o \
+		$(BUILDDIR)config.o \
+		$(BUILDDIR)manager.o \
+		$(BUILDDIR)driver.o \
 		$(BUILDDIR)instance.o
 		$(CC) $(LDFLAGS) $(LD_LIBRARY_PATH) -o $(BUILDDIR)$@ $^ $(LDLIBS)
 
 $(BUILDDIR)flame.o:	$(CURRENT_DIR)/tools/flame/flame.cc
 					$(CC) $(CXXFLAGS) $(INCLUDE_DIR) -c $^ -o $@
 $(BUILDDIR)instance.o: $(CURRENT_DIR)/tools/flame/instance.cc
+						$(CC) $(CXXFLAGS) $(INCLUDE_DIR) -c $^ -o $@
+$(BUILDDIR)manager.o: $(CURRENT_DIR)/tools/flame/manager.cc
+						$(CC) $(CXXFLAGS) $(INCLUDE_DIR) -c $^ -o $@
+$(BUILDDIR)driver.o: $(INCLUDES)/flame/component/driver.cc
+						$(CC) $(CXXFLAGS) $(INCLUDE_DIR) -c $^ -o $@
+$(BUILDDIR)config.o: $(INCLUDES)/flame/config.cc
 						$(CC) $(CXXFLAGS) $(INCLUDE_DIR) -c $^ -o $@
 
 

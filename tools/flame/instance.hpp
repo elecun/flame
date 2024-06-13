@@ -14,14 +14,13 @@
 
 #include <dep/libzmq/zmq.hpp>
 
-namespace flame::tools {
+bool init(const char* config_path);
+void cleanup_and_exit();
+void cleanup();
+void signal_callback(int sig);
+bool install_bundle(const char* bundle = nullptr);  // install bundle
+void run_bundle();   // perform bundle
 
-    bool init(const char* config_path);
-    void cleanup_and_exit();
-    void cleanup();
-    void signal_callback(int sig);
-    void run_bundle(const char* bundle = nullptr);
 
-} /* namespace */
 
 #endif

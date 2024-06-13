@@ -14,6 +14,7 @@
 
 #include <string>
 #include <map>
+#include <flame/component/driver.hpp>
 
 using namespace std;
 
