@@ -36,6 +36,8 @@ namespace flame {
             bool install(fs::path repository);
             void uninstall(); //install without system configuration
 
+            void start_bundle_service();
+
             // flame::component::driver* get_driver(const char* component_name = nullptr);
             // flame::component::runnable* get_component(const char* component_name = nullptr);
 

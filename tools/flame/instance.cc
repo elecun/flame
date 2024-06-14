@@ -98,5 +98,5 @@ bool install_bundle(const char* bundle){
 }
 
 void run_bundle(){
-
+    manager->start_bundle_service();
 }

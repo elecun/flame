@@ -52,6 +52,7 @@ REV_COUNT = $(shell git rev-list --all --count)
 MIN_COUNT = $(shell git rev-list --tags --count)
 
 #if release(-O3), debug(-O0)
+# if release mode compile, remove -DNDEBUG
 CXXFLAGS = -O3 -fPIC -Wall -std=c++17 -D__cplusplus=201703L
 
 #custom definitions
@@ -85,14 +86,19 @@ $(BUILDDIR)config.o: $(INCLUDES)/flame/config.cc
 
 
 # components
-device.uvccam.multi.comp:	$(BUILDDIR)device.uvccam.multi.o
+component_test.comp:	$(BUILDDIR)component.test.o
+						$(CC) $(LDFLAGS) $(LD_LIBRARY_PATH) -shared -o $(BUILDDIR)$@ $^ $(LDLIBS)
+$(BUILDDIR)component.test.o:	$(CURRENT_DIR)/components/component.test/component.test.cc
+								$(CC) $(CXXFLAGS) $(INCLUDE_DIR) -c $^ -o $@
+
+device_uvccam_multi.comp:	$(BUILDDIR)device.uvccam.multi.o
 							$(CC) $(LDFLAGS) $(LD_LIBRARY_PATH) -shared -o $(BUILDDIR)$@ $^ $(LDLIBS)
 $(BUILDDIR)device.uvccam.multi.o:	$(CURRENT_DIR)/components/device.uvccam.multi/device.uvccam.multi.cc
 									$(CC) $(CXXFLAGS) $(INCLUDE_DIR) -c $^ -o $@
 
 
 all : flame
-components : device.uvccam.multi.comp
+components : device.uvccam.multi.comp component.test.comp
 
 deploy : FORCE
 	cp $(BUILDDIR)*.comp $(BUILDDIR)flame $(BINDIR)

@@ -15,11 +15,15 @@
 
 #include <filesystem>
 #include <flame/component/interface.hpp>
+#include <flame/component/profile.hpp>
+#include <memory>
 
 using namespace std;
-namespace fs = std::filesystem;
+using path = std::filesystem::path;
 
 namespace flame::component {
+    enum class dtype_status : int { STOPPED=0, WORKING};
+
     class driver;
     class object : public component::interface {
         friend class flame::component::driver;
@@ -28,21 +32,28 @@ namespace flame::component {
             object() = default;
             virtual ~object() = default;
 
-            // no interface override
-
-            virtual const char* get_name() { return _name.c_str(); }
+            const char* get_name() const { return _name.c_str(); }
+            const dtype_status get_status() const { return _status; }
 
         protected:
+            const component::profile* get_profile() const { 
+                return _profile.get();
+            }
 
         private:
+            void set_status(dtype_status s) { _status = s; }
+
+        private:
+            dtype_status _status { dtype_status::STOPPED };
             string _name = {"noname"};
+            unique_ptr<profile> _profile;
             
     }; /* class */
 
     typedef flame::component::object*(*create_component)(void);
     typedef void(*release_component)(void);
 
-    #define EXPORT_COMPONENT_API extern "C" { flame::component::object* create_component(void); void release(void); }
+    #define EXPORT_COMPONENT_API extern "C" { flame::component::object* create(void); void release(void); }
 
 } /* namespace */
 

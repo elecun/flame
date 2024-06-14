@@ -26,12 +26,10 @@ namespace fs = std::filesystem;
 namespace flame::component {
     class driver : public component::interface {
         public:
-            driver(string component_path);
-            driver(fs::path component_path);
-            driver(flame::component::object* instance);
+            driver(fs::path component_path); //without extension
             virtual ~driver();
 
-            void on_init() override;
+            bool on_init() override;
             void on_loop() override;
             void on_close() override;
             void on_message() override;
@@ -43,7 +41,19 @@ namespace flame::component {
             }
 
         private:
-            bool load(const char* component_name);
+            /**
+             * @brief component file(*.comp) load
+             * 
+             * @param component_path 
+             * @return true if success
+             * @return false if failed
+             */
+            bool load(fs::path component_path);
+
+            /**
+             * @brief unload the component file(*.comp)
+             * 
+             */
             void unload();
 
         private:

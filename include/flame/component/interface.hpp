@@ -13,8 +13,11 @@
 #define FLAME_COMPONENT_INTERFACE_HPP_INCLUDED
 
 namespace flame::component {
+    class driver;
     class interface {
-        virtual void on_init() = 0;
+        friend class flame::component::driver;
+        
+        virtual bool on_init() = 0;
         virtual void on_loop() = 0;
         virtual void on_close() = 0;
         virtual void on_message() = 0;

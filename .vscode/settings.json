@@ -6,7 +6,11 @@
         "exception": "cpp",
         "filesystem": "cpp",
         "chrono": "cpp",
-        "unordered_map": "cpp"
+        "unordered_map": "cpp",
+        "*.tcc": "cpp",
+        "string": "cpp",
+        "unordered_set": "cpp",
+        "string_view": "cpp"
     },
     "cmake.sourceDirectory": "/home/hwang-exp/dev/flame/include/3rdparty/mosquitto"
 }
