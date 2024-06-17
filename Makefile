@@ -53,7 +53,7 @@ MIN_COUNT = $(shell git rev-list --tags --count)
 
 #if release(-O3), debug(-O0)
 # if release mode compile, remove -DNDEBUG
-CXXFLAGS = -O3 -fPIC -Wall -std=c++17 -D__cplusplus=201703L
+CXXFLAGS = -O3 -fPIC -Wall -std=c++20 -D__cplusplus=202002L
 
 #custom definitions
 CXXFLAGS += -D__MAJOR__=0 -D__MINOR__=$(MIN_COUNT) -D__REV__=$(REV_COUNT)

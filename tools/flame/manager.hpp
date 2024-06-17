@@ -34,7 +34,7 @@ namespace flame {
 
             // components installation in bundle repository
             bool install(fs::path repository);
-            void uninstall(); //install without system configuration
+            void uninstall(const char* component_name = nullptr); //install without system configuration
 
             void start_bundle_service();
 
