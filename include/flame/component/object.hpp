@@ -25,7 +25,7 @@ namespace flame::component {
     enum class dtype_status : int { STOPPED=0, WORKING};
 
     class driver;
-    class object : public component::interface {
+    class object  : public interface {
         friend class flame::component::driver;
 
         public:

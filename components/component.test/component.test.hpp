@@ -15,7 +15,7 @@
 #include <flame/component/object.hpp>
 
 
-class component_test : public flame::component::object {
+class component_test : public flame::component::object, public flame::component::periodic{
     public:
         component_test() = default;
         virtual ~component_test() = default;
