@@ -11,6 +11,10 @@
 
 using namespace std;
 
+#if defined(linux) || defined(__linux) || defined(__linux__)
+    static const int SIG_RUNTIME_TRIGGER = (SIGRTMIN);
+#endif
+
 namespace flame::component {
 
     driver::driver(path component_path){
@@ -73,7 +77,11 @@ namespace flame::component {
 
         try {
             if(_componentImpl){
-                return _componentImpl->on_loop();
+                if(_componentImpl->get_status()==flame::component::dtype_status::STOPPED){
+                    unsigned long long _rtime = _componentImpl->get_profile()->raw()[__PROFILE_RT_CYCLE_NS__].get<unsigned long long>();
+                    set_rt_timer(_rtime);
+                    _ptrThread = new thread{ &flame::component::driver::do_cycle, this };
+                }
             }
         }
         catch(const std::runtime_error& e){
@@ -83,6 +91,7 @@ namespace flame::component {
 
     void driver::on_close(){
         try {
+            timer_delete(_timer_id);    //delete timer
             if(_componentImpl){
                 return _componentImpl->on_close();
             }
@@ -158,6 +167,47 @@ namespace flame::component {
         catch(std::runtime_error& e){
             console::error("component unload failed");
         }
+    }
+
+    void driver::set_rt_timer(unsigned long long nsec){
+        
+        /* Set and enable alarm */ 
+        _signal_event.sigev_notify = SIGEV_SIGNAL; 
+        _signal_event.sigev_signo = SIG_RUNTIME_TRIGGER; 
+        _signal_event.sigev_value.sival_ptr = _timer_id; 
+        if(timer_create(CLOCK_REALTIME, &_signal_event, &_timer_id)==-1)
+            console::error("timer create error");
+    
+        const unsigned long long nano = (1000000000L);
+        _time_spec.it_value.tv_sec = nsec / nano;
+        _time_spec.it_value.tv_nsec = nsec % nano;
+        _time_spec.it_interval.tv_sec = nsec / nano;
+        _time_spec.it_interval.tv_nsec = nsec % nano;
+
+        if(timer_settime(_timer_id, 0, &_time_spec, nullptr)==-1)
+            console::error("timer setting error");
+    }
+
+    void driver::do_cycle(){
+
+        //signal set for threading
+        sigset_t thread_sigmask;
+        sigemptyset(&thread_sigmask);
+        sigaddset(&thread_sigmask, SIG_RUNTIME_TRIGGER);
+        int _sig_no;
+
+        while(1){
+            sigwait(&thread_sigmask, &_sig_no);
+            if(_sig_no==SIG_RUNTIME_TRIGGER){
+                //auto t_now = std::chrono::high_resolution_clock::now();
+                if(_componentImpl){
+                    _componentImpl->on_loop();
+                }
+                //kauto t_elapsed = std::chrono::high_resolution_clock::now();
+                //spdlog::info("Processing Time : {} sec", std::chrono::duration<double, std::chrono::seconds::period>(t_elapsed - t_now).count());
+            }
+        }
+
     }
 
 } /* namespace */

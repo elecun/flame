@@ -48,6 +48,7 @@ namespace flame::component {
             string _name = {"noname"};
             unique_ptr<profile> _profile;
             
+            
     }; /* class */
 
     typedef flame::component::object*(*create_component)(void);

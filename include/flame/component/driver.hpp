@@ -19,6 +19,7 @@
 #include <csignal>
 #include <chrono>
 #include <type_traits>
+#include <thread>
 
 using namespace std;
 namespace fs = std::filesystem;
@@ -56,11 +57,26 @@ namespace flame::component {
              */
             void unload();
 
+            /**
+             * @brief concrete periodic process
+             * 
+             */
+            void do_cycle();
+            
+            /**
+             * @brief Set the rt timer object
+             * 
+             * @param nsec time period
+             */
+            void set_rt_timer(unsigned long long nsec);
+
         private:
             flame::component::object* _componentImpl { nullptr };
             void* _component_handle { nullptr };
             struct sigevent _signal_event;
             struct itimerspec _time_spec;
+            std::thread* _ptrThread = nullptr;
+            timer_t _timer_id {0};
 
 
     }; /* class */

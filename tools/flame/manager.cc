@@ -92,26 +92,9 @@ namespace flame {
     void bundle_manager::start_bundle_service(){
 
         // call for all thread
-        // for(bundle_container_t::iterator itr=_bundle_container.begin(); itr!=_bundle_container.end():++itr){
-        //     itr->second->
-        // }
-
-        /* for all tasks */
-        // if(!taskname){
-        //     for(task_container_t::iterator itr = _task_container.begin(); itr!=_task_container.end();++itr){
-        //         itr->second->execute();
-        //     }
-        // }
-        // /* for specified task */
-        // else {
-        //     if(_task_uid_map.find(taskname)==_task_uid_map.end()){
-        //         console::warn("{} cannot be found to run", taskname);
-        //         return;
-        //     }
-
-        //     _task_container[_task_uid_map[taskname]]->execute();
-        // }
-
+        for(bundle_container_t::iterator itr=_bundle_container.begin(); itr!=_bundle_container.end();++itr){
+            itr->second->on_loop();
+        }
     }
 
 } /* namespace */

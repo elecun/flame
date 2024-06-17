@@ -10,7 +10,7 @@ void release(){ if(_instance){ delete _instance; _instance = nullptr; }}
 
 bool component_test::on_init(){
     console::info("<{}> call component_test on_init", _THIS_COMPONENT_);
-    return false;
+    return true;
 }
 
 void component_test::on_loop(){

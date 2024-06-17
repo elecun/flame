@@ -20,6 +20,8 @@
 
 // environments key properties
 
+//profile key
+#define __PROFILE_RT_CYCLE_NS__ "rt_cycle_ns"
 
 //bundle key properties
 #if defined(__CONFIG_KEY_BUNDLE__)
