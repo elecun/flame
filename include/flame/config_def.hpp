@@ -28,4 +28,14 @@
     #define __CONFIG_KEY_BUNDLE_NAME__ "name"
 #endif
 
+#include <cxxabi.h>
+#include <string>
+inline const char* __demangle__(const char* name){
+    int status;
+    char* demangled = abi::__cxa_demangle(name, 0, 0, &status);
+    std::string str(demangled);
+    return str.c_str();
+}
+#define _THIS_COMPONENT_ __demangle__((const char*)typeid(*this).name())
+
 #endif

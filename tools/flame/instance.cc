@@ -7,12 +7,13 @@
 #include <memory>
 
 #include <dep/json.hpp>
-#include <dep/libzmq/zmq.hpp>
+#include <zmq.hpp>
 
 #include <flame/log.hpp>
 #include <flame/config.hpp>
 #include <flame/config_def.hpp>
 #include "manager.hpp"
+
 
 using namespace std;
 using json = nlohmann::json;

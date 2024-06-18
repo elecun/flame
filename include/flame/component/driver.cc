@@ -31,7 +31,7 @@ namespace flame::component {
                 // data port
                 _dp_context = new zmq::context_t(1);
                 _dp_socket = new zmq::socket_t(*_dp_context, ZMQ_PUSH);
-                _dp_socket->bind(fmt::format("inproc://*:{}", _dp_port));
+                _dp_socket->bind(fmt::format("inproc://{}", _THIS_COMPONENT_));
             }
         }
         catch (std::runtime_error& e){

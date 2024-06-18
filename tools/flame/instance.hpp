@@ -12,8 +12,6 @@
 #ifndef FLAME_INSTANCE_HPP_INCLUDED
 #define FLAME_INSTANCE_HPP_INCLUDED
 
-#include <dep/libzmq/zmq.hpp>
-
 bool init(const char* config_path);
 void cleanup_and_exit();
 void cleanup();

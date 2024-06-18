@@ -19,9 +19,11 @@
 #include <flame/component/driver.hpp>
 #include <flame/arch/singleton.hpp>
 #include <flame/util/uuid.hpp>
+#include <zmq.hpp>
 
 using namespace std;
 namespace fs = std::filesystem;
+using dataport = zmq::context_t;
 
 namespace flame {
 
@@ -48,6 +50,9 @@ namespace flame {
             bundle_container_t _bundle_container;
             unordered_map<string, util::uuid_t> _component_uid_map;
             util::uuid_generator _uuid_gen;
+
+            // bundle data port context (only inproc)
+            dataport* _bundle_dataport_ctx { nullptr };
 
     }; /* class */
 
