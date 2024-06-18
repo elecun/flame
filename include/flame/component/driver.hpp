@@ -20,6 +20,7 @@
 #include <chrono>
 #include <type_traits>
 #include <thread>
+#include <zmq.hpp> //libzmq3-dev
 
 using namespace std;
 namespace fs = std::filesystem;
@@ -77,6 +78,12 @@ namespace flame::component {
             struct itimerspec _time_spec;
             std::thread* _ptrThread = nullptr;
             timer_t _timer_id {0};
+
+            //data port
+            zmq::context_t* _dp_context { nullptr };
+            zmq::socket_t* _dp_socket { nullptr };
+            unsigned int _dp_port { 5555 };
+
 
 
     }; /* class */

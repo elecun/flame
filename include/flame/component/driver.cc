@@ -27,6 +27,11 @@ namespace flame::component {
                 _componentImpl->_profile = make_unique<component::profile>(cprofile);
                 _componentImpl->_name = component_path.filename().string();
                 _componentImpl->_status = dtype_status::STOPPED;
+
+                // data port
+                _dp_context = new zmq::context_t(1);
+                _dp_socket = new zmq::socket_t(*_dp_context, ZMQ_PUSH);
+                _dp_socket->bind(fmt::format("inproc://*:{}", _dp_port));
             }
         }
         catch (std::runtime_error& e){
@@ -36,6 +41,12 @@ namespace flame::component {
     }
 
     driver::~driver(){
+
+        //clsoe data port
+        _dp_socket->close();
+        _dp_context->close();
+        delete _dp_context;
+
         unload();
     }
 
