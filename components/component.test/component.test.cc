@@ -1,6 +1,7 @@
 
 #include "component.test.hpp"
 #include <flame/log.hpp>
+#include <flame/config_def.hpp>
 
 using namespace flame;
 

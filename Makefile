@@ -4,7 +4,8 @@
 # Build for architecture selection (editable!!)
 #ARCH := armhf
 #ARCH := arm64
-ARCH := x86_64
+#ARCH := x86_64
+ARCH := aarch64
 
 OS := $(shell uname)
 
@@ -28,6 +29,14 @@ else ifeq ($(ARCH), armhf)
 	BUILDDIR		= $(CURRENT_DIR)/bin/armhf/
 	INCLUDE_DIR = -I./ -I$(CURRENT_DIR)/ -I$(CURRENT_DIR)/include/ -I$(CURRENT_DIR)/include/3rdparty/
 	LD_LIBRARY_PATH += -L/usr/local/lib -L./lib/armhf
+else ifeq ($(ARCH), aarch64) # for Mac Apple Silicon
+	CC := g++
+	GCC := gcc
+	LD_LIBRARY_PATH += -L./lib/aarch64
+	OUTDIR		= $(CURRENT_DIR)/bin/aarch64/
+	BUILDDIR		= $(CURRENT_DIR)/bin/aarch64/
+	INCLUDE_DIR = -I./ -I$(CURRENT_DIR) -I$(CURRENT_DIR)/include -I$(CURRENT_DIR)/include/dep
+	LD_LIBRARY_PATH += -L/usr/local/lib -L$(CURRENT_DIR)/lib/aarch64/
 else
 	CC := g++
 	GCC := gcc
