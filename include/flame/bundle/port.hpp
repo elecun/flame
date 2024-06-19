@@ -15,6 +15,8 @@
 #include <zmq.hpp>
 #include <flame/arch/singleton.hpp>
 
+using dataport = zmq::context_t;
+
 namespace flame::bundle {
 
     class dataport : public flame::arch::singleton<dataport> {
@@ -33,9 +35,23 @@ namespace flame::bundle {
             }
 
         private:
-            
             zmq::context_t* _bundle_ctx { nullptr };
-    }; /* class */ 
+    }; /* class */
+
+    class serviceport : public flame::arch::singleton<serviceport> {
+        public:
+            serviceport() {
+
+            }
+            virtual ~serviceport() {
+
+            }
+
+        protected:
+
+        private:
+        
+    }; /* class */
 }
 
 #endif

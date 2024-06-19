@@ -41,7 +41,7 @@ endif
 # OS
 ifeq ($(OS),Linux) #for Linux
 	LDFLAGS = -Wl,--export-dynamic -Wl,-rpath=$(LD_LIBRARY_PATH)
-	LDLIBS = -pthread -lrt -ldl -lm 
+	LDLIBS = -pthread -lrt -ldl -lm -lzmq
 endif
 
 

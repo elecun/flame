@@ -23,7 +23,6 @@
 
 using namespace std;
 namespace fs = std::filesystem;
-using dataport = zmq::context_t;
 
 namespace flame {
 
@@ -52,7 +51,7 @@ namespace flame {
             util::uuid_generator _uuid_gen;
 
             // bundle data port context (only inproc)
-            dataport* _bundle_dataport_ctx { nullptr };
+            zmq::context_t* _bundle_dataport_ctx { nullptr };
 
     }; /* class */
 
