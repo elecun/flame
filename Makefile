@@ -4,8 +4,8 @@
 # Build for architecture selection (editable!!)
 #ARCH := armhf
 #ARCH := arm64
-ARCH := x86_64
-#ARCH := aarch64
+#ARCH := x86_64
+ARCH := aarch64
 
 OS := $(shell uname)
 
@@ -100,6 +100,11 @@ component_test.comp:	$(BUILDDIR)component.test.o
 $(BUILDDIR)component.test.o:	$(CURRENT_DIR)/components/component.test/component.test.cc
 								$(CC) $(CXXFLAGS) $(INCLUDE_DIR) -c $^ -o $@
 
+component_test2.comp:	$(BUILDDIR)component.test2.o
+						$(CC) $(LDFLAGS) $(LD_LIBRARY_PATH) -shared -o $(BUILDDIR)$@ $^ $(LDLIBS)
+$(BUILDDIR)component.test2.o:	$(CURRENT_DIR)/components/component.test2/component.test2.cc
+								$(CC) $(CXXFLAGS) $(INCLUDE_DIR) -c $^ -o $@
+
 device_uvccam_multi.comp:	$(BUILDDIR)device.uvccam.multi.o
 							$(CC) $(LDFLAGS) $(LD_LIBRARY_PATH) -shared -o $(BUILDDIR)$@ $^ $(LDLIBS)
 $(BUILDDIR)device.uvccam.multi.o:	$(CURRENT_DIR)/components/device.uvccam.multi/device.uvccam.multi.cc
@@ -107,7 +112,7 @@ $(BUILDDIR)device.uvccam.multi.o:	$(CURRENT_DIR)/components/device.uvccam.multi/
 
 
 all : flame
-components : device.uvccam.multi.comp component.test.comp
+components : device.uvccam.multi.comp component.test.comp component.test2.comp
 
 deploy : FORCE
 	cp $(BUILDDIR)*.comp $(BUILDDIR)flame $(BINDIR)

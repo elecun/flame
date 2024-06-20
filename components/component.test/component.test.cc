@@ -16,6 +16,15 @@ bool component_test::on_init(){
 
 void component_test::on_loop(){
     console::info("<{}> call component_test on_loop", _THIS_COMPONENT_);
+
+    static int n = 0;
+    std::string message = fmt::format("push {}",n);
+    zmq::message_t zmq_message(message.data(), message.size());
+    this->get_dataport()->send(zmq_message, zmq::send_flags::dontwait);
+
+    console::info("{} : {}", _THIS_COMPONENT_, message);
+
+    n++;
 }
 
 void component_test::on_close(){

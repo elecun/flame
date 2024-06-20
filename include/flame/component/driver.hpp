@@ -79,10 +79,6 @@ namespace flame::component {
             std::thread* _ptrThread = nullptr;
             timer_t _timer_id {0};
 
-            //data port
-            zmq::socket_t* _dout_port_socket { nullptr };
-
-
 
     }; /* class */
 } /* namespace */

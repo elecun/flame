@@ -22,7 +22,7 @@ namespace flame {
         }
 
         // clear dataport map
-        for(component_dataport_ctx_map_t::iterator itr = _dp_ctx_map.begin(); itr!=_dp_ctx_map.end(); ++itr){
+        for(dataport_ctx_map_t::iterator itr = _dp_ctx_map.begin(); itr!=_dp_ctx_map.end(); ++itr){
             itr->second->shutdown();
             delete itr->second;
         }

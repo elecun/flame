@@ -20,6 +20,7 @@
 #include <flame/arch/singleton.hpp>
 #include <flame/util/uuid.hpp>
 #include <zmq.hpp>
+#include <tuple>
 
 using namespace std;
 namespace fs = std::filesystem;
@@ -29,7 +30,7 @@ namespace flame {
     class bundle_manager : public flame::arch::singleton<bundle_manager>{
         public:
             typedef map<util::uuid_t, flame::component::driver*> bundle_container_t;
-            typedef map<string, zmq::context_t*> component_dataport_ctx_map_t;
+            typedef map<string, zmq::context_t*> dataport_ctx_map_t; //component name, port context (one component has one port context)
 
             bundle_manager();
             virtual ~bundle_manager();
@@ -52,7 +53,7 @@ namespace flame {
             util::uuid_generator _uuid_gen;
 
             // bundle data port context (only inproc)
-            component_dataport_ctx_map_t _dp_ctx_map;
+            dataport_ctx_map_t _dp_ctx_map;
 
     }; /* class */
 

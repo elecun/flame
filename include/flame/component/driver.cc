@@ -5,6 +5,7 @@
 #include <dlfcn.h>
 #include <chrono>
 #include <stdexcept>
+#include <chrono>
 
 #include <flame/log.hpp>
 #include <flame/config_def.hpp>
@@ -29,8 +30,8 @@ namespace flame::component {
                 _componentImpl->_status = dtype_status::STOPPED;
 
                 // create data out port
-                _dout_port_socket = new zmq::socket_t(*dout_ctx, ZMQ_PUSH);
-                _dout_port_socket->bind(fmt::format("inproc://{}",_componentImpl->get_name()));
+                _componentImpl->_dout_port = new zmq::socket_t(*dout_ctx, ZMQ_PUSH);
+                _componentImpl->_dout_port->bind(fmt::format("inproc://{}",_componentImpl->get_name()));
             }
         }
         catch (std::runtime_error& e){
@@ -42,8 +43,8 @@ namespace flame::component {
     driver::~driver(){
 
         //clsoe data port
-        _dout_port_socket->close();
-        delete _dout_port_socket;
+        _componentImpl->_dout_port->close();
+        delete _componentImpl->_dout_port;
 
         unload();
     }
@@ -62,27 +63,6 @@ namespace flame::component {
     }
 
     void driver::on_loop(){
-        // if(_taskImpl) {
-        //     if(_taskImpl->get_status()==task::status_d::STOPPED || _taskImpl->get_status()==task::status_d::IDLE){
-        //         if(_taskImpl->rtype==task::rtype_d::NT || _taskImpl->rtype==task::rtype_d::RT){
-        //             if(_taskImpl->_profile){
-        //                 unsigned long long rtime = _taskImpl->_profile->data["info"]["cycle_ns"].get<unsigned long long>();
-        //                 console::info("<{}> Time Period : {} ns",_taskImpl->get_name(), rtime);
-        //                 set_rt_timer(rtime);
-        //                 _ptrThread = new thread{ &flame::core::task::driver::do_process, this };
-        //             }
-        //         }
-        //         else {
-        //             console::info("<{}> task is not a runnable(periodic) task.", _taskImpl->get_name());
-        //         }
-        //     }
-        //     else {
-        //         console::warn("<{}> is still working. Task should be on STOPPED or IDLE state for execution.", _taskImpl->get_name());
-        //     }
-        // }
-        // else {
-        //     console::error("Invalid task instance. The instance is null.");
-        // }
 
         try {
             if(_componentImpl){
@@ -195,6 +175,7 @@ namespace flame::component {
 
         if(timer_settime(_timer_id, 0, &_time_spec, nullptr)==-1)
             console::error("timer setting error");
+
     }
 
     void driver::do_cycle(){
@@ -202,18 +183,18 @@ namespace flame::component {
         //signal set for threading
         sigset_t thread_sigmask;
         sigemptyset(&thread_sigmask);
-        sigaddset(&thread_sigmask, SIG_RUNTIME_TRIGGER);
+        sigaddset(&thread_sigmask, SIG_RUNTIME_TRIGGER); //block SIG_RUNTIME_TRIGGER signal
         int _sig_no;
 
         while(1){
-            sigwait(&thread_sigmask, &_sig_no);
+            sigwait(&thread_sigmask, &_sig_no); //wait until receive signal
             if(_sig_no==SIG_RUNTIME_TRIGGER){
-                //auto t_now = std::chrono::high_resolution_clock::now();
+                auto t_now = std::chrono::high_resolution_clock::now();
                 if(_componentImpl){
                     _componentImpl->on_loop();
                 }
-                //kauto t_elapsed = std::chrono::high_resolution_clock::now();
-                //spdlog::info("Processing Time : {} sec", std::chrono::duration<double, std::chrono::seconds::period>(t_elapsed - t_now).count());
+                auto t_elapsed = std::chrono::high_resolution_clock::now();
+                console::info("Processing Elapsed Time : {} sec", std::chrono::duration<double, std::chrono::milliseconds::period>(t_elapsed - t_now).count());
             }
         }
 

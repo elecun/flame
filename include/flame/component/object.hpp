@@ -40,6 +40,10 @@ namespace flame::component {
                 return _profile.get();
             }
 
+            zmq::socket_t* get_dataport() const {
+                return _dout_port;
+            }
+
         private:
             void set_status(dtype_status s) { _status = s; }
 
@@ -47,6 +51,8 @@ namespace flame::component {
             dtype_status _status { dtype_status::STOPPED };
             string _name = {"noname"};
             unique_ptr<profile> _profile;
+
+            zmq::socket_t* _dout_port { nullptr };
             
             
     }; /* class */
