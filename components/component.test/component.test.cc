@@ -22,7 +22,7 @@ void component_test::on_loop(){
     zmq::message_t zmq_message(message.data(), message.size());
     this->get_dataport()->send(zmq_message, zmq::send_flags::dontwait);
 
-    console::info("{} : {}", _THIS_COMPONENT_, message);
+    console::info("{}",message);
 
     n++;
 }
