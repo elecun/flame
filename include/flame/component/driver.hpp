@@ -28,7 +28,7 @@ namespace fs = std::filesystem;
 namespace flame::component {
     class driver : public component::interface {
         public:
-            driver(fs::path component_path); //without extension
+            driver(fs::path component_path, zmq::context_t* dout_ctx); //without extension
             virtual ~driver();
 
             bool on_init() override;
@@ -80,9 +80,7 @@ namespace flame::component {
             timer_t _timer_id {0};
 
             //data port
-            zmq::context_t* _dp_context { nullptr };
-            zmq::socket_t* _dp_socket { nullptr };
-            unsigned int _dp_port { 5555 };
+            zmq::socket_t* _dout_port_socket { nullptr };
 
 
 

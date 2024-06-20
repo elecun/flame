@@ -11,7 +11,6 @@
 namespace flame {
 
     bundle_manager::bundle_manager() {
-        
     }
 
     bundle_manager::~bundle_manager(){
@@ -20,6 +19,12 @@ namespace flame {
                 itr->second->on_close();
             }
             _bundle_container.clear();
+        }
+
+        // clear dataport map
+        for(component_dataport_ctx_map_t::iterator itr = _dp_ctx_map.begin(); itr!=_dp_ctx_map.end(); ++itr){
+            itr->second->shutdown();
+            delete itr->second;
         }
     }
 
@@ -45,7 +50,8 @@ namespace flame {
                 string _cname = comp.filename().string();
 
                 _component_uid_map.insert(map<string, util::uuid_t>::value_type(_cname, _uuid_gen.generate()));
-                _bundle_container.insert(map<util::uuid_t, component::driver*>::value_type(_component_uid_map[_cname], new component::driver(comp)));
+                _dp_ctx_map.insert(map<string, zmq::context_t*>::value_type(_cname, new zmq::context_t(1)));
+                _bundle_container.insert(map<util::uuid_t, component::driver*>::value_type(_component_uid_map[_cname], new component::driver(comp, _dp_ctx_map[_cname])));
 
                 console::info("+ Load component : {} (UID:{})", _cname, _component_uid_map[_cname].str());
             }

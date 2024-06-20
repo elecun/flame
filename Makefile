@@ -4,8 +4,8 @@
 # Build for architecture selection (editable!!)
 #ARCH := armhf
 #ARCH := arm64
-#ARCH := x86_64
-ARCH := aarch64
+ARCH := x86_64
+#ARCH := aarch64
 
 OS := $(shell uname)
 
