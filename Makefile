@@ -95,14 +95,14 @@ $(BUILDDIR)config.o: $(INCLUDES)/flame/config.cc
 
 
 # components
-component_test.comp:	$(BUILDDIR)component.test.o
+data_push_periodic.comp:	$(BUILDDIR)data.push.periodic.o
 						$(CC) $(LDFLAGS) $(LD_LIBRARY_PATH) -shared -o $(BUILDDIR)$@ $^ $(LDLIBS)
-$(BUILDDIR)component.test.o:	$(CURRENT_DIR)/components/component.test/component.test.cc
+$(BUILDDIR)data.push.periodic.o:	$(CURRENT_DIR)/components/data.push.periodic/data.push.periodic.cc
 								$(CC) $(CXXFLAGS) $(INCLUDE_DIR) -c $^ -o $@
 
-component_test2.comp:	$(BUILDDIR)component.test2.o
+data_pull_test.comp:	$(BUILDDIR)data_pull_test.o
 						$(CC) $(LDFLAGS) $(LD_LIBRARY_PATH) -shared -o $(BUILDDIR)$@ $^ $(LDLIBS)
-$(BUILDDIR)component.test2.o:	$(CURRENT_DIR)/components/component.test2/component.test2.cc
+$(BUILDDIR)data_pull_test.o:	$(CURRENT_DIR)/components/data.pull.test/data.pull.test.cc
 								$(CC) $(CXXFLAGS) $(INCLUDE_DIR) -c $^ -o $@
 
 device_uvccam_multi.comp:	$(BUILDDIR)device.uvccam.multi.o
@@ -110,9 +110,60 @@ device_uvccam_multi.comp:	$(BUILDDIR)device.uvccam.multi.o
 $(BUILDDIR)device.uvccam.multi.o:	$(CURRENT_DIR)/components/device.uvccam.multi/device.uvccam.multi.cc
 									$(CC) $(CXXFLAGS) $(INCLUDE_DIR) -c $^ -o $@
 
+# for dk project
+basler_gige_cam_linker.comp:	$(BUILDDIR)basler_gige_cam_linker.o
+							$(CC) $(LDFLAGS) $(LD_LIBRARY_PATH) -shared -o $(BUILDDIR)$@ $^ $(LDLIBS)
+$(BUILDDIR)basler_gige_cam_linker.o:	$(CURRENT_DIR)/components/basler.gige.cam.linker/basler.gige.cam.linker.cc
+									$(CC) $(CXXFLAGS) $(INCLUDE_DIR) -c $^ -o $@
+
+dk_gui_supporter.comp:	$(BUILDDIR)dk_gui_supporter.o
+						$(CC) $(LDFLAGS) $(LD_LIBRARY_PATH) -shared -o $(BUILDDIR)$@ $^ $(LDLIBS)
+$(BUILDDIR)dk_gui_supporter.o:	$(CURRENT_DIR)/components/dk.gui.supporter/dk.gui.supporter.cc
+								$(CC) $(CXXFLAGS) $(INCLUDE_DIR) -c $^ -o $@
+
+dk_level_data_gateway.comp:	$(BUILDDIR)dk_level_data_gateway.o
+							$(CC) $(LDFLAGS) $(LD_LIBRARY_PATH) -shared -o $(BUILDDIR)$@ $^ $(LDLIBS)
+$(BUILDDIR)dk_level_data_gateway.o:	$(CURRENT_DIR)/components/dk.level.data.gateway/dk.level.data.gateway.cc
+									$(CC) $(CXXFLAGS) $(INCLUDE_DIR) -c $^ -o $@
+
+dk_sdd_inference.comp:	$(BUILDDIR)dk_sdd_inference.o
+						$(CC) $(LDFLAGS) $(LD_LIBRARY_PATH) -shared -o $(BUILDDIR)$@ $^ $(LDLIBS)
+$(BUILDDIR)dk_sdd_inference.o:	$(CURRENT_DIR)/components/dk.sdd.inference/dk.sdd.inference.cc
+								$(CC) $(CXXFLAGS) $(INCLUDE_DIR) -c $^ -o $@
+
+dk_presdd_inference.comp:	$(BUILDDIR)dk_presdd_inference.o
+							$(CC) $(LDFLAGS) $(LD_LIBRARY_PATH) -shared -o $(BUILDDIR)$@ $^ $(LDLIBS)
+$(BUILDDIR)dk_presdd_inference.o:	$(CURRENT_DIR)/components/dk.presdd.inference/dk.presdd.inference.cc
+									$(CC) $(CXXFLAGS) $(INCLUDE_DIR) -c $^ -o $@
+
+dk_sys_op_trigger.comp:	$(BUILDDIR)dk_sys_op_trigger.o
+						$(CC) $(LDFLAGS) $(LD_LIBRARY_PATH) -shared -o $(BUILDDIR)$@ $^ $(LDLIBS)
+$(BUILDDIR)dk_sys_op_trigger.o:	$(CURRENT_DIR)/components/dk.sys.op.trigger/dk.sys.op.trigger.cc
+								$(CC) $(CXXFLAGS) $(INCLUDE_DIR) -c $^ -o $@
+
+synology_nas_file_stacker.comp:	$(BUILDDIR)synology_nas_file_stacker.o
+						$(CC) $(LDFLAGS) $(LD_LIBRARY_PATH) -shared -o $(BUILDDIR)$@ $^ $(LDLIBS)
+$(BUILDDIR)synology_nas_file_stacker.o:	$(CURRENT_DIR)/components/synology.nas.file.stacker/synology.nas.file.stacker.cc
+							$(CC) $(CXXFLAGS) $(INCLUDE_DIR) -c $^ -o $@
+
+ni_pulse_generator.comp:	$(BUILDDIR)ni_pulse_generator.o
+							$(CC) $(LDFLAGS) $(LD_LIBRARY_PATH) -shared -o $(BUILDDIR)$@ $^ $(LDLIBS)
+$(BUILDDIR)ni_pulse_generator.o:	$(CURRENT_DIR)/components/ni.pulse.generator/ni.pulse.generator.cc
+									$(CC) $(CXXFLAGS) $(INCLUDE_DIR) -c $^ -o $@
+
+remote_light_linker.comp:	$(BUILDDIR)remote_light_linker.o
+							$(CC) $(LDFLAGS) $(LD_LIBRARY_PATH) -shared -o $(BUILDDIR)$@ $^ $(LDLIBS)
+$(BUILDDIR)remote_light_linker.o:	$(CURRENT_DIR)/components/remote.light.linker/remote.light.linker.cc
+									$(CC) $(CXXFLAGS) $(INCLUDE_DIR) -c $^ -o $@
+
+remote_lens_linker.comp:	$(BUILDDIR)remote_lens_linker.o
+							$(CC) $(LDFLAGS) $(LD_LIBRARY_PATH) -shared -o $(BUILDDIR)$@ $^ $(LDLIBS)
+$(BUILDDIR)remote_lens_linker.o:	$(CURRENT_DIR)/components/remote.lens.linker/remote.lens.linker.cc
+									$(CC) $(CXXFLAGS) $(INCLUDE_DIR) -c $^ -o $@
+
 
 all : flame
-components : device.uvccam.multi.comp component.test.comp component.test2.comp
+components : device.uvccam.multi.comp data_push_periodic.comp data_pull_test.comp basler_gige_cam_linker.comp dk_gui_supporter.comp dk_level_data_gateway.comp dk_sdd_inference.comp dk_presdd_inference.comp dk_sys_op_trigger.comp synology_nas_file_stacker.comp ni_pulse_generator.comp remote_light_linker.comp remote_lens_linker.comp
 
 deploy : FORCE
 	cp $(BUILDDIR)*.comp $(BUILDDIR)flame $(BINDIR)

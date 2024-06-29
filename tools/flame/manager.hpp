@@ -30,7 +30,8 @@ namespace flame {
     class bundle_manager : public flame::arch::singleton<bundle_manager>{
         public:
             typedef map<util::uuid_t, flame::component::driver*> bundle_container_t;
-            typedef map<string, zmq::context_t*> dataport_ctx_map_t; //component name, port context (one component has one port context)
+            typedef map<string, zmq::context_t*> dataport_ctx_map_t; //component name, data port context (one component has one port context)
+            typedef map<string, zmq::context_t*> serviceport_ctx_map_t; //component name, service port context
 
             bundle_manager();
             virtual ~bundle_manager();
@@ -54,6 +55,7 @@ namespace flame {
 
             // bundle data port context (only inproc)
             dataport_ctx_map_t _dp_ctx_map;
+            serviceport_ctx_map_t _sp_ctx_map;
 
     }; /* class */
 

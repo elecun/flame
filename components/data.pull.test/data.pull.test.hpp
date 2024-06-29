@@ -1,5 +1,5 @@
 /**
- * @file component.test2.hpp
+ * @file data.pull.test.hpp
  * @author Byunghun Hwang (bh.hwang@iae.re.kr)
  * @brief Component interface working test
  * @version 0.1
@@ -9,16 +9,16 @@
  * 
  */
 
-#ifndef FLAME_COMPONENT_TEST2_HPP_INCLUDED
-#define FLAME_COMPONENT_TEST2_HPP_INCLUDED
+#ifndef FLAME_DATA_PULL_TEST_HPP_INCLUDED
+#define FLAME_DATA_PULL_TEST_HPP_INCLUDED
 
 #include <flame/component/object.hpp>
 
 
-class component_test2 : public flame::component::object {
+class data_pull_test : public flame::component::object {
     public:
-        component_test2() = default;
-        virtual ~component_test2() = default;
+        data_pull_test() = default;
+        virtual ~data_pull_test() = default;
 
         // default interface functions
         bool on_init() override;

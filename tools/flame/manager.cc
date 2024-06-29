@@ -26,6 +26,12 @@ namespace flame {
             itr->second->shutdown();
             delete itr->second;
         }
+
+        // clear service port map
+        for(serviceport_ctx_map_t::iterator itr = _sp_ctx_map.begin(); itr !=_sp_ctx_map.end(); ++itr){
+            itr->second->shutdown();
+            delete itr->second;
+        }
     }
 
     bool bundle_manager::install(fs::path repository){
@@ -51,6 +57,7 @@ namespace flame {
 
                 _component_uid_map.insert(map<string, util::uuid_t>::value_type(_cname, _uuid_gen.generate()));
                 _dp_ctx_map.insert(map<string, zmq::context_t*>::value_type(_cname, new zmq::context_t(1)));
+                _sp_ctx_map.insert(map<string, zmq::context_t*>::value_type(_cname, new zmq::context_t(1)));
                 _bundle_container.insert(map<util::uuid_t, component::driver*>::value_type(_component_uid_map[_cname], new component::driver(comp, _dp_ctx_map[_cname])));
 
                 console::info("+ Load component : {} (UID:{})", _cname, _component_uid_map[_cname].str());
