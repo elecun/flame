@@ -100,9 +100,9 @@ data_push_periodic.comp:	$(BUILDDIR)data.push.periodic.o
 $(BUILDDIR)data.push.periodic.o:	$(CURRENT_DIR)/components/data.push.periodic/data.push.periodic.cc
 								$(CC) $(CXXFLAGS) $(INCLUDE_DIR) -c $^ -o $@
 
-data_pull_test.comp:	$(BUILDDIR)data_pull_test.o
+data_pull_test.comp:	$(BUILDDIR)data.pull.test.o
 						$(CC) $(LDFLAGS) $(LD_LIBRARY_PATH) -shared -o $(BUILDDIR)$@ $^ $(LDLIBS)
-$(BUILDDIR)data_pull_test.o:	$(CURRENT_DIR)/components/data.pull.test/data.pull.test.cc
+$(BUILDDIR)data.pull.test.o:	$(CURRENT_DIR)/components/data.pull.test/data.pull.test.cc
 								$(CC) $(CXXFLAGS) $(INCLUDE_DIR) -c $^ -o $@
 
 device_uvccam_multi.comp:	$(BUILDDIR)device.uvccam.multi.o
@@ -111,54 +111,54 @@ $(BUILDDIR)device.uvccam.multi.o:	$(CURRENT_DIR)/components/device.uvccam.multi/
 									$(CC) $(CXXFLAGS) $(INCLUDE_DIR) -c $^ -o $@
 
 # for dk project
-basler_gige_cam_linker.comp:	$(BUILDDIR)basler_gige_cam_linker.o
+basler_gige_cam_linker.comp:	$(BUILDDIR)basler.gige.cam.linker.o
 							$(CC) $(LDFLAGS) $(LD_LIBRARY_PATH) -shared -o $(BUILDDIR)$@ $^ $(LDLIBS)
-$(BUILDDIR)basler_gige_cam_linker.o:	$(CURRENT_DIR)/components/basler.gige.cam.linker/basler.gige.cam.linker.cc
+$(BUILDDIR)basler_gige_cabasler.gige.cam.linkerm_linker.o:	$(CURRENT_DIR)/components/basler.gige.cam.linker/basler.gige.cam.linker.cc
 									$(CC) $(CXXFLAGS) $(INCLUDE_DIR) -c $^ -o $@
 
-dk_gui_supporter.comp:	$(BUILDDIR)dk_gui_supporter.o
+dk_gui_supporter.comp:	$(BUILDDIR)dk.gui.supporter.o
 						$(CC) $(LDFLAGS) $(LD_LIBRARY_PATH) -shared -o $(BUILDDIR)$@ $^ $(LDLIBS)
-$(BUILDDIR)dk_gui_supporter.o:	$(CURRENT_DIR)/components/dk.gui.supporter/dk.gui.supporter.cc
+$(BUILDDIR)dk.gui.supporter.o:	$(CURRENT_DIR)/components/dk.gui.supporter/dk.gui.supporter.cc
 								$(CC) $(CXXFLAGS) $(INCLUDE_DIR) -c $^ -o $@
 
-dk_level_data_gateway.comp:	$(BUILDDIR)dk_level_data_gateway.o
+dk_level_data_gateway.comp:	$(BUILDDIR)dk.level.data.gateway.o
 							$(CC) $(LDFLAGS) $(LD_LIBRARY_PATH) -shared -o $(BUILDDIR)$@ $^ $(LDLIBS)
-$(BUILDDIR)dk_level_data_gateway.o:	$(CURRENT_DIR)/components/dk.level.data.gateway/dk.level.data.gateway.cc
+$(BUILDDIR)dk.level.data.gateway.o:	$(CURRENT_DIR)/components/dk.level.data.gateway/dk.level.data.gateway.cc
 									$(CC) $(CXXFLAGS) $(INCLUDE_DIR) -c $^ -o $@
 
-dk_sdd_inference.comp:	$(BUILDDIR)dk_sdd_inference.o
+dk_sdd_inference.comp:	$(BUILDDIR)dk.sdd.inference.o
 						$(CC) $(LDFLAGS) $(LD_LIBRARY_PATH) -shared -o $(BUILDDIR)$@ $^ $(LDLIBS)
-$(BUILDDIR)dk_sdd_inference.o:	$(CURRENT_DIR)/components/dk.sdd.inference/dk.sdd.inference.cc
+$(BUILDDIR)dk.sdd.inference.o:	$(CURRENT_DIR)/components/dk.sdd.inference/dk.sdd.inference.cc
 								$(CC) $(CXXFLAGS) $(INCLUDE_DIR) -c $^ -o $@
 
-dk_presdd_inference.comp:	$(BUILDDIR)dk_presdd_inference.o
+dk_presdd_inference.comp:	$(BUILDDIR)dk.presdd.inference.o
 							$(CC) $(LDFLAGS) $(LD_LIBRARY_PATH) -shared -o $(BUILDDIR)$@ $^ $(LDLIBS)
-$(BUILDDIR)dk_presdd_inference.o:	$(CURRENT_DIR)/components/dk.presdd.inference/dk.presdd.inference.cc
+$(BUILDDIR)dk.presdd.inference.o:	$(CURRENT_DIR)/components/dk.presdd.inference/dk.presdd.inference.cc
 									$(CC) $(CXXFLAGS) $(INCLUDE_DIR) -c $^ -o $@
 
-dk_sys_op_trigger.comp:	$(BUILDDIR)dk_sys_op_trigger.o
+dk_sys_op_trigger.comp:	$(BUILDDIR)dk.sys.op.trigger.o
 						$(CC) $(LDFLAGS) $(LD_LIBRARY_PATH) -shared -o $(BUILDDIR)$@ $^ $(LDLIBS)
-$(BUILDDIR)dk_sys_op_trigger.o:	$(CURRENT_DIR)/components/dk.sys.op.trigger/dk.sys.op.trigger.cc
+$(BUILDDIR)dk.sys.op.trigger.o:	$(CURRENT_DIR)/components/dk.sys.op.trigger/dk.sys.op.trigger.cc
 								$(CC) $(CXXFLAGS) $(INCLUDE_DIR) -c $^ -o $@
 
-synology_nas_file_stacker.comp:	$(BUILDDIR)synology_nas_file_stacker.o
+synology_nas_file_stacker.comp:	$(BUILDDIR)synology.nas.file.stacker.o
 						$(CC) $(LDFLAGS) $(LD_LIBRARY_PATH) -shared -o $(BUILDDIR)$@ $^ $(LDLIBS)
-$(BUILDDIR)synology_nas_file_stacker.o:	$(CURRENT_DIR)/components/synology.nas.file.stacker/synology.nas.file.stacker.cc
+$(BUILDDIR)synology.nas.file.stacker.o:	$(CURRENT_DIR)/components/synology.nas.file.stacker/synology.nas.file.stacker.cc
 							$(CC) $(CXXFLAGS) $(INCLUDE_DIR) -c $^ -o $@
 
-ni_pulse_generator.comp:	$(BUILDDIR)ni_pulse_generator.o
+ni_pulse_generator.comp:	$(BUILDDIR)ni.pulse.generator.o
 							$(CC) $(LDFLAGS) $(LD_LIBRARY_PATH) -shared -o $(BUILDDIR)$@ $^ $(LDLIBS)
-$(BUILDDIR)ni_pulse_generator.o:	$(CURRENT_DIR)/components/ni.pulse.generator/ni.pulse.generator.cc
+$(BUILDDIR)ni.pulse.generator.o:	$(CURRENT_DIR)/components/ni.pulse.generator/ni.pulse.generator.cc
 									$(CC) $(CXXFLAGS) $(INCLUDE_DIR) -c $^ -o $@
 
-remote_light_linker.comp:	$(BUILDDIR)remote_light_linker.o
+remote_light_linker.comp:	$(BUILDDIR)remote.light.linker.o
 							$(CC) $(LDFLAGS) $(LD_LIBRARY_PATH) -shared -o $(BUILDDIR)$@ $^ $(LDLIBS)
-$(BUILDDIR)remote_light_linker.o:	$(CURRENT_DIR)/components/remote.light.linker/remote.light.linker.cc
+$(BUILDDIR)remote.light.linker.o:	$(CURRENT_DIR)/components/remote.light.linker/remote.light.linker.cc
 									$(CC) $(CXXFLAGS) $(INCLUDE_DIR) -c $^ -o $@
 
-remote_lens_linker.comp:	$(BUILDDIR)remote_lens_linker.o
+remote_lens_linker.comp:	$(BUILDDIR)remote.lens.linker.o
 							$(CC) $(LDFLAGS) $(LD_LIBRARY_PATH) -shared -o $(BUILDDIR)$@ $^ $(LDLIBS)
-$(BUILDDIR)remote_lens_linker.o:	$(CURRENT_DIR)/components/remote.lens.linker/remote.lens.linker.cc
+$(BUILDDIR)remote.lens.linker.o:	$(CURRENT_DIR)/components/remote.lens.linker/remote.lens.linker.cc
 									$(CC) $(CXXFLAGS) $(INCLUDE_DIR) -c $^ -o $@
 
 
