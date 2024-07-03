@@ -4,8 +4,8 @@
 # Build for architecture selection (editable!!)
 #ARCH := armhf
 #ARCH := arm64
-ARCH := x86_64
-#ARCH := aarch64
+#ARCH := x86_64
+ARCH := aarch64
 
 OS := $(shell uname)
 
@@ -35,7 +35,7 @@ else ifeq ($(ARCH), aarch64) # for Mac Apple Silicon
 	LD_LIBRARY_PATH += -L./lib/aarch64
 	OUTDIR		= $(CURRENT_DIR)/bin/aarch64/
 	BUILDDIR		= $(CURRENT_DIR)/bin/aarch64/
-	INCLUDE_DIR = -I./ -I$(CURRENT_DIR) -I$(CURRENT_DIR)/include -I$(CURRENT_DIR)/include/dep -I/usr/include
+	INCLUDE_DIR = -I./ -I$(CURRENT_DIR) -I$(CURRENT_DIR)/include -I$(CURRENT_DIR)/include/dep
 	LD_LIBRARY_PATH = -L/usr/local/lib -L$(CURRENT_DIR)/lib/aarch64/
 else
 	CC := g++
@@ -58,7 +58,7 @@ endif
 $(shell mkdir -p $(OUTDIR))
 $(shell mkdir -p $(BUILDDIR))
 REV_COUNT = $(shell git rev-list --all --count)
-MIN_COUNT = $(shell git rev-list --tags --count)
+MIN_COUNT = $(shell git tag | wc -l)
 
 #if release(-O3), debug(-O0)
 # if release mode compile, remove -DNDEBUG

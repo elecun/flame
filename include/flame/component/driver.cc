@@ -39,12 +39,13 @@ namespace flame::component {
                     if(!socket_type.compare("push")){
                         _componentImpl->_dataport = new zmq::socket_t(*dout_ctx, ZMQ_PUSH);
                         _componentImpl->_dataport->setsockopt(ZMQ_SNDHWM, &hwm, sizeof(hwm));
+                        _componentImpl->_dataport->bind(fmt::format("{}://{}/dataport",transport, _componentImpl->get_name()));
                     }
                     else if(!socket_type.compare("pull")){
                         _componentImpl->_dataport = new zmq::socket_t(*dout_ctx, ZMQ_PULL);
                         _componentImpl->_dataport->setsockopt(ZMQ_RCVHWM, &hwm, sizeof(hwm));
                     }
-                    _componentImpl->_dataport->bind(fmt::format("{}://{}",transport, _componentImpl->get_name()));
+                    
                 }
                 
             }

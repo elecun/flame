@@ -78,6 +78,8 @@ bool install_bundle(const char* bundle){
     // install by configuration file
     if(!bundle && _config_loader){
         fs::path _bundle_path = _config_loader->get_config_path().parent_path() / fs::path(_config_loader->get_bundle_name());
+        console::info("Bundle Repository : {}", _bundle_path.string());
+        
         if(fs::is_directory(_bundle_path)){
             console::info("Now installing '{}' bundle..", _config_loader->get_bundle_name());
 
