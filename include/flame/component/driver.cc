@@ -6,6 +6,7 @@
 #include <chrono>
 #include <stdexcept>
 #include <chrono>
+#include <string>
 
 #include <flame/log.hpp>
 #include <flame/config_def.hpp>
@@ -13,7 +14,7 @@
 using namespace std;
 
 #if defined(linux) || defined(__linux) || defined(__linux__)
-    static const int SIG_RUNTIME_TRIGGER = (SIGRTMIN);
+    static int SIG_RUNTIME_TRIGGER = (SIGRTMIN);
 #endif
 
 namespace flame::component {
@@ -30,8 +31,22 @@ namespace flame::component {
                 _componentImpl->_status = dtype_status::STOPPED;
 
                 // create data out port
-                _componentImpl->_dout_port = new zmq::socket_t(*dout_ctx, ZMQ_PUSH);
-                _componentImpl->_dout_port->bind(fmt::format("inproc://{}",_componentImpl->get_name()));
+                if(_componentImpl->get_profile()->raw().contains(__PROFILE_DATAPORT__)){
+                    string transport = _componentImpl->get_profile()->raw()["dataport"]["transport"].get<string>();
+                    string socket_type = _componentImpl->get_profile()->raw()["dataport"]["socket_type"].get<string>();
+                    int hwm = _componentImpl->get_profile()->raw()["dataport"]["queue_size"].get<int>();
+                    
+                    if(!socket_type.compare("push")){
+                        _componentImpl->_dataport = new zmq::socket_t(*dout_ctx, ZMQ_PUSH);
+                        _componentImpl->_dataport->setsockopt(ZMQ_SNDHWM, &hwm, sizeof(hwm));
+                    }
+                    else if(!socket_type.compare("pull")){
+                        _componentImpl->_dataport = new zmq::socket_t(*dout_ctx, ZMQ_PULL);
+                        _componentImpl->_dataport->setsockopt(ZMQ_RCVHWM, &hwm, sizeof(hwm));
+                    }
+                    _componentImpl->_dataport->bind(fmt::format("{}://{}",transport, _componentImpl->get_name()));
+                }
+                
             }
         }
         catch (std::runtime_error& e){
@@ -43,8 +58,8 @@ namespace flame::component {
     driver::~driver(){
 
         //clsoe data port
-        _componentImpl->_dout_port->close();
-        delete _componentImpl->_dout_port;
+        _componentImpl->_dataport->close();
+        delete _componentImpl->_dataport;
 
         unload();
     }
@@ -161,11 +176,13 @@ namespace flame::component {
     void driver::set_rt_timer(unsigned long long nsec){
         
         /* Set and enable alarm */ 
-        _signal_event.sigev_notify = SIGEV_SIGNAL; 
-        _signal_event.sigev_signo = SIG_RUNTIME_TRIGGER; 
+        _signal_event.sigev_notify = SIGEV_SIGNAL; // notify for process, so all thread received the signal
+        _signal_id = SIG_RUNTIME_TRIGGER;
+        _signal_event.sigev_signo = SIG_RUNTIME_TRIGGER++; 
         _signal_event.sigev_value.sival_ptr = _timer_id; 
         if(timer_create(CLOCK_REALTIME, &_signal_event, &_timer_id)==-1)
             console::error("timer create error");
+        console::info("Trigger Signal ID : {}", _signal_id);
     
         const unsigned long long nano = (1000000000L);
         _time_spec.it_value.tv_sec = nsec / nano;
@@ -173,6 +190,7 @@ namespace flame::component {
         _time_spec.it_interval.tv_sec = nsec / nano;
         _time_spec.it_interval.tv_nsec = nsec % nano;
 
+        // start timer
         if(timer_settime(_timer_id, 0, &_time_spec, nullptr)==-1)
             console::error("timer setting error");
 
@@ -183,18 +201,18 @@ namespace flame::component {
         //signal set for threading
         sigset_t thread_sigmask;
         sigemptyset(&thread_sigmask);
-        sigaddset(&thread_sigmask, SIG_RUNTIME_TRIGGER); //block SIG_RUNTIME_TRIGGER signal
+        sigaddset(&thread_sigmask, _signal_id); //block SIG_RUNTIME_TRIGGER signal
         int _sig_no;
 
         while(1){
             sigwait(&thread_sigmask, &_sig_no); //wait until receive signal
-            if(_sig_no==SIG_RUNTIME_TRIGGER){
+            if(_sig_no==_signal_id){
                 auto t_now = std::chrono::high_resolution_clock::now();
                 if(_componentImpl){
                     _componentImpl->on_loop();
                 }
                 auto t_elapsed = std::chrono::high_resolution_clock::now();
-                console::info("Processing Elapsed Time : {} sec", std::chrono::duration<double, std::chrono::milliseconds::period>(t_elapsed - t_now).count());
+                //console::info("Processing Elapsed Time : {} sec", std::chrono::duration<double, std::chrono::milliseconds::period>(t_elapsed - t_now).count());
             }
         }
 

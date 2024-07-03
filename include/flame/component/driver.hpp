@@ -78,6 +78,7 @@ namespace flame::component {
             struct itimerspec _time_spec;
             std::thread* _ptrThread = nullptr;
             timer_t _timer_id {0};
+            int _signal_id { 0 };
 
 
     }; /* class */

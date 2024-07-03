@@ -4,8 +4,8 @@
 # Build for architecture selection (editable!!)
 #ARCH := armhf
 #ARCH := arm64
-#ARCH := x86_64
-ARCH := aarch64
+ARCH := x86_64
+#ARCH := aarch64
 
 OS := $(shell uname)
 
@@ -19,7 +19,7 @@ ifeq ($(ARCH),arm64)
 	LD_LIBRARY_PATH += -L./lib/arm64
 	OUTDIR		= $(CURRENT_DIR)/bin/arm64/
 	BUILDDIR		= $(CURRENT_DIR)/bin/arm64/
-	INCLUDE_DIR = -I./ -I$(CURRENT_DIR)/ -I$(CURRENT_DIR)/include/ -I$(CURRENT_DIR)/include/3rdparty/
+	INCLUDE_DIR = -I./ -I$(CURRENT_DIR)/ -I$(CURRENT_DIR)/include/ -I$(CURRENT_DIR)/include/dep -I/usr/include
 	LD_LIBRARY_PATH += -L/usr/local/lib -L./lib/arm64
 else ifeq ($(ARCH), armhf)
 	CC := /usr/bin/arm-linux-gnueabihf-g++-9
@@ -27,7 +27,7 @@ else ifeq ($(ARCH), armhf)
 	LD_LIBRARY_PATH += -L./lib/armhf
 	OUTDIR		= $(CURRENT_DIR)/bin/armhf/
 	BUILDDIR		= $(CURRENT_DIR)/bin/armhf/
-	INCLUDE_DIR = -I./ -I$(CURRENT_DIR)/ -I$(CURRENT_DIR)/include/ -I$(CURRENT_DIR)/include/3rdparty/
+	INCLUDE_DIR = -I./ -I$(CURRENT_DIR)/ -I$(CURRENT_DIR)/include/ -I$(CURRENT_DIR)/include/dep -I/usr/include
 	LD_LIBRARY_PATH += -L/usr/local/lib -L./lib/armhf
 else ifeq ($(ARCH), aarch64) # for Mac Apple Silicon
 	CC := g++
@@ -36,15 +36,15 @@ else ifeq ($(ARCH), aarch64) # for Mac Apple Silicon
 	OUTDIR		= $(CURRENT_DIR)/bin/aarch64/
 	BUILDDIR		= $(CURRENT_DIR)/bin/aarch64/
 	INCLUDE_DIR = -I./ -I$(CURRENT_DIR) -I$(CURRENT_DIR)/include -I$(CURRENT_DIR)/include/dep -I/usr/include
-	LD_LIBRARY_PATH += -L/usr/local/lib -L$(CURRENT_DIR)/lib/aarch64/
+	LD_LIBRARY_PATH = -L/usr/local/lib -L$(CURRENT_DIR)/lib/aarch64/
 else
 	CC := g++
 	GCC := gcc
 	LD_LIBRARY_PATH += -L./lib/x86_64
 	OUTDIR		= $(CURRENT_DIR)/bin/x86_64/
 	BUILDDIR		= $(CURRENT_DIR)/bin/x86_64/
-	INCLUDE_DIR = -I./ -I$(CURRENT_DIR) -I$(CURRENT_DIR)/include -I$(CURRENT_DIR)/include/dep
-	LD_LIBRARY_PATH += -L/usr/local/lib -L$(CURRENT_DIR)/lib/x86_64/
+	INCLUDE_DIR = -I./ -I$(CURRENT_DIR) -I$(CURRENT_DIR)/include -I$(CURRENT_DIR)/include/dep -I/usr/include -I/usr/local/include
+	LD_LIBRARY_PATH = -L/usr/local/lib -L$(CURRENT_DIR)/lib/x86_64/
 endif
 
 # OS
@@ -95,15 +95,15 @@ $(BUILDDIR)config.o: $(INCLUDES)/flame/config.cc
 
 
 # components
-data_push_periodic.comp:	$(BUILDDIR)data.push.periodic.o
-						$(CC) $(LDFLAGS) $(LD_LIBRARY_PATH) -shared -o $(BUILDDIR)$@ $^ $(LDLIBS)
-$(BUILDDIR)data.push.periodic.o:	$(CURRENT_DIR)/components/data.push.periodic/data.push.periodic.cc
-								$(CC) $(CXXFLAGS) $(INCLUDE_DIR) -c $^ -o $@
+data_push.comp:	$(BUILDDIR)data.push.o
+				$(CC) $(LDFLAGS) $(LD_LIBRARY_PATH) -shared -o $(BUILDDIR)$@ $^ $(LDLIBS)
+$(BUILDDIR)data.push.o:	$(CURRENT_DIR)/components/data.push/data.push.cc
+						$(CC) $(CXXFLAGS) $(INCLUDE_DIR) -c $^ -o $@
 
-data_pull_test.comp:	$(BUILDDIR)data.pull.test.o
-						$(CC) $(LDFLAGS) $(LD_LIBRARY_PATH) -shared -o $(BUILDDIR)$@ $^ $(LDLIBS)
-$(BUILDDIR)data.pull.test.o:	$(CURRENT_DIR)/components/data.pull.test/data.pull.test.cc
-								$(CC) $(CXXFLAGS) $(INCLUDE_DIR) -c $^ -o $@
+data_pull.comp:	$(BUILDDIR)data.pull.o
+				$(CC) $(LDFLAGS) $(LD_LIBRARY_PATH) -shared -o $(BUILDDIR)$@ $^ $(LDLIBS)
+$(BUILDDIR)data.pull.o:	$(CURRENT_DIR)/components/data.pull/data.pull.cc
+						$(CC) $(CXXFLAGS) $(INCLUDE_DIR) -c $^ -o $@
 
 device_uvccam_multi.comp:	$(BUILDDIR)device.uvccam.multi.o
 							$(CC) $(LDFLAGS) $(LD_LIBRARY_PATH) -shared -o $(BUILDDIR)$@ $^ $(LDLIBS)
@@ -163,7 +163,7 @@ $(BUILDDIR)remote.lens.linker.o:	$(CURRENT_DIR)/components/remote.lens.linker/re
 
 
 all : flame
-components : device.uvccam.multi.comp data_push_periodic.comp data_pull_test.comp basler_gige_cam_linker.comp dk_gui_supporter.comp dk_level_data_gateway.comp dk_sdd_inference.comp dk_presdd_inference.comp dk_sys_op_trigger.comp synology_nas_file_stacker.comp ni_pulse_generator.comp remote_light_linker.comp remote_lens_linker.comp
+components : device.uvccam.multi.comp data_push.comp data_pull_test.comp basler_gige_cam_linker.comp dk_gui_supporter.comp dk_level_data_gateway.comp dk_sdd_inference.comp dk_presdd_inference.comp dk_sys_op_trigger.comp synology_nas_file_stacker.comp ni_pulse_generator.comp remote_light_linker.comp remote_lens_linker.comp
 
 deploy : FORCE
 	cp $(BUILDDIR)*.comp $(BUILDDIR)flame $(BINDIR)

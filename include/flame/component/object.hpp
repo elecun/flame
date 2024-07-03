@@ -41,7 +41,7 @@ namespace flame::component {
             }
 
             zmq::socket_t* get_dataport() const {
-                return _dout_port;
+                return _dataport;
             }
 
         private:
@@ -52,7 +52,7 @@ namespace flame::component {
             string _name = {"noname"};
             unique_ptr<profile> _profile;
 
-            zmq::socket_t* _dout_port { nullptr };
+            zmq::socket_t* _dataport { nullptr };
             
             
     }; /* class */

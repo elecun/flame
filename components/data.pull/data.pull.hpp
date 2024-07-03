@@ -1,24 +1,24 @@
 /**
- * @file data.push.periodic.hpp
+ * @file data.pull.hpp
  * @author Byunghun Hwang (bh.hwang@iae.re.kr)
- * @brief Component interface working test
+ * @brief 
  * @version 0.1
- * @date 2024-06-14
+ * @date 2024-07-03
  * 
  * @copyright Copyright (c) 2024
  * 
  */
 
-#ifndef FLAME_DATA_PUSH_PERIODIC_HPP_INCLUDED
-#define FLAME_DATA_PUSH_PERIODIC_HPP_INCLUDED
+#ifndef FLAME_DATA_PULL_HPP_INCLUDED
+#define FLAME_DATA_PULL_HPP_INCLUDED
 
 #include <flame/component/object.hpp>
 
 
-class data_push_periodic : public flame::component::object {
+class data_pull : public flame::component::object {
     public:
-        data_push_periodic() = default;
-        virtual ~data_push_periodic() = default;
+        data_pull() = default;
+        virtual ~data_pull() = default;
 
         // default interface functions
         bool on_init() override;
