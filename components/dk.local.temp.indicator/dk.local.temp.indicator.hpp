@@ -1,7 +1,7 @@
 /**
  * @file dk.local.temp.indicator.hpp
  * @author Byunghun Hwang <bh.hwang@iae.re.kr>
- * @brief 
+ * @brief Temperature Read from RS485 and push message
  * @version 0.1
  * @date 2024-07-02
  * 
@@ -13,7 +13,9 @@
 #define FLAME_DK_LOCAL_TEMP_INDICATOR_HPP_INCLUDED
 
 #include <flame/component/object.hpp>
+#include <libserial/SerialStream.h>
 
+using namespace LibSerial;
 
 class dk_local_temp_indicator : public flame::component::object {
     public:
@@ -25,6 +27,9 @@ class dk_local_temp_indicator : public flame::component::object {
         void on_loop() override;
         void on_close() override;
         void on_message() override;
+
+    private:
+        LibSerial::SerialStream _port;
 
 }; /* class */
 

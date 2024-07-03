@@ -35,7 +35,7 @@ else ifeq ($(ARCH), aarch64) # for Mac Apple Silicon
 	LD_LIBRARY_PATH += -L./lib/aarch64
 	OUTDIR		= $(CURRENT_DIR)/bin/aarch64/
 	BUILDDIR		= $(CURRENT_DIR)/bin/aarch64/
-	INCLUDE_DIR = -I./ -I$(CURRENT_DIR) -I$(CURRENT_DIR)/include -I$(CURRENT_DIR)/include/dep
+	INCLUDE_DIR = -I./ -I$(CURRENT_DIR) -I$(CURRENT_DIR)/include -I$(CURRENT_DIR)/include/dep -I/usr/include
 	LD_LIBRARY_PATH += -L/usr/local/lib -L$(CURRENT_DIR)/lib/aarch64/
 else
 	CC := g++

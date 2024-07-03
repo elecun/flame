@@ -3,6 +3,11 @@
 #include <flame/log.hpp>
 #include <flame/config_def.hpp>
 
+#include <NIDAQmx.h>
+#include <iostream>
+#include <stdexcept>
+#include <string>
+
 using namespace flame;
 
 static ni_pulse_generator* _instance = nullptr;

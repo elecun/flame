@@ -12,6 +12,9 @@ void release(){ if(_instance){ delete _instance; _instance = nullptr; }}
 bool dk_local_temp_indicator::on_init(){
     console::info("<{}> call dk_local_temp_indicator on_init", _THIS_COMPONENT_);
 
+    this->get_profile()->raw()["settings"]["device"]
+    _port.Open("/dev/ttyUSB0");
+
     //connect
     return true;
 }
