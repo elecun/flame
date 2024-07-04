@@ -36,9 +36,7 @@ int main(int argc, char* argv[])
     cxxopts::Options options("Flame options", desc.c_str());
 
     options.add_options()
-        ("b,bundle", "(Not support yet) Service bundle path to perform", cxxopts::value<string>())
         ("c,config", "User Configuration File(*.conf)", cxxopts::value<string>())
-        ("r,repository", "(Not support yet) Service Bundle Repository(Local path)", cxxopts::value<string>())
         ("h,help", "Print usage");
 
     auto optval = options.parse(argc, argv);
@@ -71,17 +69,11 @@ int main(int argc, char* argv[])
 
     /* option arguments */
     string _config {""};
-    string _bundle {""};
 
     if(optval.count("config")){ _config = optval["config"].as<string>(); }
-    if(optval.count("bundle")){ _bundle = optval["bundle"].as<string>(); }
 
     try{
-        if(!_bundle.empty()){
-            install_bundle(_bundle.c_str());
-            console::info("Start Flame with the bundle {}...", _bundle);
-        }
-        else if(!_config.empty()){
+        if(!_config.empty()){
             if(init(_config.c_str())){
                 console::info("Bundle is now working...");
                 pause(); //wait until getting SIGINT

@@ -16,6 +16,7 @@
 #include <string>
 #include <initializer_list>
 #include <filesystem>
+#include <map>
 
 using namespace std;
 using json = nlohmann::json;
@@ -73,6 +74,9 @@ namespace flame {
             filesystem::path get_config_path() const {
                 return _config_abs_path;
             }
+
+            map<string, string> get_data_topology();
+            map<string, string> get_service_topology();
 
             filesystem::path get_bundle_path() const;
             const char* get_bundle_name() const;

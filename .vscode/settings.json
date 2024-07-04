@@ -10,7 +10,8 @@
         "*.tcc": "cpp",
         "string": "cpp",
         "unordered_set": "cpp",
-        "string_view": "cpp"
+        "string_view": "cpp",
+        "stdexcept": "cpp"
     },
     "cmake.sourceDirectory": "/home/hwang-exp/dev/flame/include/3rdparty/mosquitto"
 }

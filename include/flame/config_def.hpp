@@ -27,6 +27,7 @@
 //bundle key properties
 #if defined(__CONFIG_KEY_BUNDLE__)
     #define __CONFIG_KEY_BUNDLE_NAME__ "name"
+    #define __CONFIG_KEY_BUNDLE_TOPOLOGY__ "topology"
 #endif
 
 #include <cxxabi.h>

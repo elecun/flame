@@ -110,4 +110,8 @@ namespace flame {
         }
     }
 
+    void bundle_manager::generate_topology(){
+        
+    }
+
 } /* namespace */

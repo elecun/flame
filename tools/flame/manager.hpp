@@ -45,7 +45,8 @@ namespace flame {
             // flame::component::driver* get_driver(const char* component_name = nullptr);
             // flame::component::runnable* get_component(const char* component_name = nullptr);
 
-        public:
+        private:
+            void generate_topology();   //create connections with components in bundles
             
 
         private:

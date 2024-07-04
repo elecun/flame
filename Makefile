@@ -2,11 +2,7 @@
 
 
 # Build for architecture selection (editable!!)
-#ARCH := armhf
-#ARCH := arm64
-#ARCH := x86_64
-ARCH := aarch64
-
+ARCH := $(shell uname -m)
 OS := $(shell uname)
 
 CURRENT_DIR:=$(shell dirname $(realpath $(firstword $(MAKEFILE_LIST))))
@@ -163,10 +159,13 @@ $(BUILDDIR)remote.lens.linker.o:	$(CURRENT_DIR)/components/remote.lens.linker/re
 
 
 all : flame
+
 components : device.uvccam.multi.comp data_push.comp data_pull_test.comp basler_gige_cam_linker.comp dk_gui_supporter.comp dk_level_data_gateway.comp dk_sdd_inference.comp dk_presdd_inference.comp dk_sys_op_trigger.comp synology_nas_file_stacker.comp ni_pulse_generator.comp remote_light_linker.comp remote_lens_linker.comp
 
 deploy : FORCE
 	cp $(BUILDDIR)*.comp $(BUILDDIR)flame $(BINDIR)
 clean : FORCE 
 		$(RM) $(BUILDDIR)*.o $(BUILDDIR)flame
-FORCE : 
+debug:
+	@echo "Building for Architecture : $(ARCH)"
+	@echo "Building for OS : $(OS)"

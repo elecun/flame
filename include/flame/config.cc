@@ -100,6 +100,33 @@ namespace flame {
         return string("");
     }
 
+    map<string, string> config_loader::get_data_topology(){
+        map<string, string> _topology_map;
+        try{
+            json _topology = _config[__CONFIG_KEY_BUNDLE__][__CONFIG_KEY_BUNDLE_TOPOLOGY__];
+            if(_topology.contains("data")){
+                for(const auto& con: _topology){
+                    _topology_map.insert(make_pair(con.at("provided").get<string>(), con.at("required").get<string>()));
+                }
+
+                return _topology_map;
+            }
+            else {
+                console::info("Not defined data port connections");
+            }
+
+        }
+        catch(json::exception& e){
+            console::warn("Exception for reading dataport tolpology", e.what());
+        }
+
+        return map<string, string>(); //empty
+    }
+
+    map<string, string> config_loader::get_service_topology(){
+        return map<string, string>(); //empty
+    }
+
     // bool config_loader::exist(const char* key){
     //     if(_config){
     //         if(_config.find(key)!=_config.end())
