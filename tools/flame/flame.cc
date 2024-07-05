@@ -53,15 +53,13 @@ int main(int argc, char* argv[])
     sigset_t sigmask;
     if(!sigfillset(&sigmask)){
         for(int signal:signals)
-        sigdelset(&sigmask, signal); //delete signal from mask
+            sigdelset(&sigmask, signal); //delete signal from mask
     }
     else {
-        console::error("Signal Handling Error");
         cleanup_and_exit();
     }
 
     if(pthread_sigmask(SIG_SETMASK, &sigmask, nullptr)!=0){ // signal masking for main thread
-        console::error("Signal Masking Error");
         cleanup_and_exit();
     }
 
