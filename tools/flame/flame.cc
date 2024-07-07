@@ -29,11 +29,9 @@ using namespace std;
 int main(int argc, char* argv[])
 {
     console::stdout_color_st("console");
+    console::info("FLAME Execution Engine {} (built {}/{})",_FLAME_VER_, __DATE__, __TIME__);
 
-    string desc = fmt::format("FLAME Execution Engine {} (built {}/{})", _FLAME_VER_, __DATE__, __TIME__);
-    console::info("{}",desc);
-
-    cxxopts::Options options("Flame options", desc.c_str());
+    cxxopts::Options options("Flame options");
 
     options.add_options()
         ("c,config", "User Configuration File(*.conf)", cxxopts::value<string>())
