@@ -1,7 +1,7 @@
 /**
- * @file remote.lens.linker.hpp
+ * @file remote.light.linker.hpp
  * @author Byunghun Hwang <bh.hwang@iae.re.kr>
- * @brief Lens device linker working on remote-side controller
+ * @brief Light device linker working on remote-side controller
  * @version 0.1
  * @date 2024-06-30
  * 
@@ -9,16 +9,17 @@
  * 
  */
 
-#ifndef FLAME_REMOTE_LENS_LINKER_HPP_INCLUDED
-#define FLAME_REMOTE_LENS_LINKER_HPP_INCLUDED
+
+#ifndef FLAME_DK_REMOTE_LIGHT_LINKER_HPP_INCLUDED
+#define FLAME_DK_REMOTE_LIGHT_LINKER_HPP_INCLUDED
 
 #include <flame/component/object.hpp>
 
 
-class remote_lens_linker : public flame::component::object {
+class dk_remote_light_linker : public flame::component::object {
     public:
-        remote_lens_linker() = default;
-        virtual ~remote_lens_linker() = default;
+        dk_remote_light_linker() = default;
+        virtual ~dk_remote_light_linker() = default;
 
         // default interface functions
         bool on_init() override;
