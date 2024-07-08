@@ -26,6 +26,10 @@ class ni_pulse_generator : public flame::component::object {
         void on_close() override;
         void on_message() override;
 
+    private:
+        string _device_name { "Dev1" };
+        string _counter_channel { "ctr0" };
+
 }; /* class */
 
 EXPORT_COMPONENT_API

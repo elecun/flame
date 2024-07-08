@@ -15,7 +15,8 @@ flame::component::object* create(){ if(!_instance) _instance = new ni_pulse_gene
 void release(){ if(_instance){ delete _instance; _instance = nullptr; }}
 
 bool ni_pulse_generator::on_init(){
-    console::info("<{}> call ni_pulse_generator on_init", _THIS_COMPONENT_);
+    
+    json parameters = get_profile()
 
     //connect
     return true;

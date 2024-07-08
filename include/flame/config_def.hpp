@@ -23,6 +23,7 @@
 //profile key
 #define __PROFILE_RT_CYCLE_NS__ "rt_cycle_ns"
 #define __PROFILE_DATAPORT__ "dataport"
+#define __PROFILE_PARAMETERS__ "parameters"
 
 //bundle key properties
 #if defined(__CONFIG_KEY_BUNDLE__)

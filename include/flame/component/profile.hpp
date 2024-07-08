@@ -16,6 +16,7 @@
 #include <filesystem>
 #include <flame/log.hpp>
 #include <fstream>
+#include "config_def.hpp"
 
 using namespace std;
 using namespace flame;
@@ -69,6 +70,19 @@ namespace flame::component {
 
             const json& raw() const {
                 return raw_profile;
+            }
+
+            const json parameters() {
+                try{
+                    if(raw_profile.contains(__PROFILE_PARAMETERS__)){
+                        return raw_profile[__PROFILE_PARAMETERS__];
+                    }
+                }
+                catch(const json::exception& e){
+                    throw std::runtime_error(e.what());
+                }
+
+                return 
             }
             
 

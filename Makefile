@@ -147,20 +147,20 @@ ni_pulse_generator.comp:	$(BUILDDIR)ni.pulse.generator.o
 $(BUILDDIR)ni.pulse.generator.o:	$(CURRENT_DIR)/components/ni.pulse.generator/ni.pulse.generator.cc
 									$(CC) $(CXXFLAGS) $(INCLUDE_DIR) -c $^ -o $@
 
-remote_light_linker.comp:	$(BUILDDIR)remote.light.linker.o
+dk_remote_light_linker.comp:	$(BUILDDIR)dk.remote.light.linker.o
 							$(CC) $(LDFLAGS) $(LD_LIBRARY_PATH) -shared -o $(BUILDDIR)$@ $^ $(LDLIBS)
-$(BUILDDIR)remote.light.linker.o:	$(CURRENT_DIR)/components/remote.light.linker/remote.light.linker.cc
+$(BUILDDIR)dk.remote.light.linker.o:	$(CURRENT_DIR)/components/dk.remote.light.linker/dk.remote.light.linker.cc
 									$(CC) $(CXXFLAGS) $(INCLUDE_DIR) -c $^ -o $@
 
-remote_lens_linker.comp:	$(BUILDDIR)remote.lens.linker.o
+dk_remote_lens_linker.comp:	$(BUILDDIR)remote.lens.linker.o
 							$(CC) $(LDFLAGS) $(LD_LIBRARY_PATH) -shared -o $(BUILDDIR)$@ $^ $(LDLIBS)
-$(BUILDDIR)remote.lens.linker.o:	$(CURRENT_DIR)/components/remote.lens.linker/remote.lens.linker.cc
+$(BUILDDIR)dk.remote.lens.linker.o:	$(CURRENT_DIR)/components/dk.remote.lens.linker/dk.remote.lens.linker.cc
 									$(CC) $(CXXFLAGS) $(INCLUDE_DIR) -c $^ -o $@
 
 
 all : flame
 
-components : device.uvccam.multi.comp data_push.comp data_pull_test.comp basler_gige_cam_linker.comp dk_gui_supporter.comp dk_level_data_gateway.comp dk_sdd_inference.comp dk_presdd_inference.comp dk_sys_op_trigger.comp synology_nas_file_stacker.comp ni_pulse_generator.comp remote_light_linker.comp remote_lens_linker.comp
+components : device.uvccam.multi.comp data_push.comp data_pull_test.comp basler_gige_cam_linker.comp dk_gui_supporter.comp dk_level_data_gateway.comp dk_sdd_inference.comp dk_presdd_inference.comp dk_sys_op_trigger.comp synology_nas_file_stacker.comp ni_pulse_generator.comp dk_remote_light_linker.comp dk_remote_lens_linker.comp
 
 deploy : FORCE
 	cp $(BUILDDIR)*.comp $(BUILDDIR)flame $(BINDIR)
