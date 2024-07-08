@@ -77,12 +77,14 @@ namespace flame::component {
                     if(raw_profile.contains(__PROFILE_PARAMETERS__)){
                         return raw_profile[__PROFILE_PARAMETERS__];
                     }
+                    return json::object();
+
                 }
                 catch(const json::exception& e){
                     throw std::runtime_error(e.what());
                 }
 
-                return 
+                return json::object();
             }
             
 
