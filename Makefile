@@ -159,6 +159,11 @@ $(BUILDDIR)dk.remote.lens.linker.o:	$(CURRENT_DIR)/components/dk.remote.lens.lin
 
 
 all : flame
+dk_h_inspector : basler_gige_cam_linker.comp  dk_level_data_gateway.comp dk_sdd_inference.comp dk_presdd_inference.comp dk_sys_op_trigger.comp synology_nas_file_stacker.comp ni_pulse_generator.comp 
+
+dk_h_inspector_remote : dk_remote_light_linker.comp dk_remote_lens_linker.comp
+
+ddk_h_inspector_monitor : dk_data_aggregator.comp
 
 components : device.uvccam.multi.comp data_push.comp data_pull_test.comp basler_gige_cam_linker.comp dk_gui_supporter.comp dk_level_data_gateway.comp dk_sdd_inference.comp dk_presdd_inference.comp dk_sys_op_trigger.comp synology_nas_file_stacker.comp ni_pulse_generator.comp dk_remote_light_linker.comp dk_remote_lens_linker.comp
 
