@@ -1,7 +1,7 @@
 /**
  * @file basler.gige.cam.linker.hpp
  * @author Byunghun Hwang <bh.hwang@iae.re.kr>
- * @brief 
+ * @brief Basler Gigabit Ethernet Camera Capture by external trigger
  * @version 0.1
  * @date 2024-06-30
  * 
@@ -9,11 +9,31 @@
  * 
  */
 
+/*
+Hardware Triggering Setting parameters
+
+TriggerSelector = FrameStart
+TriggerMode = On
+TriggerActivation = RisingEdge
+TriggerSource = Line1
+
+*/
+
+// Note! FrameEnd Triggering is ....
+
 #ifndef FLAME_BASLER_GIGE_CAM_LINKER_HPP_INCLUDED
 #define FLAME_BASLER_GIGE_CAM_LINKER_HPP_INCLUDED
 
 #include <flame/component/object.hpp>
+#include <pylon/PylonIncludes.h>
+#include <map>
+#include <vector>
+#include <thread>
+#include <string>
 
+using namespace std;
+using namespace Pylon;
+using namespace GenApi;
 
 class basler_gige_cam_linker : public flame::component::object {
     public:
@@ -25,6 +45,12 @@ class basler_gige_cam_linker : public flame::component::object {
         void on_loop() override;
         void on_close() override;
         void on_message() override;
+
+    private:
+        map<int, thread> _cam_worker;    //camera capture worker (camera id, thread)
+        map<string, CInstantCamera*> _cameras;  //camera device instance (camera serial number, camera instance)
+
+
 
 }; /* class */
 

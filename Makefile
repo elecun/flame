@@ -39,7 +39,7 @@ else
 	LD_LIBRARY_PATH += -L./lib/x86_64
 	OUTDIR		= $(CURRENT_DIR)/bin/x86_64/
 	BUILDDIR		= $(CURRENT_DIR)/bin/x86_64/
-	INCLUDE_DIR = -I./ -I$(CURRENT_DIR) -I$(CURRENT_DIR)/include -I$(CURRENT_DIR)/include/dep -I/usr/include -I/usr/local/include
+	INCLUDE_DIR = -I./ -I$(CURRENT_DIR) -I$(CURRENT_DIR)/include -I$(CURRENT_DIR)/include/dep -I/usr/include -I/usr/local/include -I/opt/pylon/include
 	LD_LIBRARY_PATH = -L/usr/local/lib -L$(CURRENT_DIR)/lib/x86_64/
 endif
 
@@ -109,7 +109,7 @@ $(BUILDDIR)device.uvccam.multi.o:	$(CURRENT_DIR)/components/device.uvccam.multi/
 # for dk project
 basler_gige_cam_linker.comp:	$(BUILDDIR)basler.gige.cam.linker.o
 							$(CC) $(LDFLAGS) $(LD_LIBRARY_PATH) -shared -o $(BUILDDIR)$@ $^ $(LDLIBS)
-$(BUILDDIR)basler_gige_cabasler.gige.cam.linkerm_linker.o:	$(CURRENT_DIR)/components/basler.gige.cam.linker/basler.gige.cam.linker.cc
+$(BUILDDIR)basler.gige.cam.linker.o:	$(CURRENT_DIR)/components/basler.gige.cam.linker/basler.gige.cam.linker.cc
 									$(CC) $(CXXFLAGS) $(INCLUDE_DIR) -c $^ -o $@
 
 dk_gui_supporter.comp:	$(BUILDDIR)dk.gui.supporter.o
@@ -163,7 +163,7 @@ dk_h_inspector : basler_gige_cam_linker.comp  dk_level_data_gateway.comp dk_sdd_
 
 dk_h_inspector_remote : dk_remote_light_linker.comp dk_remote_lens_linker.comp
 
-ddk_h_inspector_monitor : dk_data_aggregator.comp
+dk_h_inspector_monitor : dk_data_aggregator.comp
 
 components : device.uvccam.multi.comp data_push.comp data_pull_test.comp basler_gige_cam_linker.comp dk_gui_supporter.comp dk_level_data_gateway.comp dk_sdd_inference.comp dk_presdd_inference.comp dk_sys_op_trigger.comp synology_nas_file_stacker.comp ni_pulse_generator.comp dk_remote_light_linker.comp dk_remote_lens_linker.comp
 

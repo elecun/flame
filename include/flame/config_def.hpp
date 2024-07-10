@@ -17,6 +17,7 @@
 #define __CONFIG_KEY_BUNDLE__ "bundle"
 #define __COMPONENT_FILE_EXT__ ".comp"
 #define __PROFILE_FILE_EXT__ ".json"
+#define __BUNDLE_CONFIG_FILE_EXT__ ".conf"
 
 // environments key properties
 

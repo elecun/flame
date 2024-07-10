@@ -16,7 +16,7 @@
 #include <filesystem>
 #include <flame/log.hpp>
 #include <fstream>
-#include "config_def.hpp"
+#include <flame/config_def.hpp>
 
 using namespace std;
 using namespace flame;
@@ -72,7 +72,7 @@ namespace flame::component {
                 return raw_profile;
             }
 
-            const json parameters() {
+            json parameters() {
                 try{
                     if(raw_profile.contains(__PROFILE_PARAMETERS__)){
                         return raw_profile[__PROFILE_PARAMETERS__];
