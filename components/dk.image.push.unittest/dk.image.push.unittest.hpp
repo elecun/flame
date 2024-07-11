@@ -34,6 +34,9 @@ class dk_image_push_unittest : public flame::component::object {
     private:
         vector<string> _files;
         vector<cv::Mat> _container;
+        
+        zmq::context_t* _context;
+        zmq::socket_t* _socket;
 
 }; /* class */
 

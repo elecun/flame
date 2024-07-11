@@ -31,33 +31,53 @@ bool dk_image_push_unittest::on_init(){
             }
         }
 
+        // load image
+        for(const auto& file:_files){
+            _container.emplace_back(cv::imread(file, IMREAD_GRAYSCALE));
+        }
+
+        //zmq context
+        _context = new zmq::context_t(1);
+        _socket = new zmq::socket_t(*_context, ZMQ_PUB);
+        _socket->bind("tcp://*:5555");
         
     }
     catch (const fs::filesystem_error& e){
         console::error("{}", e.what());
     }
-
-
-    // load sample image
-    // cv::Mat image = cv::imread("1.png", IMREAD_GRAYSCALE);
     
     return true;
 }
 
 void dk_image_push_unittest::on_loop(){
 
-    // transfer data
-    // static int n = 0;
-    // std::string message = fmt::format("push {}",n);
-    // zmq::message_t zmq_message(message.data(), message.size());
-    // this->get_dataport()->send(zmq_message, zmq::send_flags::dontwait);
+    string topic = "image_bus";
+    static int count = 0;
+    for(auto& image:_container){
 
-    // console::info("{}",message);
-    // n++;
+        vector<uchar> buffer;
+        imencode(".jpg", image, buffer);
+
+        zmq::message_t topic_msg(topic.size());
+        memcpy(topic_msg.data(), topic.data(), topic.size());
+        _socket->send(topic_msg, zmq::send_flags::sndmore);
+
+        zmq::message_t message(buffer.size());
+        memcpy(message.data(), buffer.data(), buffer.size());
+        _socket->send(message);
+
+        console::info("Sent data {} bytes ({})", buffer.size(), count++);
+    }
 }
 
 void dk_image_push_unittest::on_close(){
+    
+    _socket->close();
+    _context->close();
 
+    for(auto& image:_container){
+        image.release();
+    }
 }
 
 void dk_image_push_unittest::on_message(){

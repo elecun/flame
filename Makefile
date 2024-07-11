@@ -48,7 +48,7 @@ endif
 ifeq ($(OS),Linux) #for Linux
 #LDFLAGS = -Wl,--export-dynamic -Wl,-rpath,$(LD_LIBRARY_PATH)
 	LDFLAGS = -Wl,--export-dynamic -Wl,-rpath,$(LIBDIR) -L$(LIBDIR)
-	LDLIBS = -pthread -lrt -ldl -lm -lzmq -lpylonbase -lpylonutility
+	LDLIBS = -pthread -lrt -ldl -lm -lzmq -lpylonbase -lpylonutility -lopencv_core -lopencv_imgcodecs -lopencv_highgui -lopencv_imgproc
 endif
 
 
