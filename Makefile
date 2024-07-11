@@ -36,17 +36,19 @@ else ifeq ($(ARCH), aarch64) # for Mac Apple Silicon
 else
 	CC := g++
 	GCC := gcc
-	LD_LIBRARY_PATH += -L./lib/x86_64
+#	LD_LIBRARY_PATH += -L./lib/x86_64
 	OUTDIR		= $(CURRENT_DIR)/bin/x86_64/
 	BUILDDIR		= $(CURRENT_DIR)/bin/x86_64/
 	INCLUDE_DIR = -I./ -I$(CURRENT_DIR) -I$(CURRENT_DIR)/include -I$(CURRENT_DIR)/include/dep -I/usr/include -I/usr/local/include -I/opt/pylon/include
-	LD_LIBRARY_PATH = -L/usr/local/lib -L$(CURRENT_DIR)/lib/x86_64/
+	LIBDIR = -L/usr/local/lib -L$(CURRENT_DIR)/lib/x86_64/ -L/opt/pylon/lib/
+export LD_LIBRARY_PATH := $(LIBDIR):$(LD_LIBRARY_PATH)
 endif
 
 # OS
 ifeq ($(OS),Linux) #for Linux
-	LDFLAGS = -Wl,--export-dynamic -Wl,-rpath=$(LD_LIBRARY_PATH)
-	LDLIBS = -pthread -lrt -ldl -lm -lzmq
+#LDFLAGS = -Wl,--export-dynamic -Wl,-rpath,$(LD_LIBRARY_PATH)
+	LDFLAGS = -Wl,--export-dynamic -Wl,-rpath,$(LIBDIR) -L$(LIBDIR)
+	LDLIBS = -pthread -lrt -ldl -lm -lzmq -lpylonbase -lpylonutility
 endif
 
 
@@ -108,7 +110,7 @@ $(BUILDDIR)device.uvccam.multi.o:	$(CURRENT_DIR)/components/device.uvccam.multi/
 
 # for dk project
 basler_gige_cam_linker.comp:	$(BUILDDIR)basler.gige.cam.linker.o
-							$(CC) $(LDFLAGS) $(LD_LIBRARY_PATH) -shared -o $(BUILDDIR)$@ $^ $(LDLIBS)
+							$(CC) $(LDFLAGS) $(LD_LIBRARY_PATH) -shared -o $(BUILDDIR)$@ $^ $(LDFLAGS) $(LDLIBS)
 $(BUILDDIR)basler.gige.cam.linker.o:	$(CURRENT_DIR)/components/basler.gige.cam.linker/basler.gige.cam.linker.cc
 									$(CC) $(CXXFLAGS) $(INCLUDE_DIR) -c $^ -o $@
 
@@ -174,3 +176,5 @@ clean : FORCE
 debug:
 	@echo "Building for Architecture : $(ARCH)"
 	@echo "Building for OS : $(OS)"
+
+FORCE : 

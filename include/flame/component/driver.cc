@@ -126,10 +126,10 @@ namespace flame::component {
                 return false;
             }
 
+            console::info("{}", component_path.c_str());
             _component_handle = dlopen(component_path.string().c_str(), RTLD_LAZY|RTLD_LOCAL);
             if(!_component_handle){
-                console::error("{} component cannot be opened.", component_path.filename().string());
-                dlerror();
+                console::error("<{}> {}", component_path.filename().string(), dlerror());
                 return false;
             }
 

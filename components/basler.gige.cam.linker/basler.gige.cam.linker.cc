@@ -10,16 +10,21 @@ flame::component::object* create(){ if(!_instance) _instance = new basler_gige_c
 void release(){ if(_instance){ delete _instance; _instance = nullptr; }}
 
 bool basler_gige_cam_linker::on_init(){
-    console::info("<{}> call basler_gige_cam_linker on_init", _THIS_COMPONENT_);
 
     //get parameters from profile
-    json param_cameras = get_profile()->raw()["cameras"];
-    if(param_cameras.is_array()){
-        for(const auto& cam: param_cameras){
-            int id = cam["id"].get<int>();          //camera id (by user)
-            string ip = cam["ip"].get<string>();    //ip address
-            string sn = cam["sn"].get<string>();    //camera serial number
+    try{
+        json param_cameras = get_profile()->raw()["cameras"];
+        if(param_cameras.is_array()){
+            for(const auto& cam: param_cameras){
+                int id = cam["id"].get<int>();          //camera id (by user)
+                string ip = cam["ip"].get<string>();    //ip address
+                string sn = cam["sn"].get<string>();    //camera serial number
+            }
         }
+    }
+    catch(json::exception& e){
+        console::error("{}", e.what());
+        return false;
     }
 
     // pylon initialization
