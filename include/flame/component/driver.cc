@@ -44,14 +44,14 @@ namespace flame::component {
                                 _componentImpl->_socket_map.insert(make_pair(portname, new pipe_socket(*context, zmq::socket_type::sub)));
                                 unsigned int q_size = value.value("queue_size", 1000);
                                 _componentImpl->_socket_map[portname]->setsockopt(ZMQ_SNDHWM, &q_size, sizeof(q_size));
-                                _componentImpl->_socket_map[portname]->connect(fmt::format("{}://{}", transport, portname));
+                                _componentImpl->_socket_map[portname]->connect(fmt::format("inproc://{}", portname));
                                 _componentImpl->_socket_map[portname]->set(zmq::sockopt::subscribe, portname);
                             }
                             else if(!socket_type.compare("pub")){
                                 _componentImpl->_socket_map.insert(make_pair(portname, new pipe_socket(*context, zmq::socket_type::pub)));
                                 unsigned int q_size = value.value("queue_size", 1000);
                                 _componentImpl->_socket_map[portname]->setsockopt(ZMQ_SNDHWM, &q_size, sizeof(q_size));
-                                _componentImpl->_socket_map[portname]->bind(fmt::format("{}://{}", transport, portname));
+                                _componentImpl->_socket_map[portname]->bind(fmt::format("inproc://{}", portname));
                             }
                             else {
                                 console::warn("Undefined socket type to create dataport");
