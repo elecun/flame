@@ -14,7 +14,11 @@
 
 #include <zmq.hpp>
 
+using pipe_context = zmq::context_t;
+using pipe_socket = zmq::socket_t;
+
 namespace flame::component {
+
 
 } /* namespace */
 

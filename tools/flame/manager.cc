@@ -36,7 +36,7 @@ namespace flame {
         try{
             
             // 1. find component files and check profile existance in bundle repository
-            vector<fs::path> _component_list;   //
+            vector<fs::path> _component_list; 
             for(const auto& cfile : fs::directory_iterator(bundle_repo)){
                 if(cfile.is_regular_file() && cfile.path().extension() == __COMPONENT_FILE_EXT__){
                     fs::path pfile = cfile.path();
@@ -52,16 +52,13 @@ namespace flame {
             // 2. check components profiles to create and manage inproc context
             for(auto& comp : _component_list){
                 string _cname = comp.filename().string();
-
                 _component_uid_map.insert(map<string, util::uuid_t>::value_type(_cname, _uuid_gen.generate()));
-                _dp_ctx_map.insert(map<string, zmq::context_t*>::value_type(_cname, new zmq::context_t(1)));
-                _sp_ctx_map.insert(map<string, zmq::context_t*>::value_type(_cname, new zmq::context_t(1)));
-                _bundle_container.insert(map<util::uuid_t, component::driver*>::value_type(_component_uid_map[_cname], new component::driver(comp, _dp_ctx_map[_cname])));
+                _bundle_container.insert(map<util::uuid_t, component::driver*>::value_type(_component_uid_map[_cname], new component::driver(comp, _inproc_context)));
 
                 console::info("+ Load component : {} (UID:{})", _cname, _component_uid_map[_cname].str());
             }
 
-            // call initialization of all components
+            // 3. call on_init function for all components
             for(auto& comp : _component_list){
                 string _cname = comp.filename().string();
                 if(!_bundle_container[_component_uid_map[_cname]]->on_init()){
@@ -71,6 +68,7 @@ namespace flame {
             }
         }
         catch(std::runtime_error& e){
+            console::error("Error : {}", e.what());
             this->uninstall();
             return false;
         }

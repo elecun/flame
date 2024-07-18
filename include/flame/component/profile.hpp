@@ -71,6 +71,11 @@ namespace flame::component {
                 return raw_profile;
             }
 
+            /**
+             * @brief parameter section data in profile
+             * 
+             * @return json 
+             */
             json parameters() {
                 try{
                     if(raw_profile.contains(__PROFILE_PARAMETERS__)){
@@ -83,6 +88,24 @@ namespace flame::component {
                     throw std::runtime_error(e.what());
                 }
 
+                return json::object();
+            }
+
+            /**
+             * @brief dataport section data in profile
+             * 
+             * @return json 
+             */
+            json dataport() {
+                try {
+                    if(raw_profile.contains(__PROFILE_DATAPORT__)){
+                        return raw_profile[__PROFILE_DATAPORT__];
+                    }
+                    return json::object();
+                }
+                catch(const json::exception& e){
+                    throw std::runtime_error(e.what());
+                }
                 return json::object();
             }
             

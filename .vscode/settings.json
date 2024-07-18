@@ -11,7 +11,9 @@
         "string": "cpp",
         "unordered_set": "cpp",
         "string_view": "cpp",
-        "stdexcept": "cpp"
+        "stdexcept": "cpp",
+        "optional": "cpp",
+        "system_error": "cpp"
     },
     "cmake.sourceDirectory": "/home/hwang-exp/dev/flame/include/3rdparty/mosquitto"
 }

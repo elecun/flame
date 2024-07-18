@@ -48,7 +48,7 @@ namespace flame {
             bundle_container_t _bundle_container;
             unordered_map<string, util::uuid_t> _component_uid_map;
             util::uuid_generator _uuid_gen;
-            zmq::context_t* _inproc_context;
+            pipe_context* _inproc_context { nullptr };
             
 
     }; /* class */

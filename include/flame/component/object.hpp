@@ -16,6 +16,7 @@
 #include <filesystem>
 #include <flame/component/interface.hpp>
 #include <flame/component/profile.hpp>
+#include <flame/component/port.hpp>
 #include <memory>
 
 using namespace std;
@@ -36,16 +37,8 @@ namespace flame::component {
             const dtype_status get_status() const { return _status; }
 
         protected:
-            const component::profile* get_profile() const { 
+            component::profile* get_profile() const { 
                 return _profile.get();
-            }
-
-            zmq::socket_t* get_dataport() const {
-                return _dataport;
-            }
-
-            zmq::socket_t* get_dataport(string portname) const {
-                return _dataport;
             }
 
         private:
@@ -56,7 +49,7 @@ namespace flame::component {
             string _name = {"noname"};
             unique_ptr<profile> _profile;
 
-            zmq::socket_t* _dataport { nullptr };
+            unordered_map<string, pipe_socket*> _socket_map;
             
             
     }; /* class */

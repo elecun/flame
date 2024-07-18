@@ -14,6 +14,7 @@
 
 #include <flame/component/object.hpp>
 #include <flame/component/interface.hpp>
+#include <flame/component/port.hpp>
 #include <filesystem>
 #include <memory>
 #include <csignal>
@@ -28,7 +29,7 @@ namespace fs = std::filesystem;
 namespace flame::component {
     class driver : public component::interface {
         public:
-            driver(fs::path component_path, zmq::context_t* dout_ctx); //without extension
+            driver(fs::path component_path, pipe_context* context); //without extension
             virtual ~driver();
 
             bool on_init() override;
