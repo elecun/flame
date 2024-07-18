@@ -11,9 +11,14 @@
 namespace flame {
 
     bundle_manager::bundle_manager() {
+
+        // 1. create context
+        _inproc_context = new zmq::context_t(1);    // inproc transport is effective for single(1) I/O thread
     }
 
     bundle_manager::~bundle_manager(){
+
+        //1. call close function for all components, then clear the bundle container
         if(!_bundle_container.empty()){
             for(bundle_container_t::iterator itr = _bundle_container.begin(); itr != _bundle_container.end(); ++itr){
                 itr->second->on_close();
@@ -21,38 +26,31 @@ namespace flame {
             _bundle_container.clear();
         }
 
-        // clear dataport map
-        for(dataport_ctx_map_t::iterator itr = _dp_ctx_map.begin(); itr!=_dp_ctx_map.end(); ++itr){
-            itr->second->shutdown();
-            delete itr->second;
-        }
+        // 2. shutdown context
+        _inproc_context->shutdown();
 
-        // clear service port map
-        for(serviceport_ctx_map_t::iterator itr = _sp_ctx_map.begin(); itr !=_sp_ctx_map.end(); ++itr){
-            itr->second->shutdown();
-            delete itr->second;
-        }
     }
 
-    bool bundle_manager::install(fs::path repository){
+    bool bundle_manager::install(fs::path bundle_repo){
 
         try{
-            // check component & profile existance
-            vector<fs::path> _comp_list;
-            for(const auto& cfile : fs::directory_iterator(repository)){
+            
+            // 1. find component files and check profile existance in bundle repository
+            vector<fs::path> _component_list;   //
+            for(const auto& cfile : fs::directory_iterator(bundle_repo)){
                 if(cfile.is_regular_file() && cfile.path().extension() == __COMPONENT_FILE_EXT__){
                     fs::path pfile = cfile.path();
                     pfile.replace_extension(__PROFILE_FILE_EXT__);
                     
                     if(fs::exists(pfile)){
-                        _comp_list.push_back(pfile.replace_extension(""));
+                        _component_list.push_back(pfile.replace_extension(""));
                     }
                 }
             }
-            console::info("Found {} dependent component(s)", _comp_list.size());
+            console::info("Found {} component(s) in the bundle.", _component_list.size());
 
-            // component load
-            for(auto& comp : _comp_list){
+            // 2. check components profiles to create and manage inproc context
+            for(auto& comp : _component_list){
                 string _cname = comp.filename().string();
 
                 _component_uid_map.insert(map<string, util::uuid_t>::value_type(_cname, _uuid_gen.generate()));
@@ -64,7 +62,7 @@ namespace flame {
             }
 
             // call initialization of all components
-            for(auto& comp : _comp_list){
+            for(auto& comp : _component_list){
                 string _cname = comp.filename().string();
                 if(!_bundle_container[_component_uid_map[_cname]]->on_init()){
                     console::error("<{}> component has a problem to initialize", _cname);

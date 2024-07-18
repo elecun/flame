@@ -44,6 +44,10 @@ namespace flame::component {
                 return _dataport;
             }
 
+            zmq::socket_t* get_dataport(string portname) const {
+                return _dataport;
+            }
+
         private:
             void set_status(dtype_status s) { _status = s; }
 

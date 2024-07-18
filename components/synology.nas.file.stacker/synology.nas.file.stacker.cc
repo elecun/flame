@@ -10,14 +10,27 @@ flame::component::object* create(){ if(!_instance) _instance = new synology_nas_
 void release(){ if(_instance){ delete _instance; _instance = nullptr; }}
 
 bool synology_nas_file_stacker::on_init(){
-    console::info("<{}> call synology_nas_file_stacker on_init", _THIS_COMPONENT_);
+    
+    // read profile parameters
+    try {
+        
+    }
+    catch(json::exception& e){
+        console::error("Profile is not completed. {}", e.what());
+        return false;
+    }
+
+    // join in data pipelines
+    
+    
 
     //connect
     return true;
 }
 
 void synology_nas_file_stacker::on_loop(){
-    console::info("<{}> call synology_nas_file_stacker on_loop", _THIS_COMPONENT_);
+
+    //
 
     static int n = 0;
     std::string message = fmt::format("push {}",n);
@@ -30,9 +43,20 @@ void synology_nas_file_stacker::on_loop(){
 }
 
 void synology_nas_file_stacker::on_close(){
-    console::info("<{}> call synology_nas_file_stacker on_close", _THIS_COMPONENT_);
+    
 }
 
 void synology_nas_file_stacker::on_message(){
-    console::info("<{}> call synology_nas_file_stacker on_message", _THIS_COMPONENT_);
+    
+}
+
+
+void synology_nas_file_stacker::_subscriber_callback(zmq::context_t& context, const string& topic)
+{
+    
+}
+
+void synology_nas_file_stacker::_stacker_cakllback(const string& topic)
+{
+
 }

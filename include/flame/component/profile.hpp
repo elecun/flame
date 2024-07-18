@@ -22,7 +22,6 @@ using namespace std;
 using namespace flame;
 namespace fs = std::filesystem;
 using json = nlohmann::json;
-using profile_data = nlohmann::json;
 
 
 namespace flame::component {

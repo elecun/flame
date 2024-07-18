@@ -21,6 +21,7 @@
 #include <flame/util/uuid.hpp>
 #include <zmq.hpp>
 #include <tuple>
+#include <flame/component/port.hpp>
 
 using namespace std;
 namespace fs = std::filesystem;
@@ -29,21 +30,15 @@ namespace flame {
 
     class bundle_manager : public flame::arch::singleton<bundle_manager>{
         public:
-            typedef map<util::uuid_t, flame::component::driver*> bundle_container_t;
-            typedef map<string, zmq::context_t*> dataport_ctx_map_t; //component name, data port context (one component has one port context)
-            typedef map<string, zmq::context_t*> serviceport_ctx_map_t; //component name, service port context
+            typedef unordered_map<util::uuid_t, flame::component::driver*> bundle_container_t;
 
             bundle_manager();
             virtual ~bundle_manager();
 
-            // components installation in bundle repository
-            bool install(fs::path repository);
-            void uninstall(const char* component_name = nullptr); //install without system configuration
-
+            bool install(fs::path bundle_repo); //install the all components in bundle repository
+            void uninstall(const char* component_name = nullptr); // uninstall the all components or specific component
             void start_bundle_service();
 
-            // flame::component::driver* get_driver(const char* component_name = nullptr);
-            // flame::component::runnable* get_component(const char* component_name = nullptr);
 
         private:
             void generate_topology();   //create connections with components in bundles
@@ -53,10 +48,8 @@ namespace flame {
             bundle_container_t _bundle_container;
             unordered_map<string, util::uuid_t> _component_uid_map;
             util::uuid_generator _uuid_gen;
-
-            // bundle data port context (only inproc)
-            dataport_ctx_map_t _dp_ctx_map;
-            serviceport_ctx_map_t _sp_ctx_map;
+            zmq::context_t* _inproc_context;
+            
 
     }; /* class */
 

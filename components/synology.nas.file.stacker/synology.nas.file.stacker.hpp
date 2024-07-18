@@ -13,6 +13,14 @@
 #define FLAME_SYNOLOGY_NAS_FILE_STACKER_HPP_INCLUDED
 
 #include <flame/component/object.hpp>
+#include <thread>
+#include <string>
+#include <condition_variable>
+#include <unordered_map>
+#include <queue>
+#include <mutex>
+
+using namespace std;
 
 
 class synology_nas_file_stacker : public flame::component::object {
@@ -25,6 +33,22 @@ class synology_nas_file_stacker : public flame::component::object {
         void on_loop() override;
         void on_close() override;
         void on_message() override;
+
+    private:
+        void _subscriber_callback(zmq::context_t& context, const string& topic);
+        void _stacker_cakllback(const string& topic);
+
+
+    private:
+        thread* _subscriber { nullptr };
+        thread* _stacker { nullptr };
+
+        unordered_map<string, queue<string>> _sub_topics;
+        unordered_map<string, mutex> _topic_mutex;
+        unordered_map<string, condition_variable> _topic_csv;
+        bool _thread_stop_signal { false };
+
+
 
 }; /* class */
 
