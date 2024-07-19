@@ -41,8 +41,101 @@ namespace flame::component {
                 return _profile.get();
             }
 
+            pipe_socket* get_port(const string portname) {
+                return _socket_map[portname];
+            }
+
+            void transfer(const string portname, pipe_data msg){
+
+                if(_socket_map.contains(portname)){
+                    _socket_map[portname]->send(msg, zmq::send_flags::dontwait);
+                    console::info("transferred");
+                }
+                else {
+                    console::warn("Undefined data port");
+                }
+            }
+
         private:
             void set_status(dtype_status s) { _status = s; }
+
+            /**
+             * @brief Create a pipe context
+             * 
+             * @param pipename pipe name
+             * @return pipe_context* created context
+             */
+            pipe_context* create_pipe(const string pipename){
+                if(_pipe_map.contains(pipename)){
+                    console::warn("{} pipe is already defined", pipename);
+                    return nullptr;
+                }
+                else {
+                    _pipe_map.insert(make_pair(pipename, new pipe_context(1)));
+                }
+                return _pipe_map[pipename];
+            }
+
+            /**
+             * @brief Create a port object
+             * 
+             * @param pipe created pipe context
+             * @param socket_name socket name to create 
+             * @param socket_type socket type (e.g. pub, sub)
+             * @param q_size custom queue size (default:1000)
+             * @return pipe_socket* created pipe socket pointer
+             */
+            pipe_socket* create_port(pipe_context* pipe, const string socket_name, const string socket_type, int q_size, string topic = ""){
+                if(!socket_type.compare("sub")){
+                    _socket_map.insert(make_pair(socket_name, new pipe_socket(*pipe, zmq::socket_type::sub)));
+                    _socket_map[socket_name]->set(zmq::sockopt::rcvhwm, q_size);
+                    _socket_map[socket_name]->set(zmq::sockopt::subscribe, topic);
+                    _socket_map[socket_name]->connect(fmt::format("inproc://{}", socket_name));
+                }
+                else if(!socket_type.compare("pub")){
+                    _socket_map.insert(make_pair(socket_name, new pipe_socket(*pipe, zmq::socket_type::pub)));
+                    _socket_map[socket_name]->set(zmq::sockopt::sndhwm, q_size);
+                    _socket_map[socket_name]->bind(fmt::format("inproc://{}", socket_name));
+                }
+                else {
+                    console::warn("Undefined socket type to create dataport");
+                }
+                
+                
+                return _socket_map[socket_name];
+            }
+
+            pipe_socket* create_port(pipe_context* pipe, const string socket_name, const string socket_type, int q_size, const string address, int port, string topic = ""){
+                if(!socket_type.compare("sub")){
+                    _socket_map.insert(make_pair(socket_name, new pipe_socket(*pipe, zmq::socket_type::sub)));
+                    _socket_map[socket_name]->set(zmq::sockopt::rcvhwm, q_size);
+                    _socket_map[socket_name]->set(zmq::sockopt::subscribe, topic);
+                    _socket_map[socket_name]->connect(fmt::format("tcp://{}:{}", address, port));
+                }
+                else if(!socket_type.compare("pub")){
+                    _socket_map.insert(make_pair(socket_name, new pipe_socket(*pipe, zmq::socket_type::pub)));
+                    _socket_map[socket_name]->set(zmq::sockopt::sndhwm, q_size);
+                    _socket_map[socket_name]->bind(fmt::format("tcp://{}:{}", address, port));
+                }
+                else {
+                    console::warn("Undefined socket type to create dataport");
+                }
+                
+                
+                return _socket_map[socket_name];
+            }
+
+            void destory_pipe(){
+                for(const auto& pair : _socket_map){
+                    pair.second->close();
+                    delete pair.second;
+                }
+
+                for(const auto& pair : _pipe_map){
+                    pair.second->close();
+                    delete pair.second;
+                }
+            }
 
         private:
             dtype_status _status { dtype_status::STOPPED };
@@ -50,6 +143,7 @@ namespace flame::component {
             unique_ptr<profile> _profile;
 
             unordered_map<string, pipe_socket*> _socket_map;
+            unordered_map<string, pipe_context*> _pipe_map;
             
             
     }; /* class */

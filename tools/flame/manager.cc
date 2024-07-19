@@ -1,7 +1,6 @@
 
 #include "manager.hpp"
 #include <flame/config_def.hpp>
-#include <vector>
 #include <flame/log.hpp>
 
 #if __cplusplus >= 202002L //c++20 (and later)
@@ -13,6 +12,7 @@ namespace flame {
     bundle_manager::bundle_manager() {
 
         // 1. create context
+        _component_uid_map.reserve(50);
         _inproc_context = new zmq::context_t(1);    // inproc transport is effective for single(1) I/O thread
     }
 
@@ -27,7 +27,8 @@ namespace flame {
         }
 
         // 2. shutdown context
-        _inproc_context->shutdown();
+        if(_inproc_context)
+            _inproc_context->shutdown();
 
     }
 
@@ -104,10 +105,6 @@ namespace flame {
         for(bundle_container_t::iterator itr=_bundle_container.begin(); itr!=_bundle_container.end();++itr){
             itr->second->on_loop();
         }
-    }
-
-    void bundle_manager::generate_topology(){
-        
     }
 
 } /* namespace */

@@ -13,7 +13,9 @@
         "string_view": "cpp",
         "stdexcept": "cpp",
         "optional": "cpp",
-        "system_error": "cpp"
+        "system_error": "cpp",
+        "bitset": "cpp",
+        "typeinfo": "cpp"
     },
     "cmake.sourceDirectory": "/home/hwang-exp/dev/flame/include/3rdparty/mosquitto"
 }

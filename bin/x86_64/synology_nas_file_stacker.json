@@ -8,16 +8,20 @@
 
     "dataport":{
         "status_out" : {
+            "allowable" : "status_out",
             "transport" : "tcp",
+            "port" : 5555,
             "socket_type" : "pub",
             "queue_size" : 1000
         },
         "image_stream" : {
+            "allowable" : "image_stream",
             "transport" : "inproc",
             "socket_type" : "sub",
             "queue_size" : 1000
         },
         "prod_info" : {
+            "allowable" : "prod_info",
             "transport" : "inproc",
             "socket_type" : "sub",
             "queue_size" : 1000

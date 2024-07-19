@@ -14,12 +14,9 @@
 
 #include <zmq.hpp>
 
-using pipe_context = zmq::context_t;
-using pipe_socket = zmq::socket_t;
+using pipe_context = zmq::context_t;    /* pipeline */
+using pipe_socket = zmq::socket_t;      /* socket */
+using pipe_data = zmq::message_t;       /* message */
 
-namespace flame::component {
-
-
-} /* namespace */
 
 #endif

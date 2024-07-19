@@ -14,13 +14,11 @@
 
 #include <vector>
 #include <map>
-#include <unordered_map>
 #include <filesystem>
+#include <tuple>
 #include <flame/component/driver.hpp>
 #include <flame/arch/singleton.hpp>
 #include <flame/util/uuid.hpp>
-#include <zmq.hpp>
-#include <tuple>
 #include <flame/component/port.hpp>
 
 using namespace std;
@@ -30,7 +28,7 @@ namespace flame {
 
     class bundle_manager : public flame::arch::singleton<bundle_manager>{
         public:
-            typedef unordered_map<util::uuid_t, flame::component::driver*> bundle_container_t;
+            typedef map<util::uuid_t, flame::component::driver*> bundle_container_t;
 
             bundle_manager();
             virtual ~bundle_manager();
@@ -38,10 +36,6 @@ namespace flame {
             bool install(fs::path bundle_repo); //install the all components in bundle repository
             void uninstall(const char* component_name = nullptr); // uninstall the all components or specific component
             void start_bundle_service();
-
-
-        private:
-            void generate_topology();   //create connections with components in bundles
             
 
         private:
