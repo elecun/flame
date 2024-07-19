@@ -21,8 +21,8 @@ void synology_nas_file_stacker::on_loop(){
     
     static int n = 0;
     std::string str_message = fmt::format("push {}",n++);
-    pipe_data message(str_message.data(), str_message.size());
-    this->transfer("status_out", message);
+    pipe_data data(str_message.data(), str_message.size());
+    this->transfer("status_out", data);
 }
 
 void synology_nas_file_stacker::on_close(){
