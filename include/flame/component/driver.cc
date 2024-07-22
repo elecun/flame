@@ -41,7 +41,7 @@ namespace flame::component {
                         
                         // 2.1 build data port [inproc]
                         if(!transport.compare("inproc")){
-                            _componentImpl->create_port(pipeline, name, socket_type, q_size);
+                            _componentImpl->create_port(pipeline, name, str2type(socket_type), q_size);
                         }
 
                         // 2.2 tcp data port

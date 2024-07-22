@@ -75,23 +75,37 @@ namespace flame::component {
              * @param q_size custom queue size (default:1000)
              * @return pipe_socket* created pipe socket pointer
              */
-            pipe_socket* create_port(pipe_context* pipe, const string socket_name, const string socket_type, int q_size, string topic = ""){
-                if(!socket_type.compare("sub")){
-                    _socket_map.insert(make_pair(socket_name, new pipe_socket(*pipe, zmq::socket_type::sub)));
-                    _socket_map[socket_name]->set(zmq::sockopt::rcvhwm, q_size);
-                    _socket_map[socket_name]->set(zmq::sockopt::subscribe, topic);
-                    _socket_map[socket_name]->connect(fmt::format("inproc://{}", socket_name));
+            pipe_socket* create_port(pipe_context* pipe, const string socket_name, const flame::socket_type socket_type, int q_size, string filter_topic = ""){
+
+                string addr = fmt::format("inproc://{}", socket_name);
+
+                switch(socket_type){
+                    case flame::socket_type::pub:{
+                        _socket_map.insert(make_pair(socket_name, new pipe_socket(*pipe, zmq::socket_type::pub)));
+                        _socket_map[socket_name]->set(zmq::sockopt::sndhwm, q_size);
+                        _socket_map[socket_name]->bind(addr);
+                    }
+                    break;
+
+                    case flame::socket_type::sub:{
+                        _socket_map.insert(make_pair(socket_name, new pipe_socket(*pipe, zmq::socket_type::sub)));
+                        _socket_map[socket_name]->set(zmq::sockopt::rcvhwm, q_size);
+                        _socket_map[socket_name]->set(zmq::sockopt::subscribe, filter_topic);
+                        _socket_map[socket_name]->connect(addr);
+                    }
+                    break;
+
+                    case flame::socket_type::push:{
+
+                    }
+                    break;
+
+                    case flame::socket_type::pull:{
+
+                    }
+                    break;
                 }
-                else if(!socket_type.compare("pub")){
-                    _socket_map.insert(make_pair(socket_name, new pipe_socket(*pipe, zmq::socket_type::pub)));
-                    _socket_map[socket_name]->set(zmq::sockopt::sndhwm, q_size);
-                    _socket_map[socket_name]->bind(fmt::format("inproc://{}", socket_name));
-                }
-                else {
-                    console::warn("Undefined socket type to create dataport");
-                }
-                
-                
+                console::info("Created port({}) : {}", static_cast<int>(socket_type), addr);
                 return _socket_map[socket_name];
             }
 

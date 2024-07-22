@@ -13,7 +13,8 @@
             "port" : 5555,
             "socket_type" : "pub",
             "message_format" : "json",
-            "queue_size" : 100000
+            "queue_size" : 100000,
+            "io_handling":"blocked"
         },
         "image_stream" : {
             "allowable" : "image_stream",
