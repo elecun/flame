@@ -1,5 +1,5 @@
 {
-    "rt_cycle_ns" : 500000000,
+    "rt_cycle_ns" : 100000000,
     "verbose" : 1,
 
     "parameters":{
@@ -8,11 +8,12 @@
 
     "dataport":{
         "status_out" : {
-            "allowable" : "status_out",
             "transport" : "tcp",
+            "host":"*",
             "port" : 5555,
             "socket_type" : "pub",
-            "queue_size" : 1000
+            "message_format" : "json",
+            "queue_size" : 100000
         },
         "image_stream" : {
             "allowable" : "image_stream",

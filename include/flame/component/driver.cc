@@ -46,8 +46,16 @@ namespace flame::component {
 
                         // 2.2 tcp data port
                         else if(!transport.compare("tcp")){
+                            int port = value.value("port", 5555);
+                            string host = value.value("host", "*");
                             pipe_context* pipe = _componentImpl->create_pipe(name.c_str());
-                            _componentImpl->create_port(pipe, name, socket_type, q_size);
+                            _componentImpl->create_port(pipe, 
+                                                name, /* socket name*/ 
+                                                socket_type, /* socket type */ 
+                                                q_size, /* buffer size */ 
+                                                host, /* host address to bind */
+                                                port, /* host port to bind */
+                                                name /* topic if subscriber */);
                         }
                     }
                 }

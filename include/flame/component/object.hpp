@@ -45,16 +45,6 @@ namespace flame::component {
                 return _socket_map[portname];
             }
 
-            void transfer(const string portname, pipe_data msg){
-
-                if(_socket_map.contains(portname)){
-                    _socket_map[portname]->send(msg, zmq::send_flags::dontwait);
-                    console::info("transferred");
-                }
-                else {
-                    console::warn("Undefined data port");
-                }
-            }
 
         private:
             void set_status(dtype_status s) { _status = s; }
@@ -115,6 +105,13 @@ namespace flame::component {
                 else if(!socket_type.compare("pub")){
                     _socket_map.insert(make_pair(socket_name, new pipe_socket(*pipe, zmq::socket_type::pub)));
                     _socket_map[socket_name]->set(zmq::sockopt::sndhwm, q_size);
+                    _socket_map[socket_name]->set(zmq::sockopt::sndbuf, q_size);
+                    _socket_map[socket_name]->bind(fmt::format("tcp://{}:{}", address, port));
+                }
+                else if(!socket_type.compare("push")){
+                    _socket_map.insert(make_pair(socket_name, new pipe_socket(*pipe, zmq::socket_type::push)));
+                    _socket_map[socket_name]->set(zmq::sockopt::sndhwm, q_size);
+                    _socket_map[socket_name]->set(zmq::sockopt::sndbuf, q_size);
                     _socket_map[socket_name]->bind(fmt::format("tcp://{}:{}", address, port));
                 }
                 else {

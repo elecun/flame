@@ -74,24 +74,22 @@ namespace flame {
         return true;
     }
 
-    const char* config_loader::get_bundle_name() const{
+    string config_loader::get_bundle_name() {
         if(!_config.empty()){
             if(_config.contains(__CONFIG_KEY_BUNDLE__)){
                 if(_config[__CONFIG_KEY_BUNDLE__].contains(__CONFIG_KEY_BUNDLE_NAME__)){
                     string name = _config[__CONFIG_KEY_BUNDLE__][__CONFIG_KEY_BUNDLE_NAME__].get<string>();
-                    console::info("found bundle : {}", name);
-                    return name.c_str();
+                    return name;
                 }
             }
         }
-        return nullptr;
+        return string("");
     }
 
     filesystem::path config_loader::get_bundle_path() const{
         if(!_config.empty()){
             filesystem::path _conf_path(_config_abs_path);
             filesystem::path _bundle_path = filesystem::canonical(_conf_path).parent_path() / filesystem::path(__CONFIG_KEY_BUNDLE__);
-            // console::info("path = {}", _bundle_path.string());
             return _bundle_path;
         }
         else{

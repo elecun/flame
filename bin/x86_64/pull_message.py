@@ -4,9 +4,9 @@ import numpy as np
 
 context = zmq.Context()
 
-socket = context.socket(zmq.SUB)
-socket.setsockopt_string(zmq.SUBSCRIBE, "status_out")
+socket = context.socket(zmq.PULL)
 socket.setsockopt(zmq.RCVHWM, 100000) #bytes
+socket.setsockopt(zmq.RCVBUF, 10000)
 socket.connect("tcp://localhost:5555")  # PUB 소켓에 연결
 count = 0
 

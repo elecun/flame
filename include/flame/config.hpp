@@ -79,7 +79,7 @@ namespace flame {
             map<string, string> get_service_topology();
 
             filesystem::path get_bundle_path() const;
-            const char* get_bundle_name() const;
+            string get_bundle_name();
 
         private:
             bool __load(fs::path filepath);
