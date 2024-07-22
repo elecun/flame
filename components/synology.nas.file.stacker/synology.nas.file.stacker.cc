@@ -18,11 +18,12 @@ bool synology_nas_file_stacker::on_init(){
 
 void synology_nas_file_stacker::on_loop(){
 
-    
-    static int n = 0;
-    std::string str_message = fmt::format("push {}",n++);
+    std::string str_message = "test message";
     pipe_data data(str_message.data(), str_message.size());
-    this->transfer("status_out", data);
+    this->get_port("status_out")->send(data, zmq::send_flags::dontwait);
+
+    console::info("sent message");
+
 }
 
 void synology_nas_file_stacker::on_close(){

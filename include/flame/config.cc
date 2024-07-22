@@ -79,6 +79,7 @@ namespace flame {
             if(_config.contains(__CONFIG_KEY_BUNDLE__)){
                 if(_config[__CONFIG_KEY_BUNDLE__].contains(__CONFIG_KEY_BUNDLE_NAME__)){
                     string name = _config[__CONFIG_KEY_BUNDLE__][__CONFIG_KEY_BUNDLE_NAME__].get<string>();
+                    console::info("found bundle : {}", name);
                     return name.c_str();
                 }
             }
