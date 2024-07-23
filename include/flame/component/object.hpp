@@ -96,16 +96,22 @@ namespace flame::component {
                     break;
 
                     case flame::socket_type::push:{
-
+                        _socket_map.insert(make_pair(socket_name, new pipe_socket(*pipe, zmq::socket_type::push)));
+                        _socket_map[socket_name]->set(zmq::sockopt::rcvhwm, q_size);
+                        _socket_map[socket_name]->bind(addr);
                     }
                     break;
 
                     case flame::socket_type::pull:{
-
+                        _socket_map.insert(make_pair(socket_name, new pipe_socket(*pipe, zmq::socket_type::pull)));
+                        _socket_map[socket_name]->set(zmq::sockopt::rcvhwm, q_size);
+                        _socket_map[socket_name]->connect(addr);
                     }
                     break;
+                    default:
+                        console::warn("Undefined socket type you use.");
                 }
-                console::info("Created port({}) : {}", static_cast<int>(socket_type), addr);
+                console::info("[{}] Created port({}) : {}", _name, static_cast<int>(socket_type), addr);
                 return _socket_map[socket_name];
             }
 

@@ -108,7 +108,7 @@ namespace flame::core::task {
             }
         }
         catch(const std::runtime_error& e){
-            console::error("Runtime Error : {}", e.what());
+            console::error("Runtime Error(configure) : {}", e.what());
         }
 
         return false;

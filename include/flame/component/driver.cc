@@ -19,7 +19,7 @@ using namespace std;
 
 namespace flame::component {
 
-    driver::driver(path component_path, pipe_context* pipeline){
+    driver::driver(path component_path, flame::pipe_context* pipeline){
         try{
             fs::path cobject = component_path.replace_extension(__COMPONENT_FILE_EXT__);
             fs::path cprofile = component_path.replace_extension(__PROFILE_FILE_EXT__);
@@ -28,7 +28,7 @@ namespace flame::component {
                 assert(_componentImpl!=nullptr);
                 //1. set parameters
                 _componentImpl->_profile = make_unique<component::profile>(cprofile);
-                _componentImpl->_name = component_path.filename().string();
+                _componentImpl->_name = component_path.stem().string();
                 _componentImpl->_status = dtype_status::STOPPED;
 
                 // 2. assign inproc dataport
@@ -41,7 +41,7 @@ namespace flame::component {
                         
                         // 2.1 build data port [inproc]
                         if(!transport.compare("inproc")){
-                            _componentImpl->create_port(pipeline, name, str2type(socket_type), q_size);
+                            _componentImpl->create_port(pipeline, name, str2type(socket_type), q_size, name);
                         }
 
                         // 2.2 tcp data port
@@ -82,7 +82,7 @@ namespace flame::component {
             }
         }
         catch(const std::runtime_error& e){
-            console::error("Runtime Error : {}", e.what());
+            console::error("Runtime Error(on_init) : {}", e.what());
         }
 
         return false;
@@ -100,7 +100,7 @@ namespace flame::component {
             }
         }
         catch(const std::runtime_error& e){
-            console::error("Runtime Error : {}", e.what());
+            console::error("Runtime Error(on_loop) : {}", e.what());
         }
     }
 
@@ -112,7 +112,7 @@ namespace flame::component {
             }
         }
         catch(const std::runtime_error& e){
-            console::error("Runtime Error : {}", e.what());
+            console::error("Runtime Error(on_close) : {}", e.what());
         }
 
     }
@@ -124,7 +124,7 @@ namespace flame::component {
             }
         }
         catch(const std::runtime_error& e){
-            console::error("Runtime Error : {}", e.what());
+            console::error("Runtime Error(on_message) : {}", e.what());
         }
     }
 
@@ -193,7 +193,7 @@ namespace flame::component {
         _signal_event.sigev_value.sival_ptr = _timer_id; 
         if(timer_create(CLOCK_REALTIME, &_signal_event, &_timer_id)==-1)
             console::error("timer create error");
-        console::info("Trigger Signal ID : {}", _signal_id);
+        console::info("[{}] Trigger Signal ID : {}", get_name(), _signal_id);
     
         const unsigned long long nano = (1000000000L);
         _time_spec.it_value.tv_sec = nsec / nano;

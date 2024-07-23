@@ -29,7 +29,7 @@ namespace fs = std::filesystem;
 namespace flame::component {
     class driver : public component::interface {
         public:
-            driver(fs::path component_path, pipe_context* context); //without extension
+            driver(fs::path component_path, flame::pipe_context* context); //without extension
             virtual ~driver();
 
             bool on_init() override;

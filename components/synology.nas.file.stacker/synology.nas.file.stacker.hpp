@@ -19,9 +19,12 @@
 #include <unordered_map>
 #include <queue>
 #include <mutex>
+#include <flame/component/port.hpp>
+#include <atomic>
+#include <filesystem>
 
 using namespace std;
-
+namespace fs = std::filesystem;
 
 class synology_nas_file_stacker : public flame::component::object {
     public:
@@ -35,19 +38,14 @@ class synology_nas_file_stacker : public flame::component::object {
         void on_message() override;
 
     private:
-        void _subscriber_callback(zmq::context_t& context, const string& topic);
-        void _stacker_cakllback(const string& topic);
+        void _subscribe_image_stream_task();
 
 
     private:
-        thread* _subscriber { nullptr };
-        thread* _stacker { nullptr };
+        thread* _thread_image_stream { nullptr };
 
-        unordered_map<string, queue<string>> _sub_topics;
-        unordered_map<string, mutex> _topic_mutex;
-        unordered_map<string, condition_variable> _topic_csv;
-        bool _thread_stop_signal { false };
-
+        atomic<bool> _thread_stop_signal { false };
+        fs::path _save_root;
 
 
 }; /* class */

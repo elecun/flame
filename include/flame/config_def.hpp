@@ -40,6 +40,5 @@ inline const char* __demangle__(const char* name){
     std::string str(demangled);
     return str.c_str();
 }
-#define _THIS_COMPONENT_ __demangle__((const char*)typeid(*this).name())
 
 #endif

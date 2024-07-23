@@ -17,11 +17,12 @@
 
 using namespace std;
 
-using pipe_context = zmq::context_t;    /* pipeline */
-using pipe_socket = zmq::socket_t;      /* socket */
-using pipe_data = zmq::message_t;       /* message */
-
 namespace flame {
+    
+    using pipe_context = zmq::context_t;    /* pipeline */
+    using pipe_socket = zmq::socket_t;      /* socket */
+    using pipe_data = zmq::message_t;       /* message */
+
     enum class socket_type : int {
         sub = 0,
         pub,
@@ -30,8 +31,8 @@ namespace flame {
     };
 
 
-    socket_type str2type(const std::string& str_type) {
-        static const std::unordered_map<std::string, socket_type> s_type = {
+    inline socket_type str2type(const std::string& str_type) {
+        const std::unordered_map<std::string, socket_type> s_type = {
             {"sub", socket_type::sub},
             {"pub", socket_type::pub},
             {"push", socket_type::push},

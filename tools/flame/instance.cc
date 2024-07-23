@@ -28,11 +28,11 @@ static flame::config_loader* _config_loader = nullptr;
 void cleanup(){
     if(_config_loader)
         delete _config_loader;
+    manager->uninstall();
 }
 
 void cleanup_and_exit(){
     cleanup();
-    console::info("Process will be terminated");
     exit(EXIT_SUCCESS);
 }
 

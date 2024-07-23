@@ -26,10 +26,13 @@ TriggerSource = Line1
 
 #include <flame/component/object.hpp>
 #include <pylon/PylonIncludes.h>
+#include <pylon/BaslerUniversalInstantCamera.h>
 #include <map>
+#include <unordered_map>
 #include <vector>
 #include <thread>
 #include <string>
+#include <atomic>
 
 using namespace std;
 using namespace Pylon;
@@ -47,8 +50,12 @@ class basler_gige_cam_linker : public flame::component::object {
         void on_message() override;
 
     private:
-        map<int, thread> _cam_worker;    //camera capture worker (camera id, thread)
-        map<string, CInstantCamera*> _cameras;  //camera device instance (camera serial number, camera instance)
+        void _image_stream_task(int camera_id, CBaslerUniversalInstantCamera* camera);
+
+    private:
+        vector<thread> _camera_grab_worker;
+        map<int, CBaslerUniversalInstantCamera*> _cameras;
+        std::atomic<bool> _thread_stop_signal { false };
 
 
 
