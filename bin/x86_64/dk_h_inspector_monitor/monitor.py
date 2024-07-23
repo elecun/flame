@@ -19,8 +19,8 @@ import time
 ROOT_PATH = pathlib.Path(__file__).parent.parent
 sys.path.append(ROOT_PATH.as_posix())
 
-from series_analyzer.window import AppWindow
-from util.logger.console import ConsoleLogger
+from window import AppWindow
+from console import ConsoleLogger
 
 
 if __name__ == "__main__":
@@ -28,12 +28,10 @@ if __name__ == "__main__":
     console = ConsoleLogger.get_logger()
     
     parser = argparse.ArgumentParser()
-    parser.add_argument('--config', nargs='?', required=True, help="Configuration File(*.cfg)", default="mro.cfg")
+    parser.add_argument('--config', nargs='?', required=True, help="Configuration File(*.cfg)", default="default.cfg")
     parser.add_argument('--verbose', nargs='?', required=False, help="Enable/Disable verbose", default=True)
     args = parser.parse_args()
-    
-    # get filename
-    current_file_name = os.path.basename(__file__).split('.')[0]
+
     
     app = None
     try:
@@ -41,7 +39,7 @@ if __name__ == "__main__":
             configure = json.load(cfile)
             
             configure["root_path"] = ROOT_PATH
-            configure["app_path"] = (pathlib.Path(__file__).parent / current_file_name)
+            configure["app_path"] = (pathlib.Path(__file__).parent)
             configure["verbose"] = args.verbose
             
             if not all(key in configure for key in ["model"]):
