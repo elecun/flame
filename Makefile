@@ -166,7 +166,7 @@ $(BUILDDIR)UsbCtrl.o:$(CURRENT_DIR)/components/dk.remote.lens.linker/controller/
 
 $(BUILDDIR)LensCtrl.o:$(CURRENT_DIR)/components/dk.remote.lens.linker/controller/LensCtrl.c 
 					$(CC) $(CXXFLAGS) $(INCLUDE_DIR) -I./ -c $^ -o $@
-$(BUILDDIR)LensAccesso:$(CURRENT_DIR)/components/dk.remote.lens.linker/controller/LensAccess.c 
+$(BUILDDIR)LensAccess.o:$(CURRENT_DIR)/components/dk.remote.lens.linker/controller/LensAccess.c 
 					$(CC) $(CXXFLAGS) $(INCLUDE_DIR) -I./ -c $^ -o $@
 
 dk_image_push_unittest.comp:	$(BUILDDIR)dk.image.push.unittest.o
