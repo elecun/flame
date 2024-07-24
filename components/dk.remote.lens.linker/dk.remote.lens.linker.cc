@@ -25,7 +25,7 @@ void dk_remote_lens_linker::on_loop(){
 }
 
 void dk_remote_lens_linker::on_close(){
-	UsbClose();
+	// UsbClose();
 }
 
 void dk_remote_lens_linker::on_message(){
