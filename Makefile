@@ -48,7 +48,7 @@ endif
 ifeq ($(OS),Linux) #for Linux
 #LDFLAGS = -Wl,--export-dynamic -Wl,-rpath,$(LD_LIBRARY_PATH)
 	LDFLAGS = -Wl,--export-dynamic -Wl,-rpath,$(LIBDIR) -L$(LIBDIR)
-	LDLIBS = -pthread -lrt -ldl -lm -lzmq -lpylonbase -lpylonutility -lopencv_core -lopencv_imgcodecs -lopencv_highgui -lopencv_imgproc
+	LDLIBS = -pthread -lrt -ldl -lm -lzmq 
 endif
 
 
@@ -110,7 +110,7 @@ $(BUILDDIR)device.uvccam.multi.o:	$(CURRENT_DIR)/components/device.uvccam.multi/
 
 # for dk project
 basler_gige_cam_linker.comp:	$(BUILDDIR)basler.gige.cam.linker.o
-							$(CC) $(LDFLAGS) $(LD_LIBRARY_PATH) -shared -o $(BUILDDIR)$@ $^ $(LDFLAGS) $(LDLIBS)
+							$(CC) $(LDFLAGS) $(LD_LIBRARY_PATH) -shared -o $(BUILDDIR)$@ $^ $(LDFLAGS) $(LDLIBS) -lopencv_core -lopencv_imgcodecs -lopencv_highgui -lopencv_imgproc -lpylonbase -lpylonutility 
 $(BUILDDIR)basler.gige.cam.linker.o:	$(CURRENT_DIR)/components/basler.gige.cam.linker/basler.gige.cam.linker.cc
 									$(CC) $(CXXFLAGS) $(INCLUDE_DIR) -c $^ -o $@
 
@@ -140,7 +140,7 @@ $(BUILDDIR)dk.sys.op.trigger.o:	$(CURRENT_DIR)/components/dk.sys.op.trigger/dk.s
 								$(CC) $(CXXFLAGS) $(INCLUDE_DIR) -c $^ -o $@
 
 synology_nas_file_stacker.comp:	$(BUILDDIR)synology.nas.file.stacker.o
-						$(CC) $(LDFLAGS) $(LD_LIBRARY_PATH) -shared -o $(BUILDDIR)$@ $^ $(LDLIBS)
+						$(CC) $(LDFLAGS) $(LD_LIBRARY_PATH) -shared -o $(BUILDDIR)$@ $^ $(LDLIBS) -lopencv_core -lopencv_imgcodecs -lopencv_highgui -lopencv_imgproc
 $(BUILDDIR)synology.nas.file.stacker.o:	$(CURRENT_DIR)/components/synology.nas.file.stacker/synology.nas.file.stacker.cc
 							$(CC) $(CXXFLAGS) $(INCLUDE_DIR) -c $^ -o $@
 
