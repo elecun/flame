@@ -149,9 +149,9 @@ ni_pulse_generator.comp:	$(BUILDDIR)ni.pulse.generator.o
 $(BUILDDIR)ni.pulse.generator.o:	$(CURRENT_DIR)/components/ni.pulse.generator/ni.pulse.generator.cc
 									$(CC) $(CXXFLAGS) $(INCLUDE_DIR) -c $^ -o $@
 
-dk_remote_light_linker.comp:	$(BUILDDIR)dk.remote.light.linker.o
+dk_light_linker.comp:	$(BUILDDIR)dk.light.linker.o
 							$(CC) $(LDFLAGS) $(LD_LIBRARY_PATH) -shared -o $(BUILDDIR)$@ $^ $(LDLIBS)
-$(BUILDDIR)dk.remote.light.linker.o:	$(CURRENT_DIR)/components/dk.remote.light.linker/dk.remote.light.linker.cc
+$(BUILDDIR)dk.light.linker.o:	$(CURRENT_DIR)/components/dk.light.linker/dk.light.linker.cc
 									$(CC) $(CXXFLAGS) $(INCLUDE_DIR) -c $^ -o $@
 
 dk_remote_lens_linker.comp:	$(BUILDDIR)dk.remote.lens.linker.o \
@@ -179,9 +179,9 @@ $(BUILDDIR)dk.image.push.unittest.o:	$(CURRENT_DIR)/components/dk.image.push.uni
 
 
 all : flame
-dk_h_inspector : basler_gige_cam_linker.comp  dk_level_data_gateway.comp dk_sdd_inference.comp dk_presdd_inference.comp dk_sys_op_trigger.comp synology_nas_file_stacker.comp ni_pulse_generator.comp 
+dk_h_inspector : basler_gige_cam_linker.comp  dk_level_data_gateway.comp dk_sdd_inference.comp dk_presdd_inference.comp dk_sys_op_trigger.comp synology_nas_file_stacker.comp ni_pulse_generator.comp dk_light_linker.comp
 
-dk_h_inspector_remote : dk_remote_light_linker.comp dk_remote_lens_linker.comp
+dk_h_inspector_remote : dk_remote_lens_linker.comp
 
 dk_h_inspector_monitor : dk_data_aggregator.comp
 

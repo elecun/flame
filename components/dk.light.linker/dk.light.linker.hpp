@@ -15,17 +15,36 @@
 
 #include <flame/component/object.hpp>
 
+const char ARTNET_ID[] = "Art-Net";
+const uint16_t ARTNET_PORT = 6454;
+const int DMX_CHANNELS = 512;
 
-class dk_remote_light_linker : public flame::component::object {
+#pragma pack(push, 1)
+struct ArtnetPacket {
+    char id[8];
+    uint16_t opcode;
+    uint16_t protocolVersion;
+    uint8_t sequence;
+    uint8_t physical;
+    uint16_t universe;
+    uint16_t length;
+    uint8_t data[DMX_CHANNELS];
+};
+#pragma pack(pop)
+
+
+class dk_light_linker : public flame::component::object {
     public:
-        dk_remote_light_linker() = default;
-        virtual ~dk_remote_light_linker() = default;
+        dk_light_linker() = default;
+        virtual ~dk_light_linker() = default;
 
         // default interface functions
         bool on_init() override;
         void on_loop() override;
         void on_close() override;
         void on_message() override;
+
+    private:
 
 }; /* class */
 

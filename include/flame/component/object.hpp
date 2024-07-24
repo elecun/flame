@@ -125,14 +125,19 @@ namespace flame::component {
                 else if(!socket_type.compare("pub")){
                     _socket_map.insert(make_pair(socket_name, new pipe_socket(*pipe, zmq::socket_type::pub)));
                     _socket_map[socket_name]->set(zmq::sockopt::sndhwm, q_size);
-                    _socket_map[socket_name]->set(zmq::sockopt::sndbuf, q_size);
+                    // _socket_map[socket_name]->set(zmq::sockopt::sndbuf, q_size);
                     _socket_map[socket_name]->bind(fmt::format("tcp://{}:{}", address, port));
                 }
                 else if(!socket_type.compare("push")){
                     _socket_map.insert(make_pair(socket_name, new pipe_socket(*pipe, zmq::socket_type::push)));
                     _socket_map[socket_name]->set(zmq::sockopt::sndhwm, q_size);
-                    _socket_map[socket_name]->set(zmq::sockopt::sndbuf, q_size);
+                    // _socket_map[socket_name]->set(zmq::sockopt::sndbuf, q_size);
                     _socket_map[socket_name]->bind(fmt::format("tcp://{}:{}", address, port));
+                }
+                else if(!socket_type.compare("pull")){
+                    _socket_map.insert(make_pair(socket_name, new pipe_socket(*pipe, zmq::socket_type::pull)));
+                    _socket_map[socket_name]->set(zmq::sockopt::sndhwm, q_size);
+                    _socket_map[socket_name]->connect(fmt::format("tcp://{}:{}", address, port));
                 }
                 else {
                     console::warn("Undefined socket type to create dataport");
