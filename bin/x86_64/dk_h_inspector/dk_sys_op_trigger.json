@@ -1,0 +1,35 @@
+{
+    "rt_cycle_ns" : 100000000,
+    "verbose" : 1,
+
+    "parameters":{
+        "use_channels":2,
+        "action":{
+            "trigger_high":{
+                "channel_1":"high", 
+                "channel_2":"high"
+            },
+            "trigger_low":{
+                "channel_1":"low",
+                "channel_2":"low"
+            }
+        },
+        "trigger_low_delay":1000
+    },
+
+    "dataport":{
+        "status_out" : {
+            "transport" : "tcp",
+            "host":"*",
+            "port" : 5556,
+            "socket_type" : "pub",
+            "queue_size" : 1000,
+            "io_handling":"async"
+        },
+        "op_trigger" : {
+            "transport" : "inproc",
+            "socket_type" : "pull",
+            "queue_size" : 1000
+        }
+    }
+}

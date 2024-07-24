@@ -1,24 +1,23 @@
 /**
- * @file dk.sys.op.trigger.hpp
+ * @file dk.ni.daq.handler.hpp
  * @author Byunghun Hwang <bh.hwang@iae.re.kr>
- * @brief Process Start/Stop Signal Trigger
+ * @brief NI DAQ Handler
  * @version 0.1
- * @date 2024-06-30
+ * @date 2024-07-24
  * 
  * @copyright Copyright (c) 2024
  * 
  */
 
-#ifndef FLAME_DK_SYS_OP_TRIGGER_HPP_INCLUDED
-#define FLAME_DK_SYS_OP_TRIGGER_HPP_INCLUDED
+#ifndef FLAME_DK_NI_DAQ_HANDLER_HPP_INCLUDED
+#define FLAME_DK_NI_DAQ_HANDLER_HPP_INCLUDED
 
 #include <flame/component/object.hpp>
 
-
-class dk_sys_op_trigger : public flame::component::object {
+class dk_ni_daq_handler : public flame::component::object {
     public:
-        dk_sys_op_trigger() = default;
-        virtual ~dk_sys_op_trigger() = default;
+        dk_ni_daq_handler() = default;
+        virtual ~dk_ni_daq_handler() = default;
 
         // default interface functions
         bool on_init() override;

@@ -1,26 +1,22 @@
 
-#include "ni.pulse.generator.hpp"
+#include "dk.ni.daq.handler.hpp"
 #include <flame/log.hpp>
 #include <flame/config_def.hpp>
 
-#include <NIDAQmx.h>
-#include <iostream>
-#include <stdexcept>
-#include <string>
-
 using namespace flame;
 
-static ni_pulse_generator* _instance = nullptr;
-flame::component::object* create(){ if(!_instance) _instance = new ni_pulse_generator(); return _instance; }
+static dk_ni_daq_handler* _instance = nullptr;
+flame::component::object* create(){ if(!_instance) _instance = new dk_ni_daq_handler(); return _instance; }
 void release(){ if(_instance){ delete _instance; _instance = nullptr; }}
 
-bool ni_pulse_generator::on_init(){
+bool dk_ni_daq_handler::on_init(){
+    
 
     //connect
     return true;
 }
 
-void ni_pulse_generator::on_loop(){
+void dk_ni_daq_handler::on_loop(){
     
 
     static int n = 0;
@@ -33,10 +29,10 @@ void ni_pulse_generator::on_loop(){
     n++;
 }
 
-void ni_pulse_generator::on_close(){
+void dk_ni_daq_handler::on_close(){
     
 }
 
-void ni_pulse_generator::on_message(){
+void dk_ni_daq_handler::on_message(){
     
 }
