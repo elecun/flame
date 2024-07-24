@@ -96,6 +96,7 @@ void dk_remote_lens_linker::_lens_scan()
 				ModelName(_model);
                 console::info("Lens #{} : {}({})", i, _model, _sn_string);
 				UsbClose();
+				console::info("device closed");
 			}
             else {
                 console::warn("Len devices cannot be scanned");
