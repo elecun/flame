@@ -156,7 +156,8 @@ $(BUILDDIR)dk.remote.light.linker.o:	$(CURRENT_DIR)/components/dk.remote.light.l
 
 dk_remote_lens_linker.comp:	$(BUILDDIR)dk.remote.lens.linker.o \
 							$(BUILDDIR)UsbCtrl.o \
-							$(BUILDDIR)LensCtrl.o
+							$(BUILDDIR)LensCtrl.o \
+							$(BUILDDIR)LensAccess.o
 							$(CC) $(LDFLAGS) $(LD_LIBRARY_PATH) -shared -o $(BUILDDIR)$@ $^ $(LDLIBS) -lslabhidtosmbus -lslabhiddevice -lusb-1.0 -ludev
 $(BUILDDIR)dk.remote.lens.linker.o:	$(CURRENT_DIR)/components/dk.remote.lens.linker/dk.remote.lens.linker.cc
 									$(CC) $(CXXFLAGS) $(INCLUDE_DIR) -c $^ -o $@
@@ -164,6 +165,8 @@ $(BUILDDIR)UsbCtrl.o:$(CURRENT_DIR)/components/dk.remote.lens.linker/controller/
 					$(CC) $(CXXFLAGS) $(INCLUDE_DIR) -I./ -c $^ -o $@
 
 $(BUILDDIR)LensCtrl.o:$(CURRENT_DIR)/components/dk.remote.lens.linker/controller/LensCtrl.c 
+					$(CC) $(CXXFLAGS) $(INCLUDE_DIR) -I./ -c $^ -o $@
+$(BUILDDIR)LensAccesso:$(CURRENT_DIR)/components/dk.remote.lens.linker/controller/LensAccess.c 
 					$(CC) $(CXXFLAGS) $(INCLUDE_DIR) -I./ -c $^ -o $@
 
 dk_image_push_unittest.comp:	$(BUILDDIR)dk.image.push.unittest.o
