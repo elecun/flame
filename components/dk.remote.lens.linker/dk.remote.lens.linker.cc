@@ -84,25 +84,25 @@ void dk_remote_lens_linker::_lens_device_disconnect(){
 
 void dk_remote_lens_linker::_lens_scan()
 {
-    unsigned int _n_devices = 0;
-	char _sn_string[260];	// SnString is 260bytes according to the instructions of the USB IC
-	char _model[25];
-	UsbGetNumDevices(&_n_devices);
-	if(_n_devices >= 1) {
-		for(unsigned short i=0; i<_n_devices; i++) {
-			int retval = UsbGetSnDevice(i, _sn_string);
-			if(retval == SUCCESS){
-				UsbOpen(i);
-				ModelName(_model);
-                console::info("Lens #{} : {}({})", i, _model, _sn_string);
-				UsbClose();
-				console::info("device closed");
-			}
-            else {
-                console::warn("Len devices cannot be scanned");
-            }
-		}
-	}
-	else
-        console::warn("No Lens devices are connected");
+    // unsigned int _n_devices = 0;
+	// char _sn_string[260];	// SnString is 260bytes according to the instructions of the USB IC
+	// char _model[25];
+	// UsbGetNumDevices(&_n_devices);
+	// if(_n_devices >= 1) {
+	// 	for(unsigned short i=0; i<_n_devices; i++) {
+	// 		int retval = UsbGetSnDevice(i, _sn_string);
+	// 		if(retval == SUCCESS){
+	// 			UsbOpen(i);
+	// 			ModelName(_model);
+    //             console::info("Lens #{} : {}({})", i, _model, _sn_string);
+	// 			UsbClose();
+	// 			console::info("device closed");
+	// 		}
+    //         else {
+    //             console::warn("Len devices cannot be scanned");
+    //         }
+	// 	}
+	// }
+	// else
+    //     console::warn("No Lens devices are connected");
 }
