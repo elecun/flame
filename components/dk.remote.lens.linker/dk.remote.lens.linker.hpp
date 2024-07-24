@@ -14,6 +14,10 @@
 
 #include <flame/component/object.hpp>
 
+/* lens controller */
+#include "controller/LensConnect.h"
+#include "controller/LensCtrl.h"
+
 
 class dk_remote_lens_linker : public flame::component::object {
     public:
@@ -25,6 +29,13 @@ class dk_remote_lens_linker : public flame::component::object {
         void on_loop() override;
         void on_close() override;
         void on_message() override;
+
+    private:
+
+        /* lens control functions */
+        void _lens_device_connect(int n_devices);
+        void _lens_device_disconnect();
+        void _lens_scan();
 
 }; /* class */
 

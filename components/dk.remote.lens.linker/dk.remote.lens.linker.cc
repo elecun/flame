@@ -10,29 +10,99 @@ flame::component::object* create(){ if(!_instance) _instance = new dk_remote_len
 void release(){ if(_instance){ delete _instance; _instance = nullptr; }}
 
 bool dk_remote_lens_linker::on_init(){
-    console::info("<{}> call dk_remote_lens_linker on_init", _THIS_COMPONENT_);
 
+    int n_devices = get_profile()->parameters().value("n_devices", 10);
+    _lens_scan();
+    
     //connect
     return true;
 }
 
 void dk_remote_lens_linker::on_loop(){
-    console::info("<{}> call dk_remote_lens_linker on_loop", _THIS_COMPONENT_);
+    
 
-    static int n = 0;
-    std::string message = fmt::format("push {}",n);
-    zmq::message_t zmq_message(message.data(), message.size());
-    this->get_dataport()->send(zmq_message, zmq::send_flags::dontwait);
 
-    console::info("{} : {}", _THIS_COMPONENT_, message);
-
-    n++;
 }
 
 void dk_remote_lens_linker::on_close(){
-    console::info("<{}> call dk_remote_lens_linker on_close", _THIS_COMPONENT_);
+    
 }
 
 void dk_remote_lens_linker::on_message(){
-    console::info("<{}> call dk_remote_lens_linker on_message", _THIS_COMPONENT_);
+    
+}
+
+void dk_remote_lens_linker::_lens_device_connect(int n_devices){
+    
+	int retval = UsbOpen(n_devices);
+	if(retval != SUCCESS){
+        console::error("[{}] {}", get_name(), ErrorTxt(retval));
+		return;
+	}
+
+	retval = UsbSetConfig();
+	if(retval != SUCCESS){
+        console::error("[{}] {}", get_name(), ErrorTxt(retval));
+		return;
+	}
+	console::info("Lens device is connected.");
+
+    // uint16_t capabilities;
+	// CapabilitiesRead(&capabilities);
+	// Status2ReadSet();
+
+	// if(capabilities & ZOOM_MASK) {
+	// 	ZoomParameterReadSet();
+	// 	if((status2 & ZOOM_MASK) == INIT_COMPLETED)
+	// 	    ZoomCurrentAddrReadSet();
+	// 	withZoom = TRUE;
+	// }
+	// if(capabilities & FOCUS_MASK) {
+	// 	FocusParameterReadSet();
+	// 	if ((status2 & FOCUS_MASK) == INIT_COMPLETED)
+	// 		FocusCurrentAddrReadSet();
+	// 	withFocus = TRUE;
+	// }
+	// if(capabilities & IRIS_MASK) {
+	// 	IrisParameterReadSet();
+	// 	if ((status2 & IRIS_MASK) == INIT_COMPLETED)
+	// 		IrisCurrentAddrReadSet();
+	// 	withIris = TRUE;
+	// }
+	// if(capabilities & OPT_FILTER_MASK) {
+	// 	OptFilterParameterReadSet();
+	// 	if ((status2 & OPT_FILTER_MASK) == INIT_COMPLETED)
+	// 		OptFilterCurrentAddrReadSet();
+	// 	withOptFil = TRUE;
+	// }
+	// USBOpen_flag = TRUE;
+}
+
+void dk_remote_lens_linker::_lens_device_disconnect(){
+
+}
+
+void dk_remote_lens_linker::_lens_scan()
+{
+    unsigned int _n_devices = 0;
+	char _sn_string[260];	// SnString is 260bytes according to the instructions of the USB IC
+	char _model[25];
+	UsbGetNumDevices(&_n_devices);
+	if(_n_devices >= 1) {
+		for(unsigned short i=0; i<_n_devices; i++) {
+			int retval = UsbGetSnDevice(i, _sn_string);
+			if(retval == SUCCESS){
+				UsbOpen(i);
+				ModelName(_model);
+                console::info("Lens #{} : {}({})", i, _model, _sn_string);
+				UserIDRead();
+				UsbClose();
+			}
+            else {
+                console::warn("Len devices cannot be scanned");
+            }
+		}
+	}
+	else
+        console::warn("No Lens devices are connected");
 }
