@@ -25,7 +25,7 @@ void dk_remote_lens_linker::on_loop(){
 }
 
 void dk_remote_lens_linker::on_close(){
-    
+    UsbDisconnect();
 }
 
 void dk_remote_lens_linker::on_message(){
@@ -95,7 +95,6 @@ void dk_remote_lens_linker::_lens_scan()
 				UsbOpen(i);
 				ModelName(_model);
                 console::info("Lens #{} : {}({})", i, _model, _sn_string);
-				UserIDRead();
 				UsbClose();
 			}
             else {
