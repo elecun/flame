@@ -1,7 +1,7 @@
 /**
- * @file dk.level.data.gateway.hpp
+ * @file dk.level2.gateway.hpp
  * @author Byunghun Hwang <bh.hwang@iae.re.kr>
- * @brief 
+ * @brief DK Level2 Data Interface component
  * @version 0.1
  * @date 2024-06-30
  * 
@@ -9,16 +9,16 @@
  * 
  */
 
-#ifndef FLAME_DK_LEVEL_DATA_GATEWAY_HPP_INCLUDED
-#define FLAME_DK_LEVEL_DATA_GATEWAY_HPP_INCLUDED
+#ifndef FLAME_DK_LEVEL2_GATEWAY_HPP_INCLUDED
+#define FLAME_DK_LEVEL2_GATEWAY_HPP_INCLUDED
 
 #include <flame/component/object.hpp>
 
 
-class dk_level_data_gateway : public flame::component::object {
+class dk_level2_gateway : public flame::component::object {
     public:
-        dk_level_data_gateway() = default;
-        virtual ~dk_level_data_gateway() = default;
+        dk_level2_gateway() = default;
+        virtual ~dk_level2_gateway() = default;
 
         // default interface functions
         bool on_init() override;

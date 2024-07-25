@@ -1,0 +1,39 @@
+{
+    "rt_cycle_ns" : 1000000000,
+    "verbose" : 1,
+
+    "parameters":{
+        "use_io_channels":2,
+        "action":{
+            "trigger_on":{
+                "channel_1":1, 
+                "channel_2":1
+            },
+            "trigger_off":{
+                "channel_1":0,
+                "channel_2":0
+            }
+        },
+        "trigger_off_delay":1000
+    },
+
+    "dataport":{
+        "status" : {
+            "transport" : "tcp",
+            "host":"*",
+            "port" : 5001,
+            "socket_type" : "pub",
+            "queue_size" : 1000
+        },
+        "op_trigger" : {
+            "transport" : "inproc",
+            "socket_type" : "push",
+            "queue_size" : 1000
+        },
+        "cam_trigger" : {
+            "transport" : "inproc",
+            "socket_type" : "pull",
+            "queue_size" : 1000
+        }
+    }
+}
