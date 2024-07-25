@@ -7,8 +7,9 @@ $ sudo apt-get install build-essential libmosquittopp-dev libmosquitto-dev
 
 # Build on Ubuntu (x86_64 Architecture)
 ```
-$ apt-get install libzmq3-dev
+$ apt-get install libzmq3-dev libboost-atomic-dev
 ```
+- to build 
 
 # Build on Raspberry Pi 4 (ARM64 Architecture)
 ```

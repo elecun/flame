@@ -33,10 +33,12 @@ TriggerSource = Line1
 #include <thread>
 #include <string>
 #include <atomic>
+#include <boost/lockfree/queue.hpp>
 
 using namespace std;
 using namespace Pylon;
 using namespace GenApi;
+using namespace boost;
 
 class basler_gige_cam_linker : public flame::component::object {
     public:
@@ -54,12 +56,11 @@ class basler_gige_cam_linker : public flame::component::object {
         void _status_monitor_task(json parameters);
 
     private:
-        typedef unordered_map<int, pthread_t> worker_t;
-        worker_t _camera_grab_worker;
+        unordered_map<int, pthread_t> _camera_grab_worker;
         map<int, CBaslerUniversalInstantCamera*> _cameras;
         std::atomic<bool> _thread_stop_signal { false };
 
-        pthread_t _status_monitor;
+        pthread_t _status_monitor; /* for status publish */
 
 
 

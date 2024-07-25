@@ -48,7 +48,7 @@ endif
 ifeq ($(OS),Linux) #for Linux
 #LDFLAGS = -Wl,--export-dynamic -Wl,-rpath,$(LD_LIBRARY_PATH)
 	LDFLAGS = -Wl,--export-dynamic -Wl,-rpath,$(LIBDIR) -L$(LIBDIR)
-	LDLIBS = -pthread -lrt -ldl -lm -lzmq 
+	LDLIBS = -pthread -lrt -ldl -lm -lzmq -lboost_atomic
 endif
 
 

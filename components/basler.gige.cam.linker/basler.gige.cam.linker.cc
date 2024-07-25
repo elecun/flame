@@ -32,7 +32,6 @@ bool basler_gige_cam_linker::on_init(){
         }
 
         for(const auto& camera:_cameras){
-            //_camera_grab_worker.emplace_back(thread(&basler_gige_cam_linker::_image_stream_task, this, camera.first, camera.second, get_profile()->parameters()));
             thread worker = thread(&basler_gige_cam_linker::_image_stream_task, this, camera.first, camera.second, get_profile()->parameters());
             _camera_grab_worker[camera.first] = worker.native_handle();
             worker.detach();

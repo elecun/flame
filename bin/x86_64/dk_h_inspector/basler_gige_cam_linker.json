@@ -3,6 +3,7 @@
     "verbose" : 1,
 
     "parameters":{
+        "stream_method":"batch",
         "acqusition_mode":"Continuous",
         "trigger_selector":"FrameStart",
         "trigger_mode":"On",
@@ -24,7 +25,7 @@
     },
 
     "dataport":{
-        "status_out" : {
+        "status" : {
             "transport" : "tcp",
             "host":"*",
             "port" : 5556,
@@ -34,7 +35,7 @@
         },
         "image_stream" : {
             "transport" : "inproc",
-            "socket_type" : "push",
+            "socket_type" : "pub",
             "queue_size" : 5000
         }
     }
