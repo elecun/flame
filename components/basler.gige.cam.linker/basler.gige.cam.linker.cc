@@ -33,10 +33,12 @@ bool basler_gige_cam_linker::on_init(){
 
         for(const auto& camera:_cameras){
             //_camera_grab_worker.emplace_back(thread(&basler_gige_cam_linker::_image_stream_task, this, camera.first, camera.second, get_profile()->parameters()));
-            std::thread worker = std::thread(&basler_gige_cam_linker::_image_stream_task, this, camera.first, camera.second, get_profile()->parameters());
+            thread worker = thread(&basler_gige_cam_linker::_image_stream_task, this, camera.first, camera.second, get_profile()->parameters());
             _camera_grab_worker[camera.first] = worker.native_handle();
             worker.detach();
         }
+
+        thread monitor = thread(&basler_gige_cam_linker::_status_monitor_task, this, get_profile()->parameters());
 
     }
     catch(const GenericException& e){
@@ -53,6 +55,7 @@ bool basler_gige_cam_linker::on_init(){
 
 void basler_gige_cam_linker::on_loop(){
 
+    
 
 }
 
@@ -82,6 +85,11 @@ void basler_gige_cam_linker::on_message(){
     
 }
 
+void basler_gige_cam_linker::_status_monitor_task(json parameters){
+    while(!_thread_stop_signal.load()){
+        this_thread::sleep_for(chrono::milliseconds(1000));
+    }
+}
 
 void basler_gige_cam_linker::_image_stream_task(int camera_id, CBaslerUniversalInstantCamera* camera, json parameters){
     try{
