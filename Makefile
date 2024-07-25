@@ -139,9 +139,9 @@ dk_sys_op_trigger.comp:	$(BUILDDIR)dk.sys.op.trigger.o
 $(BUILDDIR)dk.sys.op.trigger.o:	$(CURRENT_DIR)/components/dk.sys.op.trigger/dk.sys.op.trigger.cc
 								$(CC) $(CXXFLAGS) $(INCLUDE_DIR) -c $^ -o $@
 
-synology_nas_file_stacker.comp:	$(BUILDDIR)synology.nas.file.stacker.o
+nas_file_stacker.comp:	$(BUILDDIR)nas.file.stacker.o
 						$(CC) $(LDFLAGS) $(LD_LIBRARY_PATH) -shared -o $(BUILDDIR)$@ $^ $(LDLIBS) -lopencv_core -lopencv_imgcodecs -lopencv_highgui -lopencv_imgproc
-$(BUILDDIR)synology.nas.file.stacker.o:	$(CURRENT_DIR)/components/synology.nas.file.stacker/synology.nas.file.stacker.cc
+$(BUILDDIR)nas.file.stacker.o:	$(CURRENT_DIR)/components/nas.file.stacker/nas.file.stacker.cc
 							$(CC) $(CXXFLAGS) $(INCLUDE_DIR) -c $^ -o $@
 
 ni_pulse_generator.comp:	$(BUILDDIR)ni.pulse.generator.o
@@ -184,7 +184,7 @@ $(BUILDDIR)dk.image.push.unittest.o:	$(CURRENT_DIR)/components/dk.image.push.uni
 
 
 all : flame
-dk_h_inspector : basler_gige_cam_linker.comp  dk_level_data_gateway.comp dk_sdd_inference.comp dk_presdd_inference.comp dk_sys_op_trigger.comp synology_nas_file_stacker.comp ni_pulse_generator.comp dk_light_linker.comp dk_ni_daq_handler.comp
+dk_h_inspector : basler_gige_cam_linker.comp  dk_level_data_gateway.comp dk_sdd_inference.comp dk_presdd_inference.comp dk_sys_op_trigger.comp nas_file_stacker.comp ni_pulse_generator.comp dk_light_linker.comp dk_ni_daq_handler.comp
 
 dk_h_inspector_remote : dk_remote_lens_linker.comp
 
@@ -192,7 +192,7 @@ dk_h_inspector_monitor : dk_data_aggregator.comp
 
 dk_h_unittest : dk_image_push_unittest.comp
 
-components : device.uvccam.multi.comp data_push.comp data_pull_test.comp basler_gige_cam_linker.comp dk_gui_supporter.comp dk_level_data_gateway.comp dk_sdd_inference.comp dk_presdd_inference.comp dk_sys_op_trigger.comp synology_nas_file_stacker.comp ni_pulse_generator.comp dk_remote_light_linker.comp dk_remote_lens_linker.comp
+components : device.uvccam.multi.comp data_push.comp data_pull_test.comp basler_gige_cam_linker.comp dk_gui_supporter.comp dk_level_data_gateway.comp dk_sdd_inference.comp dk_presdd_inference.comp dk_sys_op_trigger.comp nas_file_stacker.comp ni_pulse_generator.comp dk_remote_light_linker.comp dk_remote_lens_linker.comp
 
 deploy : FORCE
 	cp $(BUILDDIR)*.comp $(BUILDDIR)flame $(BINDIR)

@@ -91,9 +91,9 @@ namespace flame {
         }
         else {
             for(bundle_container_t::iterator itr = _bundle_container.begin(); itr!=_bundle_container.end(); ++itr){
+                console::info("[*] Uninstalling component <{}>", itr->second->get_name());
                 itr->second->on_close();
                 delete itr->second;
-                console::info("[*] Uninstalled component <{}>", itr->second->get_name());
             }
             _bundle_container.clear();
             _component_uid_map.clear();

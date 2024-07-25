@@ -33,6 +33,7 @@ void cleanup(){
 
 void cleanup_and_exit(){
     cleanup();
+    console::info("successfully terminated");
     exit(EXIT_SUCCESS);
 }
 

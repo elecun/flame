@@ -50,10 +50,11 @@ class basler_gige_cam_linker : public flame::component::object {
         void on_message() override;
 
     private:
-        void _image_stream_task(int camera_id, CBaslerUniversalInstantCamera* camera);
+        void _image_stream_task(int camera_id, CBaslerUniversalInstantCamera* camera, json parameters);
 
     private:
-        vector<thread> _camera_grab_worker;
+        typedef unordered_map<int, pthread_t> worker_t;
+        worker_t _camera_grab_worker;
         map<int, CBaslerUniversalInstantCamera*> _cameras;
         std::atomic<bool> _thread_stop_signal { false };
 

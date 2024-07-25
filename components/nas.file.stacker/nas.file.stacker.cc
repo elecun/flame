@@ -1,5 +1,5 @@
 
-#include "synology.nas.file.stacker.hpp"
+#include "nas.file.stacker.hpp"
 #include <flame/log.hpp>
 #include <flame/config_def.hpp>
 #include <chrono>
@@ -7,22 +7,22 @@
 
 using namespace flame;
 
-static synology_nas_file_stacker* _instance = nullptr;
-flame::component::object* create(){ if(!_instance) _instance = new synology_nas_file_stacker(); return _instance; }
+static nas_file_stacker* _instance = nullptr;
+flame::component::object* create(){ if(!_instance) _instance = new nas_file_stacker(); return _instance; }
 void release(){ if(_instance){ delete _instance; _instance = nullptr; }}
 
-bool synology_nas_file_stacker::on_init(){
+bool nas_file_stacker::on_init(){
 
     fs::path save_path = fs::path(get_profile()->parameters().value("save_root", "/mnt/sddnas"));
     console::info("[{}] Mounted NAS Storage : {}", get_name(), save_path.string());
 
-    _thread_image_stream = new thread(&synology_nas_file_stacker::_subscribe_image_stream_task, this);
+    _thread_image_stream = new thread(&nas_file_stacker::_subscribe_image_stream_task, this);
     
     //connect
     return true;
 }
 
-void synology_nas_file_stacker::on_loop(){
+void nas_file_stacker::on_loop(){
 
     // 1. component working status publish
 
@@ -36,7 +36,7 @@ void synology_nas_file_stacker::on_loop(){
 
 }
 
-void synology_nas_file_stacker::on_close(){
+void nas_file_stacker::on_close(){
     _thread_stop_signal.store(true);
     _thread_image_stream->join();
 
@@ -44,12 +44,12 @@ void synology_nas_file_stacker::on_close(){
         delete _thread_image_stream;
 }
 
-void synology_nas_file_stacker::on_message(){
+void nas_file_stacker::on_message(){
     
 }
 
 
-void synology_nas_file_stacker::_subscribe_image_stream_task()
+void nas_file_stacker::_subscribe_image_stream_task()
 {
     while(!_thread_stop_signal.load()){
         

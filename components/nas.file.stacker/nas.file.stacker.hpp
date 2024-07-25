@@ -1,5 +1,5 @@
 /**
- * @file synology.nas.file.stacker.hpp
+ * @file nas.file.stacker.hpp
  * @author Byunghun Hwang <bh.hwang@iae.re.kr>
  * @brief File Stacker for Synology NAS Device
  * @version 0.1
@@ -9,8 +9,8 @@
  * 
  */
 
-#ifndef FLAME_SYNOLOGY_NAS_FILE_STACKER_HPP_INCLUDED
-#define FLAME_SYNOLOGY_NAS_FILE_STACKER_HPP_INCLUDED
+#ifndef FLAME_NAS_FILE_STACKER_HPP_INCLUDED
+#define FLAME_NAS_FILE_STACKER_HPP_INCLUDED
 
 #include <flame/component/object.hpp>
 #include <thread>
@@ -26,10 +26,10 @@
 using namespace std;
 namespace fs = std::filesystem;
 
-class synology_nas_file_stacker : public flame::component::object {
+class nas_file_stacker : public flame::component::object {
     public:
-        synology_nas_file_stacker() = default;
-        virtual ~synology_nas_file_stacker() = default;
+        nas_file_stacker() = default;
+        virtual ~nas_file_stacker() = default;
 
         // default interface functions
         bool on_init() override;

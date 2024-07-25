@@ -32,19 +32,10 @@ bool basler_gige_cam_linker::on_init(){
         }
 
         for(const auto& camera:_cameras){
-            //_camera_grab_worker.emplace_back(new thread(&basler_gige_cam_linker::_image_stream_task, this, camera.first, camera.second));
-            _camera_grab_worker.emplace_back(thread(&basler_gige_cam_linker::_image_stream_task, this, camera.first, camera.second));
-        }
-
-        // 3. read parameters
-        json param_cameras = get_profile()->parameters()["cameras"];
-        if(param_cameras.is_array()){
-            for(const auto& cam: param_cameras){
-                int id = cam["id"].get<int>();          //camera id (by user)
-                string ip = cam["ip"].get<string>();    //ip address
-                string sn = cam["sn"].get<string>();    //camera serial number
-                //console::info("+ {}, {}, {}", id, ip, sn);
-            }
+            //_camera_grab_worker.emplace_back(thread(&basler_gige_cam_linker::_image_stream_task, this, camera.first, camera.second, get_profile()->parameters()));
+            std::thread worker = std::thread(&basler_gige_cam_linker::_image_stream_task, this, camera.first, camera.second, get_profile()->parameters());
+            _camera_grab_worker[camera.first] = worker.native_handle();
+            worker.detach();
         }
 
     }
@@ -57,79 +48,33 @@ bool basler_gige_cam_linker::on_init(){
         return false;
     }
 
-    
-
-    // pylon initialization
-    // PylonInitialize();
-
-    // try {
-
-    //     //finding camera device
-    //     CTlFactory& tlFactory = CTlFactory::GetInstance();
-    //     DeviceInfoList_t devices;
-    //     tlFactory.EnumerateDevices(devices);
-    //     console::info("Found {} cameras", devices.size());
-    //     if(devices.size()<1){
-    //         throw RUNTIME_EXCEPTION("No camera found!");
-    //     }
-
-    //     //create device
-    //     for(int idx=0;idx<(int)devices.size();idx++){
-    //         _cameras.insert(make_pair(devices[idx].GetSerialNumber(), new CInstantCamera(tlFactory.CreateDevice(devices[idx]))));
-    //         console::info("Use {}({})", devices[idx].GetFriendlyName().c_str(), devices[idx].GetIpAddress().c_str());
-    //     }
-
-    //     //camera open & configure hardware trigger
-    //     for(const auto& camera:_cameras){
-    //         camera.second->Open();
-            
-    //         /*
-    //         Hardware Triggering Setting parameters
-
-    //         TriggerSelector = FrameStart
-    //         TriggerMode = On
-    //         TriggerActivation = RisingEdge
-    //         TriggerSource = Line1
-    //         */
-
-    //         CEnumParameter(camera.second->GetNodeMap(), "TriggerSelector").SetValue("FrameStart");
-    //         CEnumParameter(camera.second->GetNodeMap(), "TriggerMode").SetValue("On");
-    //         CEnumParameter(camera.second->GetNodeMap(), "TriggerSource").SetValue("Line1");
-    //         CEnumParameter(camera.second->GetNodeMap(), "TriggerActivation").SetValue("RisingEdge");
-
-    //     }
-    // }
-    // catch(const GenericException& e){
-    //     console::error("Pylon Generic Exception : {}", e.GetDescription());
-    //     return false;
-    // }
-
-    //connect
     return true;
 }
 
 void basler_gige_cam_linker::on_loop(){
 
-    // static int n = 0;
-    // std::string message = fmt::format("push {}",n);
-    // zmq::message_t zmq_message(message.data(), message.size());
-    // this->get_dataport()->send(zmq_message, zmq::send_flags::dontwait);
 
-    // console::info("{} : {}", _THIS_COMPONENT_, message);
-
-    // n++;
 }
 
 void basler_gige_cam_linker::on_close(){
 
-    _thread_stop_signal.store(true);
+    /* camera grab thread will be killed */
+    for(auto& worker:_camera_grab_worker){
+        pthread_cancel(worker.second);
+        pthread_join(worker.second, nullptr);
+    }
+    _camera_grab_worker.clear();
 
-    //camera close
-    for(auto& camera: _cameras){
-        delete camera.second;
+    /* camera close and delete */
+    for(auto& camera:_cameras){
+        if(camera.second->IsOpen()){
+            camera.second->StopGrabbing();
+            camera.second->Close();
+            delete camera.second;
+        }
+        
     }
 
-    // pylob cleanup
     PylonTerminate();
 }
 
@@ -138,30 +83,53 @@ void basler_gige_cam_linker::on_message(){
 }
 
 
-void basler_gige_cam_linker::_image_stream_task(int camera_id, CBaslerUniversalInstantCamera* camera){
+void basler_gige_cam_linker::_image_stream_task(int camera_id, CBaslerUniversalInstantCamera* camera, json parameters){
     try{
+        pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, nullptr);
+        pthread_setcanceltype(PTHREAD_CANCEL_DEFERRED, nullptr);
+
         camera->Open();
-        camera->AcquisitionMode.SetValue("Continuous");
+        string acqusition_mode = parameters.value("acqusition_mode", "Continuous");
+        string trigger_selector = parameters.value("trigger_selector", "FrameStart");
+        string trigger_mode = parameters.value("trigger_mode", "On");
+        string trigger_source = parameters.value("trigger_source", "Line2");
+        string trigger_activation = parameters.value("trigger_activation", "RisingEdge");
+        int heartbeat_timeout = parameters.value("heartbeat_timeout", 5000);
+
+        camera->AcquisitionMode.SetValue(acqusition_mode.c_str());
+        camera->TriggerSelector.SetValue(trigger_selector.c_str());
+        camera->TriggerMode.SetValue(trigger_mode.c_str());
+        camera->TriggerSource.SetValue(trigger_source.c_str());
+        camera->TriggerActivation.SetValue(trigger_activation.c_str());
+        camera->GevHeartbeatTimeout.SetValue(heartbeat_timeout);
         camera->StartGrabbing(Pylon::GrabStrategy_OneByOne, Pylon::GrabLoop_ProvidedByUser);
         CGrabResultPtr ptrGrabResult;
 
         while(camera->IsGrabbing() && !_thread_stop_signal.load()){
-            camera->RetrieveResult(5000, ptrGrabResult, TimeoutHandling_ThrowException);
-            if(ptrGrabResult->GrabSucceeded()){
-                const uint8_t* pImageBuffer = (uint8_t*)ptrGrabResult->GetBuffer();
-                console::info("> camera {} captured : {}x{}", camera_id, ptrGrabResult->GetWidth(), ptrGrabResult->GetHeight());
+            try{
+                camera->RetrieveResult(5000, ptrGrabResult, Pylon::TimeoutHandling_ThrowException); //trigger mode makes it blocked
+                if(ptrGrabResult.IsValid()){
+                    if(ptrGrabResult->GrabSucceeded()){
+                        const uint8_t* pImageBuffer = (uint8_t*)ptrGrabResult->GetBuffer();
+                        console::info("> camera {} captured : {}x{}", camera_id, ptrGrabResult->GetWidth(), ptrGrabResult->GetHeight());
+                    }
+                    else{
+                        console::warn("[{}] Error-code({}) : {}", get_name(), ptrGrabResult->GetErrorCode(), ptrGrabResult->GetErrorDescription().c_str());
+                    }
+                }
+                else
+                    break;
             }
-            else{
-                console::warn("[{}] Error-code({}) : {}", get_name(), ptrGrabResult->GetErrorCode(), ptrGrabResult->GetErrorDescription().c_str());
+            catch(Pylon::TimeoutException& e){
+                console::error("[{}] Camera {} Timeout exception occurred! {}", get_name(), camera_id, e.GetDescription());
+                break;
             }
         }
 
         camera->StopGrabbing();
         camera->Close();
-
-        console::info("camera {} is closed", camera_id);
     }
     catch(const GenericException& e){
-        console::error("[{}] {}", get_name(), e.what());
+        console::error("[{}] {}", get_name(), e.GetDescription());
     }
 }
