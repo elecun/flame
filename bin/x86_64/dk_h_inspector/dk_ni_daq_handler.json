@@ -3,6 +3,8 @@
     "verbose" : 1,
 
     "parameters":{
+        "daq_device_name":"Dev1",
+        "daq_counter_channel":"ctr0",
         "use_io_channels":2,
         "action":{
             "trigger_on":{

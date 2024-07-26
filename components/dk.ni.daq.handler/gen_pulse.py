@@ -18,10 +18,13 @@ def generate_pulses(device_name, counter_channel, frequency, number_of_pulses):
         )
 
         # 펄스 수 설정
+        # task.timing.cfg_implicit_timing(
+        #     sample_mode=AcquisitionType.INFINITE, 
+        #     samps_per_chan=number_of_pulses
+        # )
         task.timing.cfg_implicit_timing(
-            sample_mode=AcquisitionType.FINITE, 
-            samps_per_chan=number_of_pulses
-        )
+            sample_mode=AcquisitionType.CONTINUOUS)
+        
 
         # 펄스 생성 시작
         task.start()
@@ -32,4 +35,4 @@ def generate_pulses(device_name, counter_channel, frequency, number_of_pulses):
         # print(f"{number_of_pulses}개의 펄스가 {frequency}Hz 주파수로 생성되었습니다.")
 
 # 함수 사용 예시
-generate_pulses('Dev1', 'ctr0', 30, 100)  # 30[FPS]이미지 획득 속도 / 1,000[Pulses] 이미지 갯수
+generate_pulses('Dev1', 'ctr0', 30, 1)  # 30[FPS]이미지 획득 속도 / 1,000[Pulses] 이미지 갯수

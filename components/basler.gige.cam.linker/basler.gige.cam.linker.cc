@@ -34,10 +34,11 @@ bool basler_gige_cam_linker::on_init(){
         for(const auto& camera:_cameras){
             thread worker = thread(&basler_gige_cam_linker::_image_stream_task, this, camera.first, camera.second, get_profile()->parameters());
             _camera_grab_worker[camera.first] = worker.native_handle();
+            _camera_grab_counter[camera.first] = 0;
             worker.detach();
         }
 
-        thread monitor = thread(&basler_gige_cam_linker::_status_monitor_task, this, get_profile()->parameters());
+        // thread monitor = thread(&basler_gige_cam_linker::_status_monitor_task, this, get_profile()->parameters());
 
     }
     catch(const GenericException& e){
@@ -54,7 +55,26 @@ bool basler_gige_cam_linker::on_init(){
 
 void basler_gige_cam_linker::on_loop(){
 
-    
+    /* camera counter check for test */
+    string grab_counter;
+    for(auto& camera:_camera_grab_counter){
+        grab_counter += fmt::format("{}:{}\t", camera.first, camera.second);
+    }
+
+    /* create message */
+    map<string, unsigned long long> grab_total;
+    for(auto& camera:_camera_grab_counter){
+        grab_total.insert(make_pair(fmt::format("camera_{}", camera.first), camera.second));
+    }
+    json info = grab_total;
+    string status_message = info.dump();
+
+    /* camera grabbing info publish */
+    string topic = fmt::format("{}/{}", get_name(), "/status");
+    pipe_data topic_msg(topic.data(), topic.size());
+    pipe_data end_msg(status_message.data(), status_message.size());
+    get_port("status")->send(topic_msg, zmq::send_flags::sndmore);
+    get_port("status")->send(end_msg, zmq::send_flags::dontwait);
 
 }
 
@@ -118,7 +138,8 @@ void basler_gige_cam_linker::_image_stream_task(int camera_id, CBaslerUniversalI
                 if(ptrGrabResult.IsValid()){
                     if(ptrGrabResult->GrabSucceeded()){
                         const uint8_t* pImageBuffer = (uint8_t*)ptrGrabResult->GetBuffer();
-                        console::info("> camera {} captured : {}x{}", camera_id, ptrGrabResult->GetWidth(), ptrGrabResult->GetHeight());
+                        _camera_grab_counter[camera_id]++;
+                        //console::info("> camera {} captured : {}x{}", camera_id, ptrGrabResult->GetWidth(), ptrGrabResult->GetHeight());
                     }
                     else{
                         console::warn("[{}] Error-code({}) : {}", get_name(), ptrGrabResult->GetErrorCode(), ptrGrabResult->GetErrorDescription().c_str());

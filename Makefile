@@ -114,6 +114,11 @@ basler_gige_cam_linker.comp:	$(BUILDDIR)basler.gige.cam.linker.o
 $(BUILDDIR)basler.gige.cam.linker.o:	$(CURRENT_DIR)/components/basler.gige.cam.linker/basler.gige.cam.linker.cc
 									$(CC) $(CXXFLAGS) $(INCLUDE_DIR) -c $^ -o $@
 
+dk_image_data_router.comp:	$(BUILDDIR)dk.image.data.router.o
+							$(CC) $(LDFLAGS) $(LD_LIBRARY_PATH) -shared -o $(BUILDDIR)$@ $^ $(LDFLAGS) $(LDLIBS) -lopencv_core -lopencv_imgcodecs -lopencv_highgui -lopencv_imgproc -lpylonbase -lpylonutility 
+$(BUILDDIR)dk.image.data.router.o:	$(CURRENT_DIR)/components/dk.image.data.router/dk.image.data.router.cc
+									$(CC) $(CXXFLAGS) $(INCLUDE_DIR) -c $^ -o $@
+
 dk_gui_supporter.comp:	$(BUILDDIR)dk.gui.supporter.o
 						$(CC) $(LDFLAGS) $(LD_LIBRARY_PATH) -shared -o $(BUILDDIR)$@ $^ $(LDLIBS)
 $(BUILDDIR)dk.gui.supporter.o:	$(CURRENT_DIR)/components/dk.gui.supporter/dk.gui.supporter.cc
@@ -144,13 +149,8 @@ nas_file_stacker.comp:	$(BUILDDIR)nas.file.stacker.o
 $(BUILDDIR)nas.file.stacker.o:	$(CURRENT_DIR)/components/nas.file.stacker/nas.file.stacker.cc
 							$(CC) $(CXXFLAGS) $(INCLUDE_DIR) -c $^ -o $@
 
-ni_pulse_generator.comp:	$(BUILDDIR)ni.pulse.generator.o
-							$(CC) $(LDFLAGS) $(LD_LIBRARY_PATH) -shared -o $(BUILDDIR)$@ $^ $(LDLIBS)
-$(BUILDDIR)ni.pulse.generator.o:	$(CURRENT_DIR)/components/ni.pulse.generator/ni.pulse.generator.cc
-									$(CC) $(CXXFLAGS) $(INCLUDE_DIR) -c $^ -o $@
-
 dk_ni_daq_handler.comp:	$(BUILDDIR)dk.ni.daq.handler.o
-							$(CC) $(LDFLAGS) $(LD_LIBRARY_PATH) -shared -o $(BUILDDIR)$@ $^ $(LDLIBS)
+							$(CC) $(LDFLAGS) $(LD_LIBRARY_PATH) -shared -o $(BUILDDIR)$@ $^ $(LDLIBS) -lnidaqmx
 $(BUILDDIR)dk.ni.daq.handler.o:	$(CURRENT_DIR)/components/dk.ni.daq.handler/dk.ni.daq.handler.cc
 									$(CC) $(CXXFLAGS) $(INCLUDE_DIR) -c $^ -o $@
 
@@ -184,7 +184,7 @@ $(BUILDDIR)dk.image.push.unittest.o:	$(CURRENT_DIR)/components/dk.image.push.uni
 
 
 all : flame
-dk_h_inspector : basler_gige_cam_linker.comp  dk_level_data_gateway.comp dk_sdd_inference.comp dk_presdd_inference.comp dk_sys_op_trigger.comp nas_file_stacker.comp ni_pulse_generator.comp dk_light_linker.comp dk_ni_daq_handler.comp
+dk_h_inspector : basler_gige_cam_linker.comp  dk_level_data_gateway.comp dk_sdd_inference.comp dk_presdd_inference.comp dk_sys_op_trigger.comp nas_file_stacker.comp ni_pulse_generator.comp dk_light_linker.comp dk_ni_daq_handler.comp dk_image_data_router.comp
 
 dk_h_inspector_remote : dk_remote_lens_linker.comp
 

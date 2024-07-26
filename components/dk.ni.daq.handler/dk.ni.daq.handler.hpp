@@ -13,6 +13,8 @@
 #define FLAME_DK_NI_DAQ_HANDLER_HPP_INCLUDED
 
 #include <flame/component/object.hpp>
+#include <string>
+#include <NIDAQmx.h>
 
 class dk_ni_daq_handler : public flame::component::object {
     public:
@@ -24,6 +26,13 @@ class dk_ni_daq_handler : public flame::component::object {
         void on_loop() override;
         void on_close() override;
         void on_message() override;
+
+    private:
+        bool _pulse_generate(double freq, unsigned long long n_pulses);
+
+    private:
+        string _daq_device_name {""};
+        string _daq_counter_channel {""};
 
 }; /* class */
 

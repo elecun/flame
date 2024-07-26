@@ -57,10 +57,12 @@ class basler_gige_cam_linker : public flame::component::object {
 
     private:
         unordered_map<int, pthread_t> _camera_grab_worker;
+        unordered_map<int, unsigned long long> _camera_grab_counter;
         map<int, CBaslerUniversalInstantCamera*> _cameras;
         std::atomic<bool> _thread_stop_signal { false };
 
         pthread_t _status_monitor; /* for status publish */
+        
 
 
 
