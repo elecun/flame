@@ -6,11 +6,11 @@ context = zmq.Context()
 
 # PUB 소켓 생성
 socket = context.socket(zmq.PUB)
-socket.bind("tcp://*:5555")  # 5555 포트에서 수신 대기
+socket.bind("tcp://*:5008")  # 5555 포트에서 수신 대기
 
 while True:
     # 발행할 메시지 생성
-    topic = "status_out"
+    topic = "simulation"
     message = "Temperature: 20C"
 
     # 메시지 발행
