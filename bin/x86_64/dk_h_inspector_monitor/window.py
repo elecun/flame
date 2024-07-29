@@ -21,7 +21,7 @@ except ImportError:
 from datetime import datetime
 from PIL import ImageQt, Image
 from sys import platform
-import paho.mqtt.client as mqtt
+# import paho.mqtt.client as mqtt
 import pyqtgraph as graph
 
 from console import ConsoleLogger
@@ -36,17 +36,8 @@ class AppWindow(QMainWindow):
         
         self.__console = ConsoleLogger.get_logger()
         
-        self.__frame_win_series_layout = QVBoxLayout()
-        self.__frame_win_series_plot = graph.PlotWidget()
-        self.__frame_win_fft_layout = QVBoxLayout()
-        self.__frame_win_fft_plot = graph.PlotWidget()
-        self.__frame_win_spectorgram_layout = QVBoxLayout()
-        self.__frame_win_spectogram_plot = graph.PlotWidget()
-        
-        # model load
-        # self.__model = PurgeFanFaultClassification_Resnet("resnet9_pfc.pth")
-        # if not self.__model.exist():
-        #     QMessageBox.critical(self, "Error", f"Model does not exist")
+        self.__frame_win_defect_layout = QVBoxLayout()
+        self.__frame_win_defect_plot = graph.PlotWidget()
         
         # local variables
         self.__current_csv_file = None
@@ -62,25 +53,12 @@ class AppWindow(QMainWindow):
                     raise Exception(f"Cannot found UI file : {ui_path}")
                 
                 # frame window components preparation
-                self.__frame_win_series = self.findChild(QFrame, name="frame_series_view")
-                self.__frame_win_series_layout.addWidget(self.__frame_win_series_plot)
-                self.__frame_win_series_layout.setContentsMargins(0, 0, 0, 0)
-                self.__frame_win_series_plot.setBackground('w')
-                self.__frame_win_series_plot.showGrid(x=True, y=True)
-                self.__frame_win_series.setLayout(self.__frame_win_series_layout)
-                
-                self.__frame_win_fft = self.findChild(QFrame, name="frame_fft_view")
-                self.__frame_win_fft_layout.addWidget(self.__frame_win_fft_plot)
-                self.__frame_win_fft_layout.setContentsMargins(0, 0, 0, 0)
-                self.__frame_win_fft_plot.setBackground('w')
-                self.__frame_win_fft_plot.showGrid(x=True, y=True)
-                self.__frame_win_fft.setLayout(self.__frame_win_fft_layout)
-                
-                self.__frame_win_spectogram = self.findChild(QFrame, name="frame_spectogram_view")
-                self.__frame_win_spectorgram_layout.addWidget(self.__frame_win_spectogram_plot)
-                self.__frame_win_spectorgram_layout.setContentsMargins(0, 0, 0, 0)
-                self.__frame_win_spectogram_plot.setBackground('w')
-                self.__frame_win_spectogram.setLayout(self.__frame_win_spectorgram_layout)
+                self.__frame_win_defect = self.findChild(QFrame, name="frame_defect_loc_view")
+                self.__frame_win_defect_layout.addWidget(self.__frame_win_defect_plot)
+                self.__frame_win_defect_layout.setContentsMargins(0, 0, 0, 0)
+                self.__frame_win_defect.setBackground('w')
+                self.__frame_win_defect.showGrid(x=True, y=True)
+                self.__frame_win_defect.setLayout(self.__frame_win_defect_layout)
 
                 
         except Exception as e:
