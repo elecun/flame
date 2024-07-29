@@ -132,6 +132,10 @@ class AppWindow(QMainWindow):
         count = 0
         try:
             while True:
+                image_recv = cam_monitor_socket.recv()
+                nparr = np.frombuffer(image_recv, np.uint8)
+                frame = cv2.imdecode(nparr, cv2.IMREAD_GRAYSCALE)
+
                 print(f"camera image received : {count}")
                 count = count + 1
         except KeyboardInterrupt:
