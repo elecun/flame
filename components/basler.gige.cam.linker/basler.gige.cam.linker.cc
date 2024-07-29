@@ -146,7 +146,7 @@ void basler_gige_cam_linker::_image_stream_task(int camera_id, CBaslerUniversalI
                         cv::Mat image(ptrGrabResult->GetHeight(), ptrGrabResult->GetWidth(), CV_8UC1, (void*)pImageBuffer);
                         
                         // set topic
-                        string topic = fmt::format("{}/{}", get_name(), "/status");
+                        string topic = fmt::format("{}/{}", get_name(), "/image_stream_monitor");
                         pipe_data topic_msg(topic.data(), topic.size());
 
                         // set image data

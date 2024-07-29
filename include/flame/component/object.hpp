@@ -127,6 +127,7 @@ namespace flame::component {
                     _socket_map[socket_name]->set(zmq::sockopt::sndhwm, q_size);
                     // _socket_map[socket_name]->set(zmq::sockopt::sndbuf, q_size);
                     _socket_map[socket_name]->bind(fmt::format("tcp://{}:{}", address, port));
+                    console::info("[{}] Created port({}) : {}", _name, address, port);
                 }
                 else if(!socket_type.compare("push")){
                     _socket_map.insert(make_pair(socket_name, new pipe_socket(*pipe, zmq::socket_type::push)));
