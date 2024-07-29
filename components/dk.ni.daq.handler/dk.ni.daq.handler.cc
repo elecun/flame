@@ -150,6 +150,9 @@ void dk_ni_daq_handler::_subscribe(json parameters){
                         // memcpy(message.data(), json_string.data(), json_string.size());
                         // get_port("op_trigger")->send(message, zmq::send_flags::dontwait);
                     }
+                    else {
+                        _stop_pulse_generation();
+                    }
                 }
             }
         }

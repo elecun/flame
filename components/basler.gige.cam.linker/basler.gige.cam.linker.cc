@@ -145,9 +145,18 @@ void basler_gige_cam_linker::_image_stream_task(int camera_id, CBaslerUniversalI
                         size_t size = ptrGrabResult->GetWidth() * ptrGrabResult->GetHeight() * 1;
                         cv::Mat image(ptrGrabResult->GetHeight(), ptrGrabResult->GetWidth(), CV_8UC1, (void*)pImageBuffer);
                         
+                        // set topic
+                        string topic = fmt::format("{}/{}", get_name(), "/status");
+                        pipe_data topic_msg(topic.data(), topic.size());
+
+                        // set image data
                         pipe_data message(size);
                         memcpy(message.data(), image.data, size);
-                        get_port("status")->send(message, zmq::send_flags::dontwait);
+
+                        
+                        get_port("image_stream_monitor")->send(topic_msg, zmq::send_flags::sndmore);
+                        get_port("image_stream_monitor")->send(message, zmq::send_flags::dontwait);
+
                     }
                     else{
                         console::warn("[{}] Error-code({}) : {}", get_name(), ptrGrabResult->GetErrorCode(), ptrGrabResult->GetErrorDescription().c_str());

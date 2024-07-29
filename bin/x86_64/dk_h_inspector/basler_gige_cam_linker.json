@@ -32,6 +32,13 @@
             "socket_type" : "pub",
             "queue_size" : 3000
         },
+        "image_stream_monitor":{
+            "transport" : "tcp",
+            "host":"*",
+            "port" : 5557,
+            "socket_type" : "pub",
+            "queue_size" : 3000
+        },
         "image_stream" : {
             "transport" : "inproc",
             "socket_type" : "pub",

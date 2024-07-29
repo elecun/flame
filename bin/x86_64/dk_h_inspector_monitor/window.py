@@ -126,8 +126,8 @@ class AppWindow(QMainWindow):
         cam_monitor_context = zmq.Context()
         cam_monitor_socket = cam_monitor_context.socket(zmq.SUB)
         cam_monitor_socket.setsockopt(zmq.RCVHWM, 5000)
-        cam_monitor_socket.setsockopt_string(zmq.SUBSCRIBE, "basler_gige_cam_linker/status")
-        cam_monitor_socket.connect("tcp://192.168.0.50:5556")
+        cam_monitor_socket.setsockopt_string(zmq.SUBSCRIBE, "basler_gige_cam_linker/image_stream_monitor")
+        cam_monitor_socket.connect("tcp://192.168.0.50:5557")
 
         count = 0
         try:
