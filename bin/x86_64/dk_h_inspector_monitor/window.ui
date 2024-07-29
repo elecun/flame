@@ -132,6 +132,9 @@
       <property name="text">
        <string>Camera #1</string>
       </property>
+      <property name="alignment">
+       <set>Qt::AlignCenter</set>
+      </property>
      </widget>
      <widget class="QLabel" name="window_camera_4">
       <property name="geometry">
@@ -205,6 +208,9 @@
       <property name="text">
        <string>Camera #1</string>
       </property>
+      <property name="alignment">
+       <set>Qt::AlignCenter</set>
+      </property>
      </widget>
      <widget class="QLabel" name="window_camera_8">
       <property name="geometry">
@@ -277,7 +283,7 @@
     <property name="title">
      <string>Control Test</string>
     </property>
-    <widget class="QPushButton" name="btn_op_start_trigger">
+    <widget class="QPushButton" name="btn_op_trigger_on">
      <property name="geometry">
       <rect>
        <x>10</x>
@@ -290,7 +296,7 @@
       <string>OP Start Trigger</string>
      </property>
     </widget>
-    <widget class="QPushButton" name="btn_op_stop_trigger">
+    <widget class="QPushButton" name="btn_op_trigger_off">
      <property name="geometry">
       <rect>
        <x>230</x>
@@ -324,7 +330,7 @@
      <x>0</x>
      <y>0</y>
      <width>1926</width>
-     <height>43</height>
+     <height>24</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuControl">
