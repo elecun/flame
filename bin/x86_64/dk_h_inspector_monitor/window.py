@@ -97,16 +97,16 @@ class AppWindow(QMainWindow):
 
     # trigger on button event
     def on_click_op_trigger_on(self):
-        api = {"function": "op_trigger", "value": True }
+        msg = {"op_trigger": True }
         topic = "simulation"
-        json_data = json.dumps(api)
+        json_data = json.dumps(msg)
         self.simulation_socket.send_multipart([topic.encode(), json_data.encode()])
         print("Trigger ON")
 
     def on_click_op_trigger_off(self):
-        api = {"function": "op_trigger", "value": False }
+        msg = {"op_trigger": False }
         topic = "simulation"
-        json_data = json.dumps(api)
+        json_data = json.dumps(msg)
         self.simulation_socket.send_multipart([topic.encode(), json_data.encode()])
         print("Trigger OFF")
 

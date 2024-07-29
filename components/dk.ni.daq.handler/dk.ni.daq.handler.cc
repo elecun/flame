@@ -14,17 +14,46 @@ bool dk_ni_daq_handler::on_init(){
     /* get info from profile */
     _daq_device_name = get_profile()->parameters().value("daq_device_name", "Dev1");
     _daq_counter_channel = get_profile()->parameters().value("daq_counter_channel", "ctr0");
-    
+    _daq_pulse_freq = get_profile()->parameters().value("daq_pulse_freq", 30);
+    _daq_pulse_samples = get_profile()->parameters().value("daq_pulse_samples", 1000);
+    _daq_pulse_duty = get_profile()->parameters().value("daq_pulse_duty", 0.5);
+    console::info("[{}] Camera Triggering via {}/{} at {}(samples:{}, duty:{})", get_name(), _daq_device_name, _daq_counter_channel, _daq_pulse_freq, _daq_pulse_samples, _daq_pulse_duty);
+
+
+
+    //_start_pulse_generation(_daq_pulse_freq, _daq_pulse_samples, _daq_pulse_duty);
+    thread subscriber = thread(&dk_ni_daq_handler::_subscribe, this, get_profile()->parameters());
+    _subscriber_handle = subscriber.native_handle();
+    subscriber.detach();
 
     return true;
 }
 
 void dk_ni_daq_handler::on_loop(){
-    
 
+    /* create message */
+    map<string, unsigned long long> daq_status;
+    daq_status.insert(make_pair("triggering", _triggering.load()));
+    json info = daq_status;
+    string status_message = info.dump();
+
+    /* camera grabbing info publish */
+    string topic = fmt::format("{}/{}", get_name(), "/status");
+    pipe_data topic_msg(topic.data(), topic.size());
+    pipe_data end_msg(status_message.data(), status_message.size());
+    get_port("status")->send(topic_msg, zmq::send_flags::sndmore);
+    get_port("status")->send(end_msg, zmq::send_flags::dontwait);
+    
 }
 
 void dk_ni_daq_handler::on_close(){
+
+    _stop_pulse_generation();
+
+    /* cancel the subscriber thread */
+    _thread_stop_signal.store(true);
+    pthread_cancel(_subscriber_handle);
+    pthread_join(_subscriber_handle, nullptr);
     
 }
 
@@ -33,57 +62,101 @@ void dk_ni_daq_handler::on_message(){
 }
 
 
-bool dk_ni_daq_handler::_pulse_generate(double freq, unsigned long long n_pulses){
+bool dk_ni_daq_handler::_start_pulse_generation(double freq, unsigned long long n_pulses, double duty){
 
     string channel = fmt::format("{}/{}", _daq_device_name, _daq_counter_channel);
 
-    TaskHandle _daq_task_handle { nullptr };
-
     /* create task handle */
-    if(!DAQmxCreateTask("", &_daq_task_handle)){
+    if(DAQmxCreateTask("camera_trigger", &_handle_pulsegen_task)){
         console::error("[{}] Failed to create DAQ task", get_name());
         return false;
     }
 
-    /* create config to generate pulse */
-    if(!DAQmxCreateCOPulseChanFreq(_daq_task_handle, channel.c_str(),  // device_name / counter_channel
+    /* create counter config to generate pulse */
+    if(DAQmxCreateCOPulseChanFreq(_handle_pulsegen_task, channel.c_str(),  // device_name / counter_channel
                                     "",               // Name of the virtual channel (optional)
                                     DAQmx_Val_Hz,     // units
                                     DAQmx_Val_Low,    // idle state
                                     0.0,              // initial delay
                                     freq,             // frequency
-                                    0.5               // Duty cycle
+                                    duty               // Duty cycle
     )){
         console::error("[{}] Failed to create pulse channel", get_name());
-        DAQmxClearTask(_daq_task_handle);
+        DAQmxClearTask(_handle_pulsegen_task);
         return false;
     }
 
     /* set timing for infinite pulse generation */
     // Note! Finite sample : DAQmx_Val_FiniteSamps
     // Note! Infinite sample : DAQmx_Val_ContSamps
-    if(!DAQmxCfgImplicitTiming(_daq_task_handle, DAQmx_Val_FiniteSamps, n_pulses)){
+    if(DAQmxCfgImplicitTiming(_handle_pulsegen_task, DAQmx_Val_ContSamps, n_pulses)){
         console::error("[{}] Failed to configure timing", get_name());
-        DAQmxClearTask(_daq_task_handle);
+        DAQmxClearTask(_handle_pulsegen_task);
         return false;
     }
 
     /* start to run task */
-    if(!DAQmxStartTask(_daq_task_handle)){
+    if(DAQmxStartTask(_handle_pulsegen_task)){
         console::error("[{}] Failed to run the pulse generation", get_name());
-        DAQmxClearTask(_daq_task_handle);
+        DAQmxClearTask(_handle_pulsegen_task);
         return false;
     }
 
-    error = DAQmxWaitUntilTaskDone(taskHandle, DAQmx_Val_WaitInfinitely);
-    if (error) {
-        std::cerr << "Error waiting for task to complete: " << error << std::endl;
-    } else {
-        std::cout << number_of_pulses << " pulses generated at " << frequency << " Hz." << std::endl;
-    }
-
-    // Clear the task
-    DAQmxClearTask(taskHandle);
+    console::info("[{}] Started the camera triggering...", get_name());
+    _triggering.store(true);
 
     return true;
+}
+
+void dk_ni_daq_handler::_stop_pulse_generation(){
+
+    if(_handle_pulsegen_task){
+        if(DAQmxStopTask(_handle_pulsegen_task)) {
+            console::error("[{}] Failed to stop the pulse generation task", get_name());
+        }
+        
+        DAQmxClearTask(_handle_pulsegen_task);
+        _handle_pulsegen_task = nullptr;
+
+        console::info("[{}] Stopped the camera triggering...", get_name());
+        _triggering.store(false);
+    }
+    
+}
+
+void dk_ni_daq_handler::_subscribe(json parameters){
+
+    pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, nullptr);
+    pthread_setcanceltype(PTHREAD_CANCEL_DEFERRED, nullptr);
+
+    while(!_thread_stop_signal.load()){
+        try{
+            pipe_data received_topic;
+            pipe_data received_message;
+
+            zmq::recv_result_t topic_result = get_port("simulation")->recv(received_topic, zmq::recv_flags::none);
+            zmq::recv_result_t message_result = get_port("simulation")->recv(received_message, zmq::recv_flags::none);
+            if(message_result){
+                std::string message(static_cast<char*>(received_message.data()), received_message.size());
+                auto json_data = json::parse(message);
+                console::info("{}", json_data.dump());
+
+                if(json_data.contains("op_trigger")){
+                    bool triggered = json_data["op_trigger"].get<bool>();
+                    if(triggered){
+                        console::info("ok");
+                        // pipe_data send_data;
+                        // get_port("op_trigger")->send(send_data, zmq::send_flags::dontwait);
+                    }
+                }
+            }
+        }
+        catch(const json::parse_error& e){
+            console::error("[{}] message cannot be parsed. {}", get_name(), e.what());
+        }
+        catch(const exception& e){
+            console::error("[{}] Error message parsing..", get_name());
+        }
+    }
+
 }

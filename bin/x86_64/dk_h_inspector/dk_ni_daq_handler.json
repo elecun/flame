@@ -5,6 +5,10 @@
     "parameters":{
         "daq_device_name":"Dev1",
         "daq_counter_channel":"ctr0",
+        "daq_pulse_freq":30,
+        "daq_pulse_samples":1000,
+        "daq_pulse_duty":0.5,
+
         "use_io_channels":2,
         "action":{
             "trigger_on":{
@@ -32,9 +36,11 @@
             "socket_type" : "push",
             "queue_size" : 1000
         },
-        "cam_trigger" : {
-            "transport" : "inproc",
-            "socket_type" : "pull",
+        "simulation" : {
+            "transport" : "tcp",
+            "socket_type" : "sub",
+            "host":"192.168.0.35",
+            "port" : 5008,
             "queue_size" : 1000
         }
     }
