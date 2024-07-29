@@ -26,6 +26,8 @@ import pyqtgraph as graph
 import zmq
 import json
 import threading
+import numpy as np
+import cv2
 
 from console import ConsoleLogger
 
@@ -133,8 +135,8 @@ class AppWindow(QMainWindow):
         try:
             while True:
                 image_recv = cam_monitor_socket.recv()
-                nparr = np.frombuffer(image_recv, np.uint8)
-                frame = cv2.imdecode(nparr, cv2.IMREAD_GRAYSCALE)
+                # nparr = np.frombuffer(image_recv, np.uint8)
+                # frame = cv2.imdecode(nparr, cv2.IMREAD_GRAYSCALE)
 
                 print(f"camera image received : {count}")
                 count = count + 1
