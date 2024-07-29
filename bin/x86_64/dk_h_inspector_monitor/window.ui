@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1926</width>
+    <width>1907</width>
     <height>1000</height>
    </rect>
   </property>
@@ -43,13 +43,13 @@
      <enum>QTabWidget::Rounded</enum>
     </property>
     <property name="currentIndex">
-     <number>1</number>
+     <number>0</number>
     </property>
     <widget class="QWidget" name="tab_defect_map">
      <attribute name="title">
       <string>Surface Defect Map</string>
      </attribute>
-     <widget class="QFrame" name="frame_defect_location">
+     <widget class="QFrame" name="frame_defect_view">
       <property name="geometry">
        <rect>
         <x>0</x>
@@ -329,7 +329,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1926</width>
+     <width>1907</width>
      <height>24</height>
     </rect>
    </property>

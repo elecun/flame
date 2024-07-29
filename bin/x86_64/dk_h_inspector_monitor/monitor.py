@@ -42,9 +42,6 @@ if __name__ == "__main__":
             configure["app_path"] = (pathlib.Path(__file__).parent)
             configure["verbose"] = args.verbose
             
-            if not all(key in configure for key in ["model"]):
-                raise Exception(f"some parameters does not set in the {args.config} configuration file")
-            
             app = QApplication(sys.argv)
             app_window = AppWindow(config=configure)
             

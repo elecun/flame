@@ -1,5 +1,5 @@
 '''
-Time-series Data Analyzer Application Window Class
+DK H Inspetor Monitor
 @author Byunghun Hwang<bh.hwang@iae.re.kr>
 '''
 
@@ -23,6 +23,8 @@ from PIL import ImageQt, Image
 from sys import platform
 # import paho.mqtt.client as mqtt
 import pyqtgraph as graph
+import zmq
+import json
 
 from console import ConsoleLogger
 
@@ -38,9 +40,13 @@ class AppWindow(QMainWindow):
         
         self.__frame_win_defect_layout = QVBoxLayout()
         self.__frame_win_defect_plot = graph.PlotWidget()
+
+        # test simulation pipeline
+        self.simulation_context = zmq.Context()
+        self.simulation_socket = self.simulation_context.socket(zmq.PUB)
+        self.simulation_socket.setsockopt(zmq.SNDHWM, 1000)
+        self.simulation_socket.bind("tcp://*:5008")
         
-        # local variables
-        self.__current_csv_file = None
         
         try:            
             if "gui" in config:
@@ -53,12 +59,16 @@ class AppWindow(QMainWindow):
                     raise Exception(f"Cannot found UI file : {ui_path}")
                 
                 # frame window components preparation
-                self.__frame_win_defect = self.findChild(QFrame, name="frame_defect_loc_view")
+                self.__frame_win_defect = self.findChild(QFrame, name="frame_defect_view")
                 self.__frame_win_defect_layout.addWidget(self.__frame_win_defect_plot)
                 self.__frame_win_defect_layout.setContentsMargins(0, 0, 0, 0)
-                self.__frame_win_defect.setBackground('w')
-                self.__frame_win_defect.showGrid(x=True, y=True)
+                self.__frame_win_defect_plot.setBackground('w')
+                self.__frame_win_defect_plot.showGrid(x=True, y=True)
                 self.__frame_win_defect.setLayout(self.__frame_win_defect_layout)
+
+                # button component connection
+                self.btn_op_trigger_on.clicked.connect(self.on_click_op_trigger_on)
+                self.btn_op_trigger_off.clicked.connect(self.on_click_op_trigger_off)
 
                 
         except Exception as e:
@@ -70,9 +80,10 @@ class AppWindow(QMainWindow):
     # clear all guis
     def clear_all(self):
         try:
-            self.__frame_win_series_plot.clear()
-            self.__frame_win_fft_plot.clear()
-            self.__frame_win_spectogram_plot.clear()
+            self.__frame_win_defect_plot.clear()
+
+            self.simulation_socket.close()
+            self.simulation_context.term()
             
         except Exception as e:
             self.__console.critical(f"{e}")
@@ -82,3 +93,21 @@ class AppWindow(QMainWindow):
         
         self.__console.info("Terminated Successfully")
         return super().closeEvent(a0)
+    
+
+    # trigger on button event
+    def on_click_op_trigger_on(self):
+        api = {"function": "op_trigger", "value": True }
+        topic = "simulation"
+        json_data = json.dumps(api)
+        self.simulation_socket.send_multipart([topic.encode(), json_data.encode()])
+        print("Trigger ON")
+
+    def on_click_op_trigger_off(self):
+        api = {"function": "op_trigger", "value": False }
+        topic = "simulation"
+        json_data = json.dumps(api)
+        self.simulation_socket.send_multipart([topic.encode(), json_data.encode()])
+        print("Trigger OFF")
+
+        
