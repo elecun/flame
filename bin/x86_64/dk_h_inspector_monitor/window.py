@@ -95,12 +95,25 @@ class AppWindow(QMainWindow):
         return super().closeEvent(a0)
     
 
+    def send_multiplart(topic:str, msgdata:dict) -> None:
+        try:
+            json_data = json.dumps(msgdata)
+
+            self.simulation_socket.send_multipart([topic.encode(), json_data.encode()])
+        except json.JSONDecodeError as e:
+            print(f"json parse error : {e}")
+        
+
     # trigger on button event
     def on_click_op_trigger_on(self):
-        msg = {"op_trigger": True }
+        # msg = {"op_trigger": True }
+        # topic = "simulation"
+        # json_data = json.dumps(msg)
+        # self.simulation_socket.send_multipart([topic.encode(), json_data.encode()])
+
         topic = "simulation"
-        json_data = json.dumps(msg)
-        self.simulation_socket.send_multipart([topic.encode(), json_data.encode()])
+        msg = {"op_trigger": True }
+        self.send_multipart(topic.encode(), json.dumps(msg).encode())
         print("Trigger ON")
 
     def on_click_op_trigger_off(self):
