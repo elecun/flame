@@ -2,6 +2,7 @@
 #include "basler.gige.cam.linker.hpp"
 #include <flame/log.hpp>
 #include <flame/config_def.hpp>
+#include <opencv2/opencv.hpp>
 
 using namespace flame;
 
@@ -140,6 +141,13 @@ void basler_gige_cam_linker::_image_stream_task(int camera_id, CBaslerUniversalI
                         const uint8_t* pImageBuffer = (uint8_t*)ptrGrabResult->GetBuffer();
                         _camera_grab_counter[camera_id]++;
                         //console::info("> camera {} captured : {}x{}", camera_id, ptrGrabResult->GetWidth(), ptrGrabResult->GetHeight());
+
+                        size_t size = ptrGrabResult->GetWidth() * ptrGrabResult->GetHeight() * 1;
+                        cv::Mat image(ptrGrabResult->GetHeight(), ptrGrabResult->GetWidth(), CV_8UC1, (void*)pImageBuffer);
+                        
+                        pipe_data message(size);
+                        memcpy(message.data(), image.data, size);
+                        get_port("status")->send(message, zmq::send_flags::dontwait);
                     }
                     else{
                         console::warn("[{}] Error-code({}) : {}", get_name(), ptrGrabResult->GetErrorCode(), ptrGrabResult->GetErrorDescription().c_str());

@@ -25,6 +25,7 @@ from sys import platform
 import pyqtgraph as graph
 import zmq
 import json
+import threading
 
 from console import ConsoleLogger
 
@@ -41,11 +42,15 @@ class AppWindow(QMainWindow):
         self.__frame_win_defect_layout = QVBoxLayout()
         self.__frame_win_defect_plot = graph.PlotWidget()
 
-        # test simulation pipeline
-        self.simulation_context = zmq.Context()
-        self.simulation_socket = self.simulation_context.socket(zmq.PUB)
-        self.simulation_socket.setsockopt(zmq.SNDHWM, 1000)
-        self.simulation_socket.bind("tcp://*:5008")
+        # op trigger test simulation pipeline
+        self.op_trigger_context = zmq.Context()
+        self.op_trigger_socket = self.op_trigger_context.socket(zmq.PUB)
+        self.op_trigger_socket.setsockopt(zmq.SNDHWM, 1000)
+        self.op_trigger_socket.bind("tcp://*:5008")
+
+        # camera monitoring worker thread
+        cam_monitor_thread = threading.Thread(target=self.cam_view_monitoring)
+        cam_monitor_thread.start()
         
         
         try:            
@@ -82,8 +87,8 @@ class AppWindow(QMainWindow):
         try:
             self.__frame_win_defect_plot.clear()
 
-            self.simulation_socket.close()
-            self.simulation_context.term()
+            self.op_trigger_socket.close()
+            self.op_trigger_context.term()
             
         except Exception as e:
             self.__console.critical(f"{e}")
@@ -95,10 +100,10 @@ class AppWindow(QMainWindow):
         return super().closeEvent(a0)
     
 
-    def __send_request(self, topic:str, msgdata:dict) -> None:
+    def __send_op_trigger_request(self, topic:str, msgdata:dict) -> None:
         try:
             json_data = json.dumps(msgdata)
-            self.simulation_socket.send_multipart([topic.encode(), json_data.encode()])
+            self.op_trigger_socket.send_multipart([topic.encode(), json_data.encode()])
         except json.JSONDecodeError as e:
             print(f"json parse error : {e}")
         
@@ -106,13 +111,31 @@ class AppWindow(QMainWindow):
     # trigger on button event
     def on_click_op_trigger_on(self):
         msg = {"op_trigger": True }
-        self.__send_request("simulation", msg)
+        self.__send_op_trigger_request("simulation", msg)
         print("Trigger ON")
 
     def on_click_op_trigger_off(self):
         msg = {"op_trigger": False }
         json_data = json.dumps(msg)
-        self.__send_request("simulation", msg)
+        self.__send_op_trigger_request("simulation", msg)
         print("Trigger OFF")
 
-        
+    
+    # camera monitoring thread function
+    def cam_view_monitoring(self):
+        cam_monitor_context = zmq.Context()
+        cam_monitor_socket = cam_monitor_context.socket(zmq.SUB)
+        cam_monitor_socket.setsockopt(zmq.RCVHWM, 5000)
+        cam_monitor_socket.setsockopt_string(zmq.SUBSCRIBE, "basler_gige_cam_linker/status")
+        cam_monitor_socket.connect("tcp://192.168.0.50:5556")
+
+        count = 0
+        try:
+            while True:
+                print(f"camera image received : {count}")
+                count = count + 1
+        except KeyboardInterrupt:
+            print("Interrupted")
+        finally:
+            cam_monitor_socket.close()
+            cam_monitor_context.term()

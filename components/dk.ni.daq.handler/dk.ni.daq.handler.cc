@@ -144,9 +144,11 @@ void dk_ni_daq_handler::_subscribe(json parameters){
                 if(json_data.contains("op_trigger")){
                     bool triggered = json_data["op_trigger"].get<bool>();
                     if(triggered){
-                        console::info("ok");
-                        // pipe_data send_data;
-                        // get_port("op_trigger")->send(send_data, zmq::send_flags::dontwait);
+                        _start_pulse_generation(_daq_pulse_freq, _daq_pulse_samples, _daq_pulse_duty);
+                        // string json_string = json_data.dump();
+                        // pipe_data message(json_string.size());
+                        // memcpy(message.data(), json_string.data(), json_string.size());
+                        // get_port("op_trigger")->send(message, zmq::send_flags::dontwait);
                     }
                 }
             }
