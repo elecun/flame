@@ -57,7 +57,7 @@ namespace flame::component {
              */
             pipe_context* create_pipe(const string pipename){
                 if(_pipe_map.contains(pipename)){
-                    console::warn("{} pipe is already defined", pipename);
+                    logger::warn("{} pipe is already defined", pipename);
                     return nullptr;
                 }
                 else {
@@ -109,9 +109,9 @@ namespace flame::component {
                     }
                     break;
                     default:
-                        console::warn("Undefined socket type you use.");
+                        logger::warn("Undefined socket type you use.");
                 }
-                console::info("[{}] Created port({}) : {}", _name, static_cast<int>(socket_type), addr);
+                logger::info("[{}] Created port({}) : {}", _name, static_cast<int>(socket_type), addr);
                 return _socket_map[socket_name];
             }
 
@@ -127,7 +127,7 @@ namespace flame::component {
                     _socket_map[socket_name]->set(zmq::sockopt::sndhwm, q_size);
                     // _socket_map[socket_name]->set(zmq::sockopt::sndbuf, q_size);
                     _socket_map[socket_name]->bind(fmt::format("tcp://{}:{}", address, port));
-                    console::info("[{}] Created port({}) : {}", _name, address, port);
+                    logger::info("[{}] Created port({}) : {}", _name, address, port);
                 }
                 else if(!socket_type.compare("push")){
                     _socket_map.insert(make_pair(socket_name, new pipe_socket(*pipe, zmq::socket_type::push)));
@@ -141,7 +141,7 @@ namespace flame::component {
                     _socket_map[socket_name]->connect(fmt::format("tcp://{}:{}", address, port));
                 }
                 else {
-                    console::warn("Undefined socket type to create dataport");
+                    logger::warn("Undefined socket type to create dataport");
                 }
                 
                 

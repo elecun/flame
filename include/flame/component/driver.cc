@@ -63,7 +63,7 @@ namespace flame::component {
             }
         }
         catch (std::runtime_error& e){
-            console::error("<{}> component driver cannot be coupled", component_path.filename().string());
+            logger::error("<{}> component driver cannot be coupled", component_path.filename().string());
             throw std::runtime_error(e.what());
         }
     }
@@ -82,7 +82,7 @@ namespace flame::component {
             }
         }
         catch(const std::runtime_error& e){
-            console::error("Runtime Error(on_init) : {}", e.what());
+            logger::error("Runtime Error(on_init) : {}", e.what());
         }
 
         return false;
@@ -100,7 +100,7 @@ namespace flame::component {
             }
         }
         catch(const std::runtime_error& e){
-            console::error("Runtime Error(on_loop) : {}", e.what());
+            logger::error("Runtime Error(on_loop) : {}", e.what());
         }
     }
 
@@ -112,7 +112,7 @@ namespace flame::component {
             }
         }
         catch(const std::runtime_error& e){
-            console::error("Runtime Error(on_close) : {}", e.what());
+            logger::error("Runtime Error(on_close) : {}", e.what());
         }
 
     }
@@ -124,7 +124,7 @@ namespace flame::component {
             }
         }
         catch(const std::runtime_error& e){
-            console::error("Runtime Error(on_message) : {}", e.what());
+            logger::error("Runtime Error(on_message) : {}", e.what());
         }
     }
 
@@ -132,21 +132,21 @@ namespace flame::component {
         try{
             // not exist
             if(!fs::exists(component_path)){
-                console::error("{} component cannot be found.", component_path.filename().string());
+                logger::error("{} component cannot be found.", component_path.filename().string());
                 return false;
             }
 
-            console::info("{}", component_path.c_str());
+            logger::info("{}", component_path.c_str());
             _component_handle = dlopen(component_path.string().c_str(), RTLD_LAZY|RTLD_LOCAL);
             if(!_component_handle){
-                console::error("<{}> {}", component_path.filename().string(), dlerror());
+                logger::error("<{}> {}", component_path.filename().string(), dlerror());
                 return false;
             }
 
             create_component pfcreate = (create_component)dlsym(_component_handle, "create");
             const char* dlsym_error = dlerror();
             if(dlsym_error){
-                console::error("{} component instance cannot be created", component_path.filename().string());
+                logger::error("{} component instance cannot be created", component_path.filename().string());
                 dlclose(_component_handle);
                 _component_handle = nullptr;
                 return false;
@@ -156,7 +156,7 @@ namespace flame::component {
             _componentImpl = pfcreate();
         }
         catch(std::runtime_error& e){
-            console::error("<{}> : {}", component_path.filename().string(), e.what());
+            logger::error("<{}> : {}", component_path.filename().string(), e.what());
         }
 
         return true;
@@ -180,7 +180,7 @@ namespace flame::component {
             }
         }
         catch(std::runtime_error& e){
-            console::error("component unload failed");
+            logger::error("component unload failed");
         }
     }
 
@@ -192,8 +192,8 @@ namespace flame::component {
         _signal_event.sigev_signo = SIG_RUNTIME_TRIGGER++; 
         _signal_event.sigev_value.sival_ptr = _timer_id; 
         if(timer_create(CLOCK_REALTIME, &_signal_event, &_timer_id)==-1)
-            console::error("timer create error");
-        console::info("[{}] Trigger Signal ID : {}", get_name(), _signal_id);
+            logger::error("timer create error");
+        logger::info("[{}] Trigger Signal ID : {}", get_name(), _signal_id);
     
         const unsigned long long nano = (1000000000L);
         _time_spec.it_value.tv_sec = nsec / nano;
@@ -203,7 +203,7 @@ namespace flame::component {
 
         // start timer
         if(timer_settime(_timer_id, 0, &_time_spec, nullptr)==-1)
-            console::error("timer setting error");
+            logger::error("timer setting error");
 
     }
 
@@ -223,7 +223,7 @@ namespace flame::component {
                     _componentImpl->on_loop();
                 }
                 auto t_elapsed = std::chrono::high_resolution_clock::now();
-                //console::info("Processing Elapsed Time : {} sec", std::chrono::duration<double, std::chrono::milliseconds::period>(t_elapsed - t_now).count());
+                //logger::info("Processing Elapsed Time : {} sec", std::chrono::duration<double, std::chrono::milliseconds::period>(t_elapsed - t_now).count());
             }
         }
 

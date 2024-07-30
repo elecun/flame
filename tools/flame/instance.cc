@@ -33,7 +33,8 @@ void cleanup(){
 
 void cleanup_and_exit(){
     cleanup();
-    console::info("successfully terminated");
+    logger::info("successfully terminated");
+    logger::default_logger()->flush();
     exit(EXIT_SUCCESS);
 }
 
@@ -44,14 +45,14 @@ void cleanup_and_exit(){
  */
 void signal_callback(int sig) {
     switch(sig){
-        case SIGSEGV: { console::warn("Segmentation violation"); } break;
-        case SIGABRT: { console::warn("Abnormal termination"); } break;
-        case SIGKILL: { console::warn("Process killed"); } break;
-        case SIGBUS: { console::warn("Bus Error"); } break;
-        case SIGTERM: { console::warn("Termination requested"); } break;
-        case SIGINT: { console::warn("Interrupted"); } break;
+        case SIGSEGV: { logger::warn("Segmentation violation"); } break;
+        case SIGABRT: { logger::warn("Abnormal termination"); } break;
+        case SIGKILL: { logger::warn("Process killed"); } break;
+        case SIGBUS: { logger::warn("Bus Error"); } break;
+        case SIGTERM: { logger::warn("Termination requested"); } break;
+        case SIGINT: { logger::warn("Interrupted"); } break;
         default:
-        console::info("Cleaning up the program");
+        logger::info("Cleaning up the program");
     }
     cleanup_and_exit();
 }
@@ -61,12 +62,12 @@ bool init(const char* config_path){
     try{
         _config_loader = new flame::config_loader(config_path);
         if(install_bundle()){
-            console::info("Successfully installed");
+            logger::info("Successfully installed");
             run_bundle();
         }
     }
     catch (const std::exception& e){
-        console::critical("{}", e.what());
+        logger::critical("{}", e.what());
         return false;
     }
 
@@ -79,22 +80,22 @@ bool install_bundle(const char* bundle){
     // install by configuration file
     if(!bundle && _config_loader){
         fs::path _bundle_path = _config_loader->get_config_path().parent_path() / fs::path(_config_loader->get_bundle_name());
-        console::info("Bundle Repository : {}", _bundle_path.string());
+        logger::info("Bundle Repository : {}", _bundle_path.string());
         
         if(fs::is_directory(_bundle_path)){
-            console::info("Now installing '{}' bundle..", _config_loader->get_bundle_name());
+            logger::info("Now installing '{}' bundle..", _config_loader->get_bundle_name());
 
             // install bundle
             manager->install(_bundle_path);
 
         }
         else{
-            console::critical("{} bundle cannot be found. Check your configurations.", _config_loader->get_bundle_name());
+            logger::critical("{} bundle cannot be found. Check your configurations.", _config_loader->get_bundle_name());
             return false;
         }
     }
     else{
-        console::warn("Manual installation does not support yet.");
+        logger::warn("Manual installation does not support yet.");
         return false;
     }
 

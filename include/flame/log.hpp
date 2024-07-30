@@ -19,7 +19,8 @@
 #include <dep/spdlog/spdlog.h>
 #include <dep/spdlog/sinks/stdout_color_sinks.h>
 #include <dep/spdlog/sinks/basic_file_sink.h>
-namespace console = spdlog;
+#include <dep/spdlog/sinks/rotating_file_sink.h>
+namespace logger = spdlog;
 
 #endif
 

@@ -28,13 +28,12 @@ using namespace std;
 
 int main(int argc, char* argv[])
 {
-    console::stdout_color_st("console");
-    console::info("FLAME Execution Engine {} (built {}/{})",_FLAME_VER_, __DATE__, __TIME__);
 
     cxxopts::Options options("Flame options");
 
     options.add_options()
         ("c,config", "User Configuration File(*.conf)", cxxopts::value<string>())
+        ("l,logfile", "Save in Log File(flame.log)")
         ("h,help", "Print usage");
 
     auto optval = options.parse(argc, argv);
@@ -68,20 +67,36 @@ int main(int argc, char* argv[])
 
     if(optval.count("config")){ _config = optval["config"].as<string>(); }
 
+    /* logger configuration */
+    auto console_sink = std::make_shared<logger::sinks::stdout_color_sink_mt>();
+    console_sink->set_pattern("[%Y-%m-%d %H:%M:%S] [%^%l%$] %v");
+    std::vector<logger::sink_ptr> sinks { console_sink };
+    if(optval.count("logfile")) {
+        auto file_sink = std::make_shared<logger::sinks::basic_file_sink_mt>("flame.log", true);
+        file_sink->set_level(spdlog::level::debug);
+        file_sink->set_pattern("[%Y-%m-%d %H:%M:%S] [%l] %v");
+        sinks.push_back(file_sink);
+    }
+    auto logger = std::make_shared<logger::logger>("flame", sinks.begin(), sinks.end());
+    logger::set_default_logger(logger);
+
+    /* begin */
+    logger::info("FLAME Execution Engine {} (built {}/{})",_FLAME_VER_, __DATE__, __TIME__);
+
     try{
         if(!_config.empty()){
             if(init(_config.c_str())){
-                console::info("Bundle is now working...");
+                logger::info("Bundle is now working...");
                 pause(); //wait until getting SIGINT
             }
         }
         else{
-            console::warn("No Arguments. Burner will run with default configuration");
+            logger::warn("No Arguments. Burner will run with default configuration");
         }
         
     }
     catch(const std::exception& e){
-        console::error("Exception : {}", e.what());
+        logger::error("Exception : {}", e.what());
     }
 
     cleanup_and_exit();

@@ -1,9 +1,0 @@
-{
-    "rt_cycle_ns" : 500000000,
-    "verbose" : 1,
-    "dataport":{
-        "transport":"inproc",
-        "socket_type":"push",
-        "queue_size":1000
-    }
-}
