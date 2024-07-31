@@ -21,7 +21,6 @@ except ImportError:
 from datetime import datetime
 from PIL import ImageQt, Image
 from sys import platform
-# import paho.mqtt.client as mqtt
 import pyqtgraph as graph
 import zmq
 import json
@@ -31,29 +30,37 @@ import cv2
 
 from console import ConsoleLogger
 
+
 '''
 Main Window
 '''
+
+SERVER_IP_ADDRESS = "192.168.0.50"
 
 class AppWindow(QMainWindow):
     def __init__(self, config:dict):
         super().__init__()
         
-        self.__console = ConsoleLogger.get_logger()
+        self.__console = ConsoleLogger.get_logger() # logger
         
         self.__frame_win_defect_layout = QVBoxLayout()
         self.__frame_win_defect_plot = graph.PlotWidget()
 
-        # op trigger test simulation pipeline
+        # definitions for data pipeline
         self.op_trigger_context = zmq.Context()
         self.op_trigger_socket = self.op_trigger_context.socket(zmq.PUB)
         self.op_trigger_socket.setsockopt(zmq.SNDHWM, 1000)
         self.op_trigger_socket.bind("tcp://*:5008")
 
+        camera_status_monitor_thread = threading.Thread(target=self.__camera_status_update)
+        camera_status_monitor_thread.start()
+
+        self._stop_threads = False
+
+
         # camera monitoring worker thread
         cam_monitor_thread = threading.Thread(target=self.cam_view_monitoring)
         cam_monitor_thread.start()
-        
         
         try:            
             if "gui" in config:
@@ -77,12 +84,51 @@ class AppWindow(QMainWindow):
                 self.btn_op_trigger_on.clicked.connect(self.on_click_op_trigger_on)
                 self.btn_op_trigger_off.clicked.connect(self.on_click_op_trigger_off)
 
+                # camera status monitoring
+                _table_camera_status_columns = ["ID", "Camera Name", "Address", "F/C", "Status"]
+                self.__table_camera_status_model = QStandardItemModel()
+                self.__table_camera_status_model.setColumnCount(len(_table_camera_status_columns))
+                self.__table_camera_status_model.setHorizontalHeaderLabels(_table_camera_status_columns)
+                self.table_camera_status.setModel(self.__table_camera_status_model)
+                self.table_camera_status.resizeColumnsToContents()
+
                 
         except Exception as e:
             self.__console.critical(f"{e}")
             
         # member variables
         self.__configure = config   # configure parameters
+
+    '''
+    camera status table update function
+    '''
+    def __camera_status_update(self):
+        # data pipeline for camera status monitoring
+        camera_status_pipe_context = zmq.Context()
+        camera_status_pipe_socket = camera_status_pipe_context.socket(zmq.SUB)
+        camera_status_pipe_socket.setsockopt(zmq.RCVHWM, 100)
+        camera_status_pipe_socket.setsockopt(zmq.RCVTIMEO, 1000) # timeout
+        camera_status_pipe_socket.setsockopt_string(zmq.SUBSCRIBE, "balser_gige_cam_linker/status")
+        camera_status_pipe_socket.connect(f"tcp://{SERVER_IP_ADDRESS}:5556")
+
+        try:
+            while True:
+                try:
+                    message = camera_status_pipe_socket.recv_string()
+                    if len(message)>0:
+                        parsed_message = json.loads(message)
+                        print("received")
+                    else:
+                        print("null")
+                except json.JSONDecodeError:
+                    print("Camera Status data parse error occurred")
+                except zmq.Again: # timeout event
+                    print("time out")
+                    pass
+        
+        finally:
+            camera_status_pipe_socket.close()
+            camera_status_pipe_context.term()
         
     # clear all guis
     def clear_all(self):
@@ -95,8 +141,14 @@ class AppWindow(QMainWindow):
         except Exception as e:
             self.__console.critical(f"{e}")
 
-        
+    
+    '''
+    Close event
+    '''
     def closeEvent(self, a0: QCloseEvent | None) -> None:
+
+        # threads termination
+        _stop_threads = True
         
         self.__console.info("Terminated Successfully")
         return super().closeEvent(a0)
