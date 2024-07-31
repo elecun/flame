@@ -205,24 +205,29 @@ class AppWindow(QMainWindow):
             # if self.isInterruptionRequested():
             #     break
 
-            camera_id = camera_monitor_socket.recv()
-            print(f"camera id : {camera_id}")
+            camera_info = camera_monitor_socket.recv_string()
+            try:
+                camera = json.loads(camera_info)
+                print(f"camera id : {camera["camera_id"]}")
+            except json.JSONDecodeError:
+                print("json decode error")
 
-            image_recv = camera_monitor_socket.recv()
-            nparr = np.frombuffer(image_recv, np.uint8)
-            frame = cv2.imdecode(nparr, cv2.IMREAD_GRAYSCALE)
-            _h, _w, _ch = frame.shape
-            _bpl = _ch*_w # bytes per line
-            print(f"resolution : {_h}, {_w}, {_ch}")
-            qt_image = QImage(frame.data, _w, _h, _bpl, QImage.Format.Format_Grayscale8)
-            pixmap = QPixmap.fromImage(qt_image)
+                image_recv = camera_monitor_socket.recv()
+                np_array = np.frombuffer(image_recv, np.uint8)
+                frame = cv2.imdecode(np_array, cv2.IMREAD_GRAYSCALE)
+                print(frame.shape)
+            # _h, _w, _ch = frame.shape
+            # _bpl = _ch*_w # bytes per line
+            # print(f"resolution : {_h}, {_w}, {_ch}")
+            # qt_image = QImage(frame.data, _w, _h, _bpl, QImage.Format.Format_Grayscale8)
+            # pixmap = QPixmap.fromImage(qt_image)
 
             # draw
-            try:
-                window = self.findChild(QLabel, self.__frame_window_map[camera_id])
-                window.setPixmap(pixmap.scaled(window.size(), Qt.AspectRatioMode.KeepAspectRatio))
-            except Exception as e:
-                self.__console.critical(f"camera {e}")
+            # try:
+            #     window = self.findChild(QLabel, self.__frame_window_map[camera_id])
+            #     window.setPixmap(pixmap.scaled(window.size(), Qt.AspectRatioMode.KeepAspectRatio))
+            # except Exception as e:
+            #     self.__console.critical(f"camera {e}")
 
             time.sleep(0.001)
             if event.is_set():
