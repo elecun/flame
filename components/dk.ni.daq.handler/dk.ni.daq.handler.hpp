@@ -46,7 +46,7 @@ class dk_ni_daq_handler : public flame::component::object {
         /* status */
         std::atomic<bool> _triggering { false };
 
-        /* for simulation */
+        /* for manual control */
         pthread_t _subscriber_handle;
         std::atomic<bool> _thread_stop_signal { false };
 

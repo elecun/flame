@@ -18,16 +18,12 @@
 using namespace std;
 using json = nlohmann::json;
 
-static flame::config_loader* _config_loader = nullptr;
-
 
 /**
  * @brief cleanup and termination
  * 
  */
 void cleanup(){
-    if(_config_loader)
-        delete _config_loader;
     manager->uninstall();
 }
 
@@ -35,6 +31,7 @@ void cleanup_and_exit(){
     cleanup();
     logger::info("successfully terminated");
     logger::default_logger()->flush();
+    
     exit(EXIT_SUCCESS);
 }
 
@@ -60,7 +57,8 @@ void signal_callback(int sig) {
 bool init(const char* config_path){
 
     try{
-        _config_loader = new flame::config_loader(config_path);
+        config->load(config_path);
+        
         if(install_bundle()){
             logger::info("Successfully installed");
             run_bundle();
@@ -78,19 +76,19 @@ bool init(const char* config_path){
 bool install_bundle(const char* bundle){
 
     // install by configuration file
-    if(!bundle && _config_loader){
-        fs::path _bundle_path = _config_loader->get_config_path().parent_path() / fs::path(_config_loader->get_bundle_name());
+    if(!bundle && config->is_loaded()){
+        fs::path _bundle_path = config->get_config_path().parent_path() / fs::path(config->get_bundle_name());
         logger::info("Bundle Repository : {}", _bundle_path.string());
         
         if(fs::is_directory(_bundle_path)){
-            logger::info("Now installing '{}' bundle..", _config_loader->get_bundle_name());
+            logger::info("Now installing '{}' bundle..", config->get_bundle_name());
 
             // install bundle
             manager->install(_bundle_path);
 
         }
         else{
-            logger::critical("{} bundle cannot be found. Check your configurations.", _config_loader->get_bundle_name());
+            logger::critical("{} bundle cannot be found. Check your configurations.", config->get_bundle_name());
             return false;
         }
     }

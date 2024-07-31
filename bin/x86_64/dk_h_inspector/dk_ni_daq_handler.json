@@ -36,7 +36,7 @@
             "socket_type" : "pub",
             "queue_size" : 1000
         },
-        "simulation" : {
+        "manual_control" : {
             "transport" : "tcp",
             "socket_type" : "sub",
             "host":"192.168.0.35",

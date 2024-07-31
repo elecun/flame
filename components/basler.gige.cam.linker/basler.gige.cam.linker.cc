@@ -39,6 +39,16 @@ bool basler_gige_cam_linker::on_init(){
             worker.detach();
         }
 
+        /* camera status ready with default profile */
+        json defined_cameras = get_profile()->parameters()["cameras"];
+        for(auto& camera:defined_cameras){
+            int id = camera["id"].get<int>();
+            _camera_status.insert(make_pair(id, camera));
+            _camera_status[id]["frames"] = 0;  // add frames (unsigned long long)
+            _camera_status[id]["status"] = "-"; // add status (-|working|connected)
+        }
+        
+
         // thread monitor = thread(&basler_gige_cam_linker::_status_monitor_task, this, get_profile()->parameters());
 
     }
@@ -56,26 +66,8 @@ bool basler_gige_cam_linker::on_init(){
 
 void basler_gige_cam_linker::on_loop(){
 
-    /* camera counter check for test */
-    string grab_counter;
-    for(auto& camera:_camera_grab_counter){
-        grab_counter += fmt::format("{}:{}\t", camera.first, camera.second);
-    }
-
-    /* create message */
-    map<string, unsigned long long> grab_total;
-    for(auto& camera:_camera_grab_counter){
-        grab_total.insert(make_pair(fmt::format("camera_{}", camera.first), camera.second));
-    }
-    json info = grab_total;
-    string status_message = info.dump();
-
-    /* camera grabbing info publish */
-    string topic = fmt::format("{}/{}", get_name(), "/status");
-    pipe_data topic_msg(topic.data(), topic.size());
-    pipe_data end_msg(status_message.data(), status_message.size());
-    get_port("status")->send(topic_msg, zmq::send_flags::sndmore);
-    get_port("status")->send(end_msg, zmq::send_flags::dontwait);
+    /* camera component status update */
+    _publish_status();
 
 }
 
@@ -103,6 +95,44 @@ void basler_gige_cam_linker::on_close(){
 
 void basler_gige_cam_linker::on_message(){
     
+}
+
+void basler_gige_cam_linker::_publish_status(){
+
+    /* update the camera working status */
+    for(auto& camera:_cameras){
+        if(camera.second->IsGrabbing())
+            _camera_status[camera.first]["status"] = "working";
+        else {
+            _camera_status[camera.first]["status"] = "not working";
+        }
+    }
+
+    /* update the camera frame for each */
+    for(auto& camera:_camera_grab_counter){
+        _camera_status[camera.first]["frames"] = camera.second;
+    }
+
+    /* combine camera status */
+    json combined_status;
+    for(auto& camera:_camera_status){
+        combined_status.push_back(_camera_status[camera.first]);
+    }
+
+    /* transfer(publish) status data */
+    try{
+        string status_message = combined_status.dump();
+        string topic = fmt::format("{}/{}", get_name(), "status");
+        pipe_data topic_msg(topic.data(), topic.size());
+        pipe_data end_msg(status_message.data(), status_message.size());
+        get_port("status")->send(topic_msg, zmq::send_flags::sndmore);
+        get_port("status")->send(end_msg, zmq::send_flags::dontwait);
+
+        logger::debug("published the camera status ({})", topic);
+    }
+    catch(std::runtime_error& e){
+        logger::error("{}", e.what());
+    }
 }
 
 void basler_gige_cam_linker::_status_monitor_task(json parameters){
@@ -140,22 +170,35 @@ void basler_gige_cam_linker::_image_stream_task(int camera_id, CBaslerUniversalI
                     if(ptrGrabResult->GrabSucceeded()){
                         const uint8_t* pImageBuffer = (uint8_t*)ptrGrabResult->GetBuffer();
                         _camera_grab_counter[camera_id]++;
-                        //logger::info("> camera {} captured : {}x{}", camera_id, ptrGrabResult->GetWidth(), ptrGrabResult->GetHeight());
 
                         size_t size = ptrGrabResult->GetWidth() * ptrGrabResult->GetHeight() * 1;
                         cv::Mat image(ptrGrabResult->GetHeight(), ptrGrabResult->GetWidth(), CV_8UC1, (void*)pImageBuffer);
+
+                        //jpg encoding
+                        std::vector<uchar> buffer;
+                        cv::imencode(".jpg", image, buffer);
+
+                        //logger::info("Captured image resolution : {}x{}({})", image.cols, image.rows, image.channels());
                         
                         // set topic
                         string topic = fmt::format("{}/{}", get_name(), "/image_stream_monitor");
                         pipe_data topic_msg(topic.data(), topic.size());
 
-                        // set image data
-                        pipe_data message(size);
-                        memcpy(message.data(), image.data, size);
+                        string cid = fmt::format("{}",camera_id);
+                        pipe_data idMessage(cid.size());
+                        memcpy(idMessage.data(), cid.c_str(), cid.size());
 
-                        
-                        get_port("image_stream_monitor")->send(topic_msg, zmq::send_flags::sndmore);
-                        get_port("image_stream_monitor")->send(message, zmq::send_flags::dontwait);
+                        json cam_id = {{"camera_id", camera_id}};
+                        string str_cam_id = cam_id.dump();
+                        pipe_data id_message(str_cam_id.size());
+                        memcpy(id_message.data(), str_cam_id.c_str(), str_cam_id.size());
+
+                        pipe_data image_message(buffer.size());
+                        memcpy(image_message.data(), buffer.data(), buffer.size());
+
+                        // get_port("image_stream_monitor")->send(topic_msg, zmq::send_flags::sndmore);
+                        get_port("image_stream_monitor")->send(id_message, zmq::send_flags::sndmore);
+                        get_port("image_stream_monitor")->send(image_message, zmq::send_flags::dontwait);
 
                     }
                     else{

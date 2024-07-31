@@ -55,10 +55,13 @@ class basler_gige_cam_linker : public flame::component::object {
         void _image_stream_task(int camera_id, CBaslerUniversalInstantCamera* camera, json parameters);
         void _status_monitor_task(json parameters);
 
+        void _publish_status(); //publish camera work status for every seconds
+
     private:
-        unordered_map<int, pthread_t> _camera_grab_worker;
-        unordered_map<int, unsigned long long> _camera_grab_counter;
-        map<int, CBaslerUniversalInstantCamera*> _cameras;
+        unordered_map<int, pthread_t> _camera_grab_worker;  // camera id, grab thread
+        unordered_map<int, unsigned long long> _camera_grab_counter; // camera id, grab counter
+        unordered_map<int, json> _camera_status; // camera id, status
+        map<int, CBaslerUniversalInstantCamera*> _cameras; // camera id, camera device instance
         std::atomic<bool> _thread_stop_signal { false };
 
         pthread_t _status_monitor; /* for status publish */

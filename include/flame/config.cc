@@ -8,10 +8,13 @@
 #include <vector>
 
 namespace flame {
+    config_loader::config_loader(){
+
+    }
+
     config_loader::config_loader(const char* config_filepath){
 
         _config_abs_path = fs::canonical(fs::path(config_filepath));
-        // logger::info("Configuration File : {}", _config_abs_path.string());
 
         if(!load(_config_abs_path)){
             throw std::runtime_error("Configuration file load failed");
@@ -23,9 +26,18 @@ namespace flame {
     }
 
     bool config_loader::load(const char* config_filepath){
-        // filesystem::path _conf_path(config_filepath);
-        // return __load(_conf_path);
+        _config_abs_path = fs::canonical(fs::path(config_filepath));
+        if(!load(_config_abs_path)){
+            throw std::runtime_error("Configuration file load failed");
+            return false;
+        }
         return true;
+    }
+
+    bool config_loader::is_loaded(){
+        if(!_config.empty())
+            return true;
+        return false;
     }
 
     bool config_loader::load(filesystem::path config_filepath){
@@ -124,6 +136,10 @@ namespace flame {
 
     map<string, string> config_loader::get_service_topology(){
         return map<string, string>(); //empty
+    }
+
+    json config_loader::get_parameters(){
+        return json::object();
     }
 
     // bool config_loader::exist(const char* key){

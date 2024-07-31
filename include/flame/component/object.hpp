@@ -42,7 +42,11 @@ namespace flame::component {
             }
 
             pipe_socket* get_port(const string portname) {
-                return _socket_map[portname];
+                if(_socket_map.contains(portname))
+                    return _socket_map[portname];
+                else
+                    throw std::runtime_error(fmt::format("{} does not exist.", portname));
+                return nullptr;
             }
 
 

@@ -17,6 +17,7 @@
 #include <initializer_list>
 #include <filesystem>
 #include <map>
+#include <flame/arch/singleton.hpp>
 
 using namespace std;
 using json = nlohmann::json;
@@ -24,9 +25,10 @@ namespace fs = std::filesystem;
 
 namespace flame {
 
-    class config_loader {
+    class config_loader : public flame::arch::singleton<config_loader>{
         public:
             config_loader(const char* config_filepath);
+            config_loader();
             virtual ~config_loader();
 
             /**
@@ -38,6 +40,8 @@ namespace flame {
              */
             bool load(const char* config_filepath);
             bool load(filesystem::path config_filepath);
+
+            bool is_loaded();
 
 
             /**
@@ -81,6 +85,8 @@ namespace flame {
             filesystem::path get_bundle_path() const;
             string get_bundle_name();
 
+            json get_parameters();
+
         private:
             bool __load(fs::path filepath);
 
@@ -91,6 +97,8 @@ namespace flame {
     }; /* class */
 
 } /* namespace */
+
+#define config flame::config_loader::instance()
 
 
 #endif

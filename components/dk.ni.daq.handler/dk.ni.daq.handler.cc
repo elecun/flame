@@ -102,7 +102,7 @@ bool dk_ni_daq_handler::_start_pulse_generation(double freq, unsigned long long 
         return false;
     }
 
-    logger::info("[{}] Started the camera triggering...", get_name());
+    logger::info("[{}] Started the camera trigger pulse generation", get_name());
     _triggering.store(true);
 
     return true;
@@ -118,7 +118,7 @@ void dk_ni_daq_handler::_stop_pulse_generation(){
         DAQmxClearTask(_handle_pulsegen_task);
         _handle_pulsegen_task = nullptr;
 
-        logger::info("[{}] Stopped the camera triggering...", get_name());
+        logger::info("[{}] Stopped the camera trigger pulse generation", get_name());
         _triggering.store(false);
     }
     
@@ -134,8 +134,8 @@ void dk_ni_daq_handler::_subscribe(json parameters){
             pipe_data received_topic;
             pipe_data received_message;
 
-            zmq::recv_result_t topic_result = get_port("simulation")->recv(received_topic, zmq::recv_flags::none);
-            zmq::recv_result_t message_result = get_port("simulation")->recv(received_message, zmq::recv_flags::none);
+            zmq::recv_result_t topic_result = get_port("manual_control")->recv(received_topic, zmq::recv_flags::none);
+            zmq::recv_result_t message_result = get_port("manual_control")->recv(received_message, zmq::recv_flags::none);
             if(message_result){
                 std::string message(static_cast<char*>(received_message.data()), received_message.size());
                 auto json_data = json::parse(message);
