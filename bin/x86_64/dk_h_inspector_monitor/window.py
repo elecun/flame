@@ -85,12 +85,12 @@ class AppWindow(QMainWindow):
                 self.btn_op_trigger_off.clicked.connect(self.on_click_op_trigger_off)
 
                 # camera status monitoring
-                _table_camera_status_columns = ["ID", "Camera Name", "Address", "F/C", "Status"]
+                _table_camera_status_columns = ["Camera S/N", "Address", "F/C", "Status"]
                 self.__table_camera_status_model = QStandardItemModel()
                 self.__table_camera_status_model.setColumnCount(len(_table_camera_status_columns))
                 self.__table_camera_status_model.setHorizontalHeaderLabels(_table_camera_status_columns)
                 self.table_camera_status.setModel(self.__table_camera_status_model)
-                self.table_camera_status.resizeColumnsToContents()
+                #self.table_camera_status.resizeColumnsToContents()
 
                 
         except Exception as e:
@@ -108,7 +108,7 @@ class AppWindow(QMainWindow):
         camera_status_pipe_socket = camera_status_pipe_context.socket(zmq.SUB)
         camera_status_pipe_socket.setsockopt(zmq.RCVHWM, 100)
         camera_status_pipe_socket.setsockopt(zmq.RCVTIMEO, 1000) # timeout
-        camera_status_pipe_socket.setsockopt_string(zmq.SUBSCRIBE, "balser_gige_cam_linker/status")
+        camera_status_pipe_socket.setsockopt_string(zmq.SUBSCRIBE, "basler_gige_cam_linker/status")
         camera_status_pipe_socket.connect(f"tcp://{SERVER_IP_ADDRESS}:5556")
 
         try:
@@ -116,12 +116,17 @@ class AppWindow(QMainWindow):
                 try:
                     message = camera_status_pipe_socket.recv_string()
                     if len(message)>0:
-                        parsed_message = json.loads(message)
-                        print("received")
-                    else:
-                        print("null")
+                        parsed_data = json.loads(message)
+                        if 'cameras' in parsed_data:
+                            self.__table_camera_status_model.setRowCount(0)
+                            for idx, camera in enumerate(parsed_data["cameras"]):
+                                self.__table_camera_status_model.appendRow([QStandardItem(camera["sn"]), 
+                                                                            QStandardItem(camera["ip"]), 
+                                                                            QStandardItem(str(0)),
+                                                                            QStandardItem("Active")])
+
                 except json.JSONDecodeError:
-                    print("Camera Status data parse error occurred")
+                    pass
                 except zmq.Again: # timeout event
                     print("time out")
                     pass
