@@ -85,7 +85,7 @@ class AppWindow(QMainWindow):
                 self.btn_op_trigger_off.clicked.connect(self.on_click_op_trigger_off)
 
                 # camera status monitoring
-                _table_camera_status_columns = ["Camera S/N", "Address", "F/C", "Status"]
+                _table_camera_status_columns = ["Camera S/N", "Address", "Frames", "Status"]
                 self.__table_camera_status_model = QStandardItemModel()
                 self.__table_camera_status_model.setColumnCount(len(_table_camera_status_columns))
                 self.__table_camera_status_model.setHorizontalHeaderLabels(_table_camera_status_columns)
@@ -117,13 +117,12 @@ class AppWindow(QMainWindow):
                     message = camera_status_pipe_socket.recv_string()
                     if len(message)>0:
                         parsed_data = json.loads(message)
-                        if 'cameras' in parsed_data:
-                            self.__table_camera_status_model.setRowCount(0)
-                            for idx, camera in enumerate(parsed_data["cameras"]):
-                                self.__table_camera_status_model.appendRow([QStandardItem(camera["sn"]), 
-                                                                            QStandardItem(camera["ip"]), 
-                                                                            QStandardItem(str(0)),
-                                                                            QStandardItem("Active")])
+                        self.__table_camera_status_model.setRowCount(0)
+                        for idx, camera in enumerate(parsed_data):
+                            self.__table_camera_status_model.appendRow([QStandardItem(camera["sn"]), 
+                                                                        QStandardItem(camera["ip"]), 
+                                                                        QStandardItem(str(camera["frames"])),
+                                                                        QStandardItem(camera["status"])])
 
                 except json.JSONDecodeError:
                     pass

@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1927</width>
-    <height>1000</height>
+    <height>962</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -298,7 +298,7 @@ color:rgb(255,255,255);</string>
       <x>1460</x>
       <y>530</y>
       <width>451</width>
-      <height>411</height>
+      <height>381</height>
      </rect>
     </property>
     <property name="title">
@@ -399,7 +399,7 @@ color:rgb(255,255,255);</string>
       <x>560</x>
       <y>550</y>
       <width>371</width>
-      <height>351</height>
+      <height>361</height>
      </rect>
     </property>
     <property name="title">
@@ -444,7 +444,7 @@ color:rgb(255,255,255);</string>
       <x>10</x>
       <y>550</y>
       <width>541</width>
-      <height>351</height>
+      <height>361</height>
      </rect>
     </property>
     <property name="title">
@@ -456,7 +456,7 @@ color:rgb(255,255,255);</string>
        <x>10</x>
        <y>30</y>
        <width>521</width>
-       <height>311</height>
+       <height>321</height>
       </rect>
      </property>
      <property name="editTriggers">
