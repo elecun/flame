@@ -128,7 +128,6 @@ class AppWindow(QMainWindow):
                 except json.JSONDecodeError:
                     pass
                 except zmq.Again: # timeout event
-                    print("time out")
                     pass
         
         finally:

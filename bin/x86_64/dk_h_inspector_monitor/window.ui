@@ -295,14 +295,14 @@ color:rgb(255,255,255);</string>
    <widget class="QGroupBox" name="groupBox">
     <property name="geometry">
      <rect>
-      <x>1450</x>
-      <y>610</y>
+      <x>1460</x>
+      <y>530</y>
       <width>451</width>
-      <height>321</height>
+      <height>411</height>
      </rect>
     </property>
     <property name="title">
-     <string>Manual Control</string>
+     <string>Manual Control (experimental)</string>
     </property>
     <widget class="QPushButton" name="btn_op_trigger_on">
      <property name="geometry">
@@ -353,27 +353,98 @@ color:rgb(255,255,255);</string>
       <enum>Qt::Horizontal</enum>
      </property>
     </widget>
+    <widget class="QRadioButton" name="radioButton">
+     <property name="geometry">
+      <rect>
+       <x>30</x>
+       <y>90</y>
+       <width>161</width>
+       <height>20</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Batch Process Mode</string>
+     </property>
+    </widget>
+    <widget class="QRadioButton" name="radioButton_2">
+     <property name="geometry">
+      <rect>
+       <x>220</x>
+       <y>90</y>
+       <width>191</width>
+       <height>20</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Realtime Process Mode</string>
+     </property>
+    </widget>
+    <widget class="Line" name="line_2">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>120</y>
+       <width>431</width>
+       <height>20</height>
+      </rect>
+     </property>
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+    </widget>
    </widget>
    <widget class="QGroupBox" name="groupBox_2">
     <property name="geometry">
      <rect>
-      <x>700</x>
-      <y>600</y>
+      <x>560</x>
+      <y>550</y>
       <width>371</width>
-      <height>321</height>
+      <height>351</height>
      </rect>
     </property>
     <property name="title">
-     <string>Status Monitor</string>
+     <string>System Status Monitoring</string>
     </property>
+    <widget class="QLabel" name="label">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>30</y>
+       <width>161</width>
+       <height>16</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>OP Trigger(HMD Signal) :</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+     </property>
+    </widget>
+    <widget class="QLabel" name="label_op_trigger_status">
+     <property name="geometry">
+      <rect>
+       <x>180</x>
+       <y>30</y>
+       <width>91</width>
+       <height>16</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>OFF (Low)</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+     </property>
+    </widget>
    </widget>
    <widget class="QGroupBox" name="groupBox_3">
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>530</y>
+      <y>550</y>
       <width>541</width>
-      <height>391</height>
+      <height>351</height>
      </rect>
     </property>
     <property name="title">
@@ -385,7 +456,7 @@ color:rgb(255,255,255);</string>
        <x>10</x>
        <y>30</y>
        <width>521</width>
-       <height>351</height>
+       <height>311</height>
       </rect>
      </property>
      <property name="editTriggers">
