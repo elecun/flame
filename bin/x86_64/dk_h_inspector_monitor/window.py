@@ -27,6 +27,7 @@ import json
 import threading
 import numpy as np
 import cv2
+import time
 
 from console import ConsoleLogger
 
@@ -52,15 +53,14 @@ class AppWindow(QMainWindow):
         self.op_trigger_socket.setsockopt(zmq.SNDHWM, 1000)
         self.op_trigger_socket.bind("tcp://*:5008")
 
-        camera_status_monitor_thread = threading.Thread(target=self.__camera_status_update)
-        camera_status_monitor_thread.start()
-
-        self._stop_threads = False
-
+        self.camera_status_monitor_event = threading.Event()
+        self.camera_status_monitor_thread = threading.Thread(target=self.__camera_status_update, args =(self.camera_status_monitor_event, ))
+        self.camera_status_monitor_thread.start()
 
         # camera monitoring worker thread
-        cam_monitor_thread = threading.Thread(target=self.cam_view_monitoring)
-        cam_monitor_thread.start()
+        self.camera_monitor_event = threading.Event()
+        self.camera_monitor_thread = threading.Thread(target=self.__cam_view_monitoring, args =(self.camera_monitor_event, ))
+        self.camera_monitor_thread.start()
         
         try:            
             if "gui" in config:
@@ -92,6 +92,10 @@ class AppWindow(QMainWindow):
                 self.table_camera_status.setModel(self.__table_camera_status_model)
                 #self.table_camera_status.resizeColumnsToContents()
 
+                self.__frame_window_map = {}
+                for idx, id in enumerate(config["camera_id"]):
+                    self.__frame_window_map[id] = config["camera_window"][idx]
+
                 
         except Exception as e:
             self.__console.critical(f"{e}")
@@ -102,7 +106,7 @@ class AppWindow(QMainWindow):
     '''
     camera status table update function
     '''
-    def __camera_status_update(self):
+    def __camera_status_update(self, event):
         # data pipeline for camera status monitoring
         camera_status_pipe_context = zmq.Context()
         camera_status_pipe_socket = camera_status_pipe_context.socket(zmq.SUB)
@@ -111,27 +115,28 @@ class AppWindow(QMainWindow):
         camera_status_pipe_socket.setsockopt_string(zmq.SUBSCRIBE, "basler_gige_cam_linker/status")
         camera_status_pipe_socket.connect(f"tcp://{SERVER_IP_ADDRESS}:5556")
 
-        try:
-            while True:
-                try:
-                    message = camera_status_pipe_socket.recv_string()
-                    if len(message)>0:
-                        parsed_data = json.loads(message)
-                        self.__table_camera_status_model.setRowCount(0)
-                        for idx, camera in enumerate(parsed_data):
-                            self.__table_camera_status_model.appendRow([QStandardItem(camera["sn"]), 
-                                                                        QStandardItem(camera["ip"]), 
-                                                                        QStandardItem(str(camera["frames"])),
-                                                                        QStandardItem(camera["status"])])
-
-                except json.JSONDecodeError:
-                    pass
-                except zmq.Again: # timeout event
-                    pass
+        while True:
+            # if self.isInterruptionRequested():
+            #     break
+            try:
+                message = camera_status_pipe_socket.recv_string()
+                if len(message)>0:
+                    parsed_data = json.loads(message)
+                    self.__table_camera_status_model.setRowCount(0)
+                    for idx, camera in enumerate(parsed_data):
+                        self.__table_camera_status_model.appendRow([QStandardItem(camera["sn"]), QStandardItem(camera["ip"]), QStandardItem(str(camera["frames"])),QStandardItem(camera["status"])])
+            except json.JSONDecodeError:
+                pass
+            except zmq.Again: # timeout event
+                pass
+            
+            time.sleep(0.001)
+            if event.is_set():
+                break
         
-        finally:
-            camera_status_pipe_socket.close()
-            camera_status_pipe_context.term()
+    
+        camera_status_pipe_socket.close()
+        camera_status_pipe_context.term()
         
     # clear all guis
     def clear_all(self):
@@ -149,10 +154,14 @@ class AppWindow(QMainWindow):
     Close event
     '''
     def closeEvent(self, a0: QCloseEvent | None) -> None:
+        # self.requestInterruption() # to quit for thread
 
-        # threads termination
-        _stop_threads = True
-        
+        self.camera_status_monitor_thread.set()
+        self.camera_monitor_thread.set()
+
+        self.camera_status_monitor_thread.join()
+        self.camera_monitor_thread.join()
+
         self.__console.info("Terminated Successfully")
         return super().closeEvent(a0)
     
@@ -165,38 +174,62 @@ class AppWindow(QMainWindow):
             print(f"json parse error : {e}")
         
 
-    # trigger on button event
+    '''
+    OP Trigger Manual Control : ON
+    '''
     def on_click_op_trigger_on(self):
         msg = {"op_trigger": True }
-        self.__send_op_trigger_request("simulation", msg)
+        self.__send_op_trigger_request("manual_control", msg)
         print("Trigger ON")
 
+    '''
+    OP Trigger Manual Control : OFF
+    '''
     def on_click_op_trigger_off(self):
         msg = {"op_trigger": False }
         json_data = json.dumps(msg)
-        self.__send_op_trigger_request("simulation", msg)
+        self.__send_op_trigger_request("manual_control", msg)
         print("Trigger OFF")
 
     
     # camera monitoring thread function
-    def cam_view_monitoring(self):
-        cam_monitor_context = zmq.Context()
-        cam_monitor_socket = cam_monitor_context.socket(zmq.SUB)
-        cam_monitor_socket.setsockopt(zmq.RCVHWM, 5000)
-        cam_monitor_socket.setsockopt_string(zmq.SUBSCRIBE, "basler_gige_cam_linker/image_stream_monitor")
-        cam_monitor_socket.connect("tcp://192.168.0.50:5557")
+    def __cam_view_monitoring(self, event):
+        camera_monitor_context = zmq.Context()
+        camera_monitor_socket = camera_monitor_context.socket(zmq.SUB)
+        camera_monitor_socket.setsockopt(zmq.RCVHWM, 5000)
+        # camera_monitor_socket.setsockopt_string(zmq.SUBSCRIBE, "basler_gige_cam_linker/image_stream_monitor")
+        camera_monitor_socket.setsockopt_string(zmq.SUBSCRIBE, "")
+        camera_monitor_socket.connect(f"tcp://{SERVER_IP_ADDRESS}:5557")
 
-        count = 0
-        try:
-            while True:
-                image_recv = cam_monitor_socket.recv()
-                # nparr = np.frombuffer(image_recv, np.uint8)
-                # frame = cv2.imdecode(nparr, cv2.IMREAD_GRAYSCALE)
+        while True:
+            # if self.isInterruptionRequested():
+            #     break
 
-                print(f"camera image received : {count}")
-                count = count + 1
-        except KeyboardInterrupt:
-            print("Interrupted")
-        finally:
-            cam_monitor_socket.close()
-            cam_monitor_context.term()
+            camera_id = camera_monitor_socket.recv()
+            print(f"camera id : {camera_id}")
+
+            image_recv = camera_monitor_socket.recv()
+            nparr = np.frombuffer(image_recv, np.uint8)
+            frame = cv2.imdecode(nparr, cv2.IMREAD_GRAYSCALE)
+            _h, _w, _ch = frame.shape
+            _bpl = _ch*_w # bytes per line
+            print(f"resolution : {_h}, {_w}, {_ch}")
+            qt_image = QImage(frame.data, _w, _h, _bpl, QImage.Format.Format_Grayscale8)
+            pixmap = QPixmap.fromImage(qt_image)
+
+            # draw
+            try:
+                window = self.findChild(QLabel, self.__frame_window_map[camera_id])
+                window.setPixmap(pixmap.scaled(window.size(), Qt.AspectRatioMode.KeepAspectRatio))
+            except Exception as e:
+                self.__console.critical(f"camera {e}")
+
+            time.sleep(0.001)
+            if event.is_set():
+                break
+
+
+        camera_monitor_socket.close()
+        camera_monitor_context.term()
+
+        
