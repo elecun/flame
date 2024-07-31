@@ -11,7 +11,7 @@ namespace flame {
     config_loader::config_loader(const char* config_filepath){
 
         _config_abs_path = fs::canonical(fs::path(config_filepath));
-        // console::info("Configuration File : {}", _config_abs_path.string());
+        // logger::info("Configuration File : {}", _config_abs_path.string());
 
         if(!load(_config_abs_path)){
             throw std::runtime_error("Configuration file load failed");
@@ -39,7 +39,7 @@ namespace flame {
 
             /* file existance check */
             if(!filesystem::exists(filepath)){
-                console::error("Configuration file does not exist.");
+                logger::error("Configuration file does not exist.");
                 return false;
             }
 
@@ -48,15 +48,15 @@ namespace flame {
             file >> this->_config;
         }
         catch(const json::exception& e){
-            console::error("configuration file load failed : {}", e.what());
+            logger::error("configuration file load failed : {}", e.what());
             return false;
         }
         catch(const std::ifstream::failure& e){
-            console::error("configuration file load failed : {}", e.what());
+            logger::error("configuration file load failed : {}", e.what());
             return false;
         }
         catch(const filesystem::filesystem_error& e){
-            console::error("configuration file load failed : {}", e.what());
+            logger::error("configuration file load failed : {}", e.what());
             return false;
         }
 
@@ -111,12 +111,12 @@ namespace flame {
                 return _topology_map;
             }
             else {
-                console::info("Not defined data port connections");
+                logger::info("Not defined data port connections");
             }
 
         }
         catch(json::exception& e){
-            console::warn("Exception for reading dataport tolpology", e.what());
+            logger::warn("Exception for reading dataport tolpology", e.what());
         }
 
         return map<string, string>(); //empty
@@ -139,7 +139,7 @@ namespace flame {
     //             for(string& component:required_components){
     //                 manager->install(component.c_str());
     //             }
-    //             console::info("Totally installed : {}", manager->size());
+    //             logger::info("Totally installed : {}", manager->size());
     //         }
     //     }
 

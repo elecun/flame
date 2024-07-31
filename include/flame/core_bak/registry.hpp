@@ -35,7 +35,7 @@ namespace flame {
                     return true;
                 }
                 else {
-                    console::warn("{} has already existed in the system registry.", key);
+                    logger::warn("{} has already existed in the system registry.", key);
                     return false;
                 }
             }

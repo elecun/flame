@@ -20,14 +20,14 @@ void jetson_spi_reader::execute(){
             set_config[1] = (ch.second>>8) & 0xff;
 
             if((i2c_write(&_device, _i2c_config_register, set_config, sizeof(set_config)))!=sizeof(set_config)){
-                console::error("I2C Set Error");
+                logger::error("I2C Set Error");
             }
 
             unsigned char rcv_buffer[2] = {0x00, 0x00};
             if((i2c_read(&_device, _i2c_conversion_register, rcv_buffer, sizeof(rcv_buffer))) == sizeof(rcv_buffer)) {
                 short value = rcv_buffer[0] << 8 | rcv_buffer[1];
                 double scaled_value = (double)value*_fsr/65535;
-                console::info(fmt::format("{} Value : {}", ch.first, scaled_value));
+                logger::info(fmt::format("{} Value : {}", ch.first, scaled_value));
 
                 if(_datalog.is_open()){
                     _datalog << scaled_value;
@@ -45,7 +45,7 @@ void jetson_spi_reader::execute(){
         
     }
     else {
-        console::error("I2C Bus access error");
+        logger::error("I2C Bus access error");
     }
     
 }
@@ -64,31 +64,31 @@ bool jetson_spi_reader::configure(){
             vector<string> required_conf_keys {"bus", "model", "chip_address", "conversion_register", "config_register", "configure", "fsr"};
             for(string key:required_conf_keys){
                 if(!config.contains(key)){
-                    console::error(fmt::format("'{}' should be defined in this profile", key));
+                    logger::error(fmt::format("'{}' should be defined in this profile", key));
                     return false;
                 }
             }
         
             string bus_name = config["bus"].get<string>();
             if((_f_bus = i2c_open(bus_name.c_str())) == -1){
-                console::error("I2C Device open failed");
+                logger::error("I2C Device open failed");
                 return false;
             }
 
             _i2c_dev_model = config["model"].get<string>();
-            console::info(fmt::format("> Model Name : {}", _i2c_dev_model));
+            logger::info(fmt::format("> Model Name : {}", _i2c_dev_model));
 
             string c_address = config["chip_address"].get<string>();
             _i2c_chip_address = (unsigned char)stoi(c_address, nullptr, 16);
-            console::info(fmt::format("> I2C Chip Address : {}", c_address));
+            logger::info(fmt::format("> I2C Chip Address : {}", c_address));
 
             string conv_reg_address = config["conversion_register"].get<string>();
             _i2c_conversion_register = (unsigned char)stoi(conv_reg_address, nullptr, 16);
-            console::info(fmt::format("> I2C Conversion Register Address : {}", (int)_i2c_conversion_register));
+            logger::info(fmt::format("> I2C Conversion Register Address : {}", (int)_i2c_conversion_register));
 
             string config_reg_address = config["config_register"].get<string>();
             _i2c_config_register = (unsigned char)stoi(config_reg_address, nullptr, 16);
-            console::info(fmt::format("> I2C Config Register Address : {}", (int)_i2c_config_register));
+            logger::info(fmt::format("> I2C Config Register Address : {}", (int)_i2c_config_register));
 
             json conf_set = config["configure"];
             for(auto& c:conf_set){
@@ -99,7 +99,7 @@ bool jetson_spi_reader::configure(){
             }
 
             _fsr = config["fsr"].get<unsigned int>();
-            console::info(fmt::format("> I2C Config FSR : {}", _fsr));
+            logger::info(fmt::format("> I2C Config FSR : {}", _fsr));
 
             // I2C device initialize
             memset(&_device, 0, sizeof(_device));
@@ -115,7 +115,7 @@ bool jetson_spi_reader::configure(){
             // set_config[0] = _i2c_set_configure & 0xff;
             // set_config[1] = (_i2c_set_configure>>8) & 0xff;
             // if((i2c_write(&_device, _i2c_config_register, set_config, sizeof(set_config)))!=sizeof(set_config)){
-            //     console::error("I2C Set Error");
+            //     logger::error("I2C Set Error");
             // }
         }
 
@@ -127,7 +127,7 @@ bool jetson_spi_reader::configure(){
             vector<string> required_mqtt_keys {"broker", "id", "qos", "pub_prefix"};
             for(string key:required_mqtt_keys){
                 if(!mqtt_config.contains(key)){
-                    console::error(fmt::format("'{}' should be defined in this profile", key));
+                    logger::error(fmt::format("'{}' should be defined in this profile", key));
                     return false;
                 }
             }
@@ -139,7 +139,7 @@ bool jetson_spi_reader::configure(){
 
             try{
                 if(!_mq_client){
-                    console::info("Connect to {} ({})", _mq_broker_address, _mq_client_id);
+                    logger::info("Connect to {} ({})", _mq_broker_address, _mq_client_id);
                     _mq_client = new mqtt::async_client(_mq_broker_address, _mq_client_id, "./persist");
                     _mq_option.set_clean_session(true);
                     _mq_option.set_keep_alive_interval(60);
@@ -149,12 +149,12 @@ bool jetson_spi_reader::configure(){
                         _mq_client->connect(_mq_option)->wait();
                         }
                     catch (const mqtt::exception& e){
-                        console::error("Message Broker Connection error : {}", e.what());
+                        logger::error("Message Broker Connection error : {}", e.what());
                     }
                 }
             }
             catch(const mqtt::exception& e){
-                console::error("{}", e.what());
+                logger::error("{}", e.what());
                 return false;
             }
 
@@ -162,7 +162,7 @@ bool jetson_spi_reader::configure(){
 
     }
     catch(const json::exception& e){
-        console::error("Profile read/access error : {}", e.what());
+        logger::error("Profile read/access error : {}", e.what());
         return false;
     }
 

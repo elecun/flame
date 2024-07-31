@@ -27,7 +27,7 @@ bool dk_image_push_unittest::on_init(){
         for(const auto& entry : fs::directory_iterator(_image_path)){
             if(entry.is_regular_file() && entry.path().extension()==".PNG"){
                 _files.emplace_back(entry.path().string());
-                console::info("file : {}", entry.path().string());
+                logger::info("file : {}", entry.path().string());
             }
         }
 
@@ -43,7 +43,7 @@ bool dk_image_push_unittest::on_init(){
         
     }
     catch (const fs::filesystem_error& e){
-        console::error("{}", e.what());
+        logger::error("{}", e.what());
     }
     
     return true;
@@ -66,7 +66,7 @@ void dk_image_push_unittest::on_loop(){
         memcpy(message.data(), buffer.data(), buffer.size());
         _socket->send(message);
 
-        console::info("Sent data {} bytes ({})", buffer.size(), count++);
+        logger::info("Sent data {} bytes ({})", buffer.size(), count++);
     }
 }
 

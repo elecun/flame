@@ -10,7 +10,7 @@ flame::component::object* create(){ if(!_instance) _instance = new dk_local_temp
 void release(){ if(_instance){ delete _instance; _instance = nullptr; }}
 
 bool dk_local_temp_indicator::on_init(){
-    console::info("<{}> call dk_local_temp_indicator on_init", _THIS_COMPONENT_);
+    logger::info("<{}> call dk_local_temp_indicator on_init", _THIS_COMPONENT_);
 
     this->get_profile()->raw()["settings"]["device"]
     _port.Open("/dev/ttyUSB0");
@@ -20,22 +20,22 @@ bool dk_local_temp_indicator::on_init(){
 }
 
 void dk_local_temp_indicator::on_loop(){
-    console::info("<{}> call dk_local_temp_indicator on_loop", _THIS_COMPONENT_);
+    logger::info("<{}> call dk_local_temp_indicator on_loop", _THIS_COMPONENT_);
 
     static int n = 0;
     std::string message = fmt::format("push {}",n);
     zmq::message_t zmq_message(message.data(), message.size());
     this->get_dataport()->send(zmq_message, zmq::send_flags::dontwait);
 
-    console::info("{} : {}", _THIS_COMPONENT_, message);
+    logger::info("{} : {}", _THIS_COMPONENT_, message);
 
     n++;
 }
 
 void dk_local_temp_indicator::on_close(){
-    console::info("<{}> call dk_local_temp_indicator on_close", _THIS_COMPONENT_);
+    logger::info("<{}> call dk_local_temp_indicator on_close", _THIS_COMPONENT_);
 }
 
 void dk_local_temp_indicator::on_message(){
-    console::info("<{}> call dk_local_temp_indicator on_message", _THIS_COMPONENT_);
+    logger::info("<{}> call dk_local_temp_indicator on_message", _THIS_COMPONENT_);
 }

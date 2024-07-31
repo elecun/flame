@@ -29,11 +29,13 @@ using namespace std;
 int main(int argc, char* argv[])
 {
 
-    cxxopts::Options options("Flame options");
+    cxxopts::Options options("Flame bundle executor options");
 
+    /* program options */
     options.add_options()
-        ("c,config", "User Configuration File(*.conf)", cxxopts::value<string>())
-        ("l,logfile", "Save in Log File(flame.log)")
+        ("c,config", "user configuration file(*.conf)", cxxopts::value<string>()->default_value("default.conf"))
+        ("l,logfile", "save logs in file(flame.log)")
+        ("v,verbose", "verbose log level [trace|debug|info|warn|err|critical|off]", cxxopts::value<string>()->default_value("trace"))
         ("h,help", "Print usage");
 
     auto optval = options.parse(argc, argv);
@@ -42,7 +44,7 @@ int main(int argc, char* argv[])
         exit(EXIT_SUCCESS);
     }
 
-    // signal connect to callback
+    /* set signals to catch the abnormal interrupts */
     const int signals[] = { SIGINT, SIGTERM, SIGBUS, SIGKILL, SIGABRT, SIGSEGV };
     for(const int& s:signals)
         signal(s, signal_callback);
@@ -62,30 +64,43 @@ int main(int argc, char* argv[])
 
     mlockall(MCL_CURRENT|MCL_FUTURE); //avoid memory swaping
 
-    /* option arguments */
-    string _config {""};
-
-    if(optval.count("config")){ _config = optval["config"].as<string>(); }
-
-    /* logger configuration */
+    /* verbose control arguments */
     auto console_sink = std::make_shared<logger::sinks::stdout_color_sink_mt>();
     console_sink->set_pattern("[%Y-%m-%d %H:%M:%S] [%^%l%$] %v");
     std::vector<logger::sink_ptr> sinks { console_sink };
+
+    string _verbose_level = optval["verbose"].as<string>();
+    int _verbose_level_i = str2level(_verbose_level);
+    switch(_verbose_level_i){
+        case logger::level::trace: { console_sink->set_level(logger::level::trace); } break;
+        case logger::level::debug: { console_sink->set_level(logger::level::debug); } break;
+        case logger::level::info: { console_sink->set_level(logger::level::info); } break;
+        case logger::level::warn: { console_sink->set_level(logger::level::warn); } break;
+        case logger::level::err: { console_sink->set_level(logger::level::err); } break;
+        case logger::level::critical: { console_sink->set_level(logger::level::critical); } break;
+        case logger::level::off: { console_sink->set_level(logger::level::off); } break;
+    }
+
+    
+    /* logfile configuration */
     if(optval.count("logfile")) {
         auto file_sink = std::make_shared<logger::sinks::basic_file_sink_mt>("flame.log", true);
-        file_sink->set_level(spdlog::level::debug);
+        file_sink->set_level(static_cast<logger::level::level_enum>(_verbose_level_i));
         file_sink->set_pattern("[%Y-%m-%d %H:%M:%S] [%l] %v");
         sinks.push_back(file_sink);
     }
+
+    /* set logger set */
     auto logger = std::make_shared<logger::logger>("flame", sinks.begin(), sinks.end());
     logger::set_default_logger(logger);
 
-    /* begin */
+    /* program begin */
     logger::info("FLAME Execution Engine {} (built {}/{})",_FLAME_VER_, __DATE__, __TIME__);
 
     try{
-        if(!_config.empty()){
-            if(init(_config.c_str())){
+        string _config_file = optval["config"].as<string>();
+        if(!_config_file.empty()){
+            if(init(_config_file.c_str())){
                 logger::info("Bundle is now working...");
                 pause(); //wait until getting SIGINT
             }

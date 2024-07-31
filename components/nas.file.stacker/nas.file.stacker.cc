@@ -14,7 +14,7 @@ void release(){ if(_instance){ delete _instance; _instance = nullptr; }}
 bool nas_file_stacker::on_init(){
 
     fs::path save_path = fs::path(get_profile()->parameters().value("save_root", "/mnt/sddnas"));
-    console::info("[{}] Mounted NAS Storage : {}", get_name(), save_path.string());
+    logger::info("[{}] Mounted NAS Storage : {}", get_name(), save_path.string());
 
     _thread_image_stream = new thread(&nas_file_stacker::_subscribe_image_stream_task, this);
     

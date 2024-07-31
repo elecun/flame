@@ -36,16 +36,16 @@ void dk_remote_lens_linker::_lens_device_connect(int n_devices){
     
 	int retval = UsbOpen(n_devices);
 	if(retval != SUCCESS){
-        console::error("[{}] {}", get_name(), ErrorTxt(retval));
+        logger::error("[{}] {}", get_name(), ErrorTxt(retval));
 		return;
 	}
 
 	retval = UsbSetConfig();
 	if(retval != SUCCESS){
-        console::error("[{}] {}", get_name(), ErrorTxt(retval));
+        logger::error("[{}] {}", get_name(), ErrorTxt(retval));
 		return;
 	}
-	console::info("Lens device is connected.");
+	logger::info("Lens device is connected.");
 
     // uint16_t capabilities;
 	// CapabilitiesRead(&capabilities);
@@ -94,15 +94,15 @@ void dk_remote_lens_linker::_lens_scan()
 	// 		if(retval == SUCCESS){
 	// 			UsbOpen(i);
 	// 			ModelName(_model);
-    //             console::info("Lens #{} : {}({})", i, _model, _sn_string);
+    //             logger::info("Lens #{} : {}({})", i, _model, _sn_string);
 	// 			UsbClose();
-	// 			console::info("device closed");
+	// 			logger::info("device closed");
 	// 		}
     //         else {
-    //             console::warn("Len devices cannot be scanned");
+    //             logger::warn("Len devices cannot be scanned");
     //         }
 	// 	}
 	// }
 	// else
-    //     console::warn("No Lens devices are connected");
+    //     logger::warn("No Lens devices are connected");
 }

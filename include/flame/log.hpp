@@ -22,6 +22,21 @@
 #include <dep/spdlog/sinks/rotating_file_sink.h>
 namespace logger = spdlog;
 
+#include <string>
+using namespace std;
+inline int str2level(string& str){
+    if(!str.compare("trace")) { return logger::level::trace; }
+    else if(!str.compare("debug")) { return logger::level::debug; }
+    else if(!str.compare("info")) { return logger::level::info; }
+    else if(!str.compare("warn")) { return logger::level::warn; }
+    else if(!str.compare("err")) { return logger::level::err; }
+    else if(!str.compare("critical")) { return logger::level::critical; }
+    else if(!str.compare("off")) { return logger::level::off; }
+    
+    return -1;
+}
+
+
 #endif
 
 

@@ -15,7 +15,7 @@ bool dk_light_linker::on_init(){
 
     int sockfd = socket(AF_INET, SOCK_DGRAM, 0);
     if(sockfd < 0) {
-        console::error("[{}] Failed socket create", get_name());
+        logger::error("[{}] Failed socket create", get_name());
         return false;
     }
     

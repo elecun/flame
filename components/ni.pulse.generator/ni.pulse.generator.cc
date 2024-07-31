@@ -28,7 +28,7 @@ void ni_pulse_generator::on_loop(){
     zmq::message_t zmq_message(message.data(), message.size());
     this->get_dataport()->send(zmq_message, zmq::send_flags::dontwait);
 
-    console::info("{} : {}", _THIS_COMPONENT_, message);
+    logger::info("{} : {}", _THIS_COMPONENT_, message);
 
     n++;
 }

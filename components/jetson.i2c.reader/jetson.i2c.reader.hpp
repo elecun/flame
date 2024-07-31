@@ -28,7 +28,7 @@ class mq_callback : public virtual mqtt::callback{
     public:
         void connection_lost(const string& cause) override {
             if(!cause.empty()){
-                console::warn("Connection lost : {}", cause);
+                logger::warn("Connection lost : {}", cause);
             }
         }
 

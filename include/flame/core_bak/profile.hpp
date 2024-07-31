@@ -54,7 +54,7 @@ namespace flame::core {
                         return data[key].dump();
                     }
                     else {
-                        console::warn("{} key cannot be found.", key);
+                        logger::warn("{} key cannot be found.", key);
                     }
                 }
                 else {

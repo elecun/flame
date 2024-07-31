@@ -57,21 +57,21 @@ namespace flame::core::task {
                             _taskImpl->set_status(task::status_d::IDLE);
                         }
                         else {
-                            console::error("<{}> profile does not exist.", taskname);
+                            logger::error("<{}> profile does not exist.", taskname);
                         }
                     }
                 }
                 else {
-                    console::error("Component successfully loaded, but the instance has null pointer.");
+                    logger::error("Component successfully loaded, but the instance has null pointer.");
                 }
             }
             else {
                 _taskImpl = nullptr;
-                console::error("Component load failed.");
+                logger::error("Component load failed.");
             }
         }
         catch(std::runtime_error& e){
-            console::error("<{}> driver cannot be loadded ({})", taskname, e.what());
+            logger::error("<{}> driver cannot be loadded ({})", taskname, e.what());
         }
     }
 
@@ -81,7 +81,7 @@ namespace flame::core::task {
         }
         catch(std::runtime_error& e){
             if(instance){
-                console::error("<{}> driver cannot be loadded ({})", instance->get_name(), e.what());
+                logger::error("<{}> driver cannot be loadded ({})", instance->get_name(), e.what());
             }
             
         }
@@ -108,7 +108,7 @@ namespace flame::core::task {
             }
         }
         catch(const std::runtime_error& e){
-            console::error("Runtime Error(configure) : {}", e.what());
+            logger::error("Runtime Error(configure) : {}", e.what());
         }
 
         return false;
@@ -120,27 +120,27 @@ namespace flame::core::task {
                 if(_taskImpl->rtype==task::rtype_d::NT || _taskImpl->rtype==task::rtype_d::RT){
                     if(_taskImpl->_profile){
                         unsigned long long rtime = _taskImpl->_profile->data["info"]["cycle_ns"].get<unsigned long long>();
-                        console::info("<{}> Time Period : {} ns",_taskImpl->get_name(), rtime);
+                        logger::info("<{}> Time Period : {} ns",_taskImpl->get_name(), rtime);
                         set_rt_timer(rtime);
                         _ptrThread = new thread{ &flame::core::task::driver::do_process, this };
                     }
                 }
                 else {
-                    console::info("<{}> task is not a runnable(periodic) task.", _taskImpl->get_name());
+                    logger::info("<{}> task is not a runnable(periodic) task.", _taskImpl->get_name());
                 }
             }
             else {
-                console::warn("<{}> is still working. Task should be on STOPPED or IDLE state for execution.", _taskImpl->get_name());
+                logger::warn("<{}> is still working. Task should be on STOPPED or IDLE state for execution.", _taskImpl->get_name());
             }
         }
         else {
-            console::error("Invalid task instance. The instance is null.");
+            logger::error("Invalid task instance. The instance is null.");
         }
     }
 
     void driver::cleanup(){
         timer_delete(_timer_id);    //delete timer
-        console::info("Cleanup <{}>", _taskImpl->get_name());
+        logger::info("Cleanup <{}>", _taskImpl->get_name());
         _taskImpl->set_status(task::status_d::STOPPED);
         if(_taskImpl)
             _taskImpl->cleanup();
@@ -149,20 +149,20 @@ namespace flame::core::task {
 
     void driver::pause(){
         if(_taskImpl){
-            console::warn("Not support yet.");
+            logger::warn("Not support yet.");
         }
     }
 
     void driver::resume(){
         if(_taskImpl){
-            console::warn("Not support yet.");
+            logger::warn("Not support yet.");
         }
     }
 
     bool driver::load(const char* taskname){
 
         if(!taskname){
-            console::warn("Task was not specified. It must be requred.", taskname);
+            logger::warn("Task was not specified. It must be requred.", taskname);
             return false;
         }
 
@@ -174,12 +174,12 @@ namespace flame::core::task {
 
             // 1. check file existance
             if(!fs::exists(_task)){
-                console::error("{}{} doest not exist. please check path or task file.", taskname, _FILE_EXT_COMPONENT_);
+                logger::error("{}{} doest not exist. please check path or task file.", taskname, _FILE_EXT_COMPONENT_);
                 return false;
             }
 
             if(!fs::exists(_profile)){
-                console::error("{}{} doest not exist. please check path or profile file.", taskname, _FILE_EXT_PROFILE_);
+                logger::error("{}{} doest not exist. please check path or profile file.", taskname, _FILE_EXT_PROFILE_);
                 return false;
             }
             
@@ -188,7 +188,7 @@ namespace flame::core::task {
             if(_task_handle){
                 create_task pfcreate = (create_task)dlsym(_task_handle, "create");
                 if(!pfcreate){
-                    console::error("{} instance cannot be created", taskname);
+                    logger::error("{} instance cannot be created", taskname);
                     dlclose(_task_handle);
                     _task_handle = nullptr;
                     return false;
@@ -197,13 +197,13 @@ namespace flame::core::task {
                 return true;
             }
             else {
-                console::error("{} load error occured : {}", taskname, dlerror());
+                logger::error("{} load error occured : {}", taskname, dlerror());
                 dlclose(_task_handle);
                 _task_handle = nullptr;
             }
         }
         else {
-            console::error("Cannot find PATH in config file. You should define BIN_DIR.");
+            logger::error("Cannot find PATH in config file. You should define BIN_DIR.");
         }
 
         return false;
@@ -232,7 +232,7 @@ namespace flame::core::task {
         _sig_evt.sigev_signo = SIG_RUNTIME_TRIGGER; 
         _sig_evt.sigev_value.sival_ptr = _timer_id; 
         if(timer_create(CLOCK_REALTIME, &_sig_evt, &_timer_id)==-1)
-            console::error("timer create error");
+            logger::error("timer create error");
     
         const unsigned long long nano = (1000000000L);
         _time_spec.it_value.tv_sec = nsec / nano;
@@ -241,7 +241,7 @@ namespace flame::core::task {
         _time_spec.it_interval.tv_nsec = nsec % nano;
 
         if(timer_settime(_timer_id, 0, &_time_spec, nullptr)==-1)
-            console::error("timer setting error");
+            logger::error("timer setting error");
     }
 
     //concreate process impl.

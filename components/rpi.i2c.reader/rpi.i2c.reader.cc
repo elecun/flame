@@ -9,7 +9,7 @@ core::task::runnable* create(){ if(!_instance) _instance = new rpi_i2c_reader();
 void release(){ if(_instance){ delete _instance; _instance = nullptr; }}
 
 void rpi_i2c_reader::execute(){
-    console::info("rpi3.i2c.reader execute");
+    logger::info("rpi3.i2c.reader execute");
 }
 
 void rpi_i2c_reader::stop(){
@@ -21,7 +21,7 @@ bool rpi_i2c_reader::configure(){
         const json& profile = this->get_profile()->raw();
     }
     catch(const json::exception& e){
-        console::error("Profile read/access error : {}", e.what());
+        logger::error("Profile read/access error : {}", e.what());
         return false;
     }
 
@@ -44,7 +44,7 @@ void rpi_i2c_reader::resume(){
 bool rpi_i2c_reader::open_i2c(const char* bus){
     _f_bus = open(bus, O_RDWR);
     if(_f_bus<0){
-        console::error("Failed to open the I2C Bus {}", bus);
+        logger::error("Failed to open the I2C Bus {}", bus);
         return false;
     }
     return true;
@@ -57,7 +57,7 @@ long rpi_i2c_reader::read_i2c(const char* address, int len){
 	convert >> std::hex >> _i2c_address_int;
 
     if(ioctl(_f_bus, I2C_SLAVE, _i2c_address_int)<0){
-        console::error("Failed to acquire bus access and/or talk to slave");
+        logger::error("Failed to acquire bus access and/or talk to slave");
         return false;
     }
 

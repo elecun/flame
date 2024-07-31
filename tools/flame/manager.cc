@@ -48,7 +48,7 @@ namespace flame {
                     }
                 }
             }
-            logger::info("[*] Found {} component(s) in the bundle.", _component_list.size());
+            logger::info("Found {} component(s) in the bundle.", _component_list.size());
 
             // 2. check components profiles to create and manage inproc context
             for(auto& comp : _component_list){
@@ -56,20 +56,20 @@ namespace flame {
                 _component_uid_map.insert(map<string, util::uuid_t>::value_type(_cname, _uuid_gen.generate()));
                 _bundle_container.insert(map<util::uuid_t, component::driver*>::value_type(_component_uid_map[_cname], new component::driver(comp, _inproc_context)));
 
-                logger::info("[*] Installing component : {} (UID:{})", _cname, _component_uid_map[_cname].str());
+                logger::info("Installing component : {} (UID:{})", _cname, _component_uid_map[_cname].str());
             }
 
             // 3. call on_init function for all components
             for(auto& comp : _component_list){
                 string _cname = comp.filename().string();
                 if(!_bundle_container[_component_uid_map[_cname]]->on_init()){
-                    logger::error("[*] <{}> component has a problem to initialize", _cname);
+                    logger::error("<{}> component has a problem to initialize", _cname);
                     this->uninstall(_cname.c_str());
                 }
             }
         }
         catch(std::runtime_error& e){
-            logger::error("[*] Error : {}", e.what());
+            logger::error("Error : {}", e.what());
             this->uninstall();
             return false;
         }
@@ -80,7 +80,7 @@ namespace flame {
     void bundle_manager::uninstall(const char* component_name){
         if(component_name!=nullptr){
             if(_component_uid_map.find(component_name)==_component_uid_map.end()){
-                logger::warn("[*] <{}> cannot be found in the repository", component_name);
+                logger::warn("<{}> cannot be found in the repository", component_name);
                 return;
             }
 
@@ -91,7 +91,7 @@ namespace flame {
         }
         else {
             for(bundle_container_t::iterator itr = _bundle_container.begin(); itr!=_bundle_container.end(); ++itr){
-                logger::info("[*] Uninstalling component <{}>", itr->second->get_name());
+                logger::info("Uninstalling component <{}>", itr->second->get_name());
                 itr->second->on_close();
                 delete itr->second;
             }

@@ -8,8 +8,8 @@
 #include <chrono>
 #include <string>
 
-#include <flame/log.hpp>
 #include <flame/config_def.hpp>
+#include <flame/log.hpp>
 
 using namespace std;
 

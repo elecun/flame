@@ -6,14 +6,14 @@ flame::component* create(){ if(!_instance) _instance = new device_uvccam_multi()
 void release(){ if(_instance){ delete _instance; _instance = nullptr; }}
 
 void device_uvccam_multi::on_init(){
-    console::info("on_init");
+    logger::info("on_init");
 }
 
 void device_uvccam_multi::on_loop(){
-    console::info("on_loop");
+    logger::info("on_loop");
 }
 
 void device_uvccam_multi::on_close(){
-    console::info("on_close");
+    logger::info("on_close");
 }
 

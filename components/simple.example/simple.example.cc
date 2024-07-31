@@ -8,20 +8,20 @@ core::task::runnable* create(){ if(!_instance) _instance = new simple_example();
 void release(){ if(_instance){ delete _instance; _instance = nullptr; }}
 
 void simple_example::execute(){
-    console::info("execute");
+    logger::info("execute");
 }
 
 void simple_example::stop(){
-    console::info("stop");
+    logger::info("stop");
 }
 
 bool simple_example::configure(){
     try {
         const json& profile = this->get_profile()->raw();
-        console::info("configure");
+        logger::info("configure");
     }
     catch(const json::exception& e){
-        console::error("Profile read/access error : {}", e.what());
+        logger::error("Profile read/access error : {}", e.what());
         return false;
     }
 
@@ -29,14 +29,14 @@ bool simple_example::configure(){
 }
 
 void simple_example::cleanup(){
-    console::info("cleanup");
+    logger::info("cleanup");
 }
 
 void simple_example::pause(){
-    console::info("pause");
+    logger::info("pause");
 }
 
 void simple_example::resume(){
-    console::info("resume");
+    logger::info("resume");
 }
 

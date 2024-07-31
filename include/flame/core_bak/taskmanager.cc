@@ -28,14 +28,14 @@ namespace flame::core {
 
         /* static installation */
         if(instance){
-            console::warn("[*] Static installation is not support yet");
+            logger::warn("Static installation is not support yet");
             return false;
         }
 
         /* dynamic installation (~ install from component file) */
         else {
             if(!taskname){
-                console::warn("[*] Task was not specified. It must be required.", taskname);
+                logger::warn("Task was not specified. It must be required.", taskname);
                 return false;
             }
 
@@ -46,19 +46,19 @@ namespace flame::core {
                 fs::path _profile = _bin / fs::path{fmt::format("{}{}",taskname, _FILE_EXT_PROFILE_)};
 
                 if(!fs::exists(_task)){
-                    console::error("[*] {}{} doest not exist. please check path or task file.", taskname, _FILE_EXT_COMPONENT_);
+                    logger::error("{}{} doest not exist. please check path or task file.", taskname, _FILE_EXT_COMPONENT_);
                     return false;
                 }
 
                 if(!fs::exists(_profile)){
-                    console::error("[*] {}{} doest not exist. please check path or profile file.", taskname, _FILE_EXT_PROFILE_);
+                    logger::error("{}{} doest not exist. please check path or profile file.", taskname, _FILE_EXT_PROFILE_);
                     return false;
                 }
             }
 
             // 2. check for already working
             if(_task_uid_map.find(taskname)!=_task_uid_map.end()){
-                console::error("[*] {} is already installed. So it cannot be installed on same process.");
+                logger::error("{} is already installed. So it cannot be installed on same process.");
                 return false;
             }
 
@@ -68,14 +68,14 @@ namespace flame::core {
 
             // 4. check load fail or success
             if(_task_container[_task_uid_map[taskname]]->good()){
-                console::info("[*] Successfully installed <{}>(UID:{})", taskname, _task_uid_map[taskname].str());
+                logger::info("Successfully installed <{}>(UID:{})", taskname, _task_uid_map[taskname].str());
                 if(!_task_container[_task_uid_map[taskname]]->configure()){
-                    console::error("[*] <{}> component has a problem to configure.", taskname);
+                    logger::error("<{}> component has a problem to configure.", taskname);
                     this->uninstall(taskname);
                 }
             }
             else {
-                console::error("[*] <{}> component load failed", taskname);
+                logger::error("<{}> component load failed", taskname);
                 this->uninstall(taskname);
             }
             
@@ -99,7 +99,7 @@ namespace flame::core {
         /* for specified task */
         else {
             if(_task_uid_map.find(taskname)==_task_uid_map.end()){
-                console::warn("[*] {} cannot be found to uninstall", taskname);
+                logger::warn("{} cannot be found to uninstall", taskname);
                 return;
             }
 
@@ -121,7 +121,7 @@ namespace flame::core {
         /* for specified task */
         else {
             if(_task_uid_map.find(taskname)==_task_uid_map.end()){
-                console::warn("[*] {} cannot be found to run", taskname);
+                logger::warn("{} cannot be found to run", taskname);
                 return;
             }
 
@@ -147,7 +147,7 @@ namespace flame::core {
 
     flame::core::task::driver* task_manager::get_driver(const char* taskname){
         if(!taskname){
-            console::error("[*] It must be specified.");
+            logger::error("It must be specified.");
         }
         else{
             if(_task_uid_map.find(taskname)==_task_uid_map.end()){

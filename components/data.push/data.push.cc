@@ -10,7 +10,7 @@ flame::component::object* create(){ if(!_instance) _instance = new data_push(); 
 void release(){ if(_instance){ delete _instance; _instance = nullptr; }}
 
 bool data_push::on_init(){
-    console::info("init {}", _THIS_COMPONENT_);
+    logger::info("init {}", _THIS_COMPONENT_);
     return true;
 }
 
@@ -22,7 +22,7 @@ void data_push::on_loop(){
     zmq::message_t zmq_message(message.data(), message.size());
     this->get_dataport()->send(zmq_message, zmq::send_flags::dontwait);
 
-    console::info("{}",message);
+    logger::info("{}",message);
     n++;
 }
 

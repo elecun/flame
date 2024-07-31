@@ -23,13 +23,13 @@ bool basler_gige_cam_linker::on_init(){
         DeviceInfoList_t devices;
         tlFactory.EnumerateDevices(devices);
         if(devices.size()>1)
-            console::info("[{}] Found {} cameras", get_name(), devices.size());
+            logger::info("[{}] Found {} cameras", get_name(), devices.size());
 
         //3. create device
         for(int idx=0;idx<(int)devices.size();idx++){
             _cameras.insert(make_pair(stoi(devices[idx].GetUserDefinedName().c_str()), 
                             new CBaslerUniversalInstantCamera(tlFactory.CreateDevice(devices[idx]))));
-            console::info("[{}] Found User ID {}, (SN:{}, Address : {})", get_name(), devices[idx].GetUserDefinedName().c_str(), devices[idx].GetSerialNumber().c_str(), devices[idx].GetIpAddress().c_str());
+            logger::info("[{}] Found User ID {}, (SN:{}, Address : {})", get_name(), devices[idx].GetUserDefinedName().c_str(), devices[idx].GetSerialNumber().c_str(), devices[idx].GetIpAddress().c_str());
         }
 
         for(const auto& camera:_cameras){
@@ -43,11 +43,11 @@ bool basler_gige_cam_linker::on_init(){
 
     }
     catch(const GenericException& e){
-        console::error("[{}] Pylon Generic Exception : {}", get_name(), e.GetDescription());
+        logger::error("[{}] Pylon Generic Exception : {}", get_name(), e.GetDescription());
         return false;
     }
     catch(json::exception& e){
-        console::error("Profile Error : {}", e.what());
+        logger::error("Profile Error : {}", e.what());
         return false;
     }
 
@@ -140,7 +140,7 @@ void basler_gige_cam_linker::_image_stream_task(int camera_id, CBaslerUniversalI
                     if(ptrGrabResult->GrabSucceeded()){
                         const uint8_t* pImageBuffer = (uint8_t*)ptrGrabResult->GetBuffer();
                         _camera_grab_counter[camera_id]++;
-                        //console::info("> camera {} captured : {}x{}", camera_id, ptrGrabResult->GetWidth(), ptrGrabResult->GetHeight());
+                        //logger::info("> camera {} captured : {}x{}", camera_id, ptrGrabResult->GetWidth(), ptrGrabResult->GetHeight());
 
                         size_t size = ptrGrabResult->GetWidth() * ptrGrabResult->GetHeight() * 1;
                         cv::Mat image(ptrGrabResult->GetHeight(), ptrGrabResult->GetWidth(), CV_8UC1, (void*)pImageBuffer);
@@ -159,14 +159,14 @@ void basler_gige_cam_linker::_image_stream_task(int camera_id, CBaslerUniversalI
 
                     }
                     else{
-                        console::warn("[{}] Error-code({}) : {}", get_name(), ptrGrabResult->GetErrorCode(), ptrGrabResult->GetErrorDescription().c_str());
+                        logger::warn("[{}] Error-code({}) : {}", get_name(), ptrGrabResult->GetErrorCode(), ptrGrabResult->GetErrorDescription().c_str());
                     }
                 }
                 else
                     break;
             }
             catch(Pylon::TimeoutException& e){
-                console::error("[{}] Camera {} Timeout exception occurred! {}", get_name(), camera_id, e.GetDescription());
+                logger::error("[{}] Camera {} Timeout exception occurred! {}", get_name(), camera_id, e.GetDescription());
                 break;
             }
         }
@@ -175,6 +175,6 @@ void basler_gige_cam_linker::_image_stream_task(int camera_id, CBaslerUniversalI
         camera->Close();
     }
     catch(const GenericException& e){
-        console::error("[{}] {}", get_name(), e.GetDescription());
+        logger::error("[{}] {}", get_name(), e.GetDescription());
     }
 }
