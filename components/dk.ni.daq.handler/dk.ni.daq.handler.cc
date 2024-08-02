@@ -159,8 +159,8 @@ void dk_ni_daq_handler::_subscribe(json parameters){
         catch(const json::parse_error& e){
             logger::error("[{}] message cannot be parsed. {}", get_name(), e.what());
         }
-        catch(const exception& e){
-            logger::error("[{}] Error message parsing..", get_name());
+        catch(const std::runtime_error& e){
+            logger::error("[{}] Runtime error occurred!", get_name());
         }
     }
 

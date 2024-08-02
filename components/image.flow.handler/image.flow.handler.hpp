@@ -14,6 +14,7 @@
 
 #include <flame/component/object.hpp>
 #include <vector>
+#include <queue>
 #include <string>
 #include <opencv2/opencv.hpp>
 
@@ -32,6 +33,13 @@ class image_flow_handler : public flame::component::object {
         void on_message() override;
 
     private:
+        void _image_puller(json parameters);
+
+    private:
+        pthread_t _stream_puller_handle;
+        std::atomic<bool> _thread_stop_signal { false };
+
+        queue<vector<uint8_t>> _image_container;
 
 }; /* class */
 

@@ -41,7 +41,7 @@
         },
         "image_stream" : {
             "transport" : "inproc",
-            "socket_type" : "pub",
+            "socket_type" : "push",
             "queue_size" : 5000
         }
     }
