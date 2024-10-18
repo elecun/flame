@@ -51,7 +51,7 @@ namespace flame::component {
                             pipe_context* pipe = _componentImpl->create_pipe(name.c_str());
                             _componentImpl->create_port(pipe, 
                                                 name, /* socket name*/ 
-                                                socket_type, /* socket type */ 
+                                                str2type(socket_type), /* socket type */ 
                                                 q_size, /* buffer size */ 
                                                 host, /* host address to bind */
                                                 port, /* host port to bind */
