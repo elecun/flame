@@ -112,6 +112,20 @@ namespace flame::component {
                         _socket_map[socket_name]->connect(addr);
                     }
                     break;
+
+                    case flame::socket_type::req:{
+                        _socket_map.insert(make_pair(socket_name, new pipe_socket(*pipe, zmq::socket_type::req)));
+                        _socket_map[socket_name]->set(zmq::sockopt::rcvhwm, q_size);
+                        _socket_map[socket_name]->connect(addr);
+                    }
+                    break;
+
+                    case flame::socket_type::rep:{
+                        _socket_map.insert(make_pair(socket_name, new pipe_socket(*pipe, zmq::socket_type::rep)));
+                        _socket_map[socket_name]->set(zmq::sockopt::rcvhwm, q_size);
+                        _socket_map[socket_name]->bind(addr);
+                    }
+                    break;
                     default:
                         logger::warn("Undefined socket type you use.");
                 }

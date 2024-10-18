@@ -27,7 +27,9 @@ namespace flame {
         sub = 0,
         pub,
         push,
-        pull
+        pull,
+        req,
+        rep
     };
 
 
@@ -36,7 +38,9 @@ namespace flame {
             {"sub", socket_type::sub},
             {"pub", socket_type::pub},
             {"push", socket_type::push},
-            {"pull", socket_type::pull}
+            {"pull", socket_type::pull},
+            {"req", socket_type::req},
+            {"rep", socket_type::rep}
         };
 
         auto it = s_type.find(str_type);
