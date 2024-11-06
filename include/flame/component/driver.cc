@@ -193,7 +193,7 @@ namespace flame::component {
         _signal_event.sigev_value.sival_ptr = _timer_id; 
         if(timer_create(CLOCK_REALTIME, &_signal_event, &_timer_id)==-1)
             logger::error("timer create error");
-        logger::info("[{}] Trigger Signal ID : {}", get_name(), _signal_id);
+        logger::info("[{}] Assigned Trigger Signal ID : {}", get_name(), _signal_id);
     
         const unsigned long long nano = (1000000000L);
         _time_spec.it_value.tv_sec = nsec / nano;
