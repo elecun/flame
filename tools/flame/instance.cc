@@ -60,7 +60,6 @@ bool init(const char* config_path){
         config->load(config_path);
         
         if(install_bundle()){
-            logger::info("Successfully installed");
             run_bundle();
         }
     }
