@@ -43,6 +43,10 @@ namespace flame::component {
                         if(!transport.compare("inproc")){
                             _componentImpl->create_port(pipeline, name, str2type(socket_type), q_size, name);
                         }
+                        else if(!transport.compare("ipc")){
+                            // _componentImpl->create_port(pipeline, name, str2type(socket_type), q_size, name);
+                            logger::warn("ipc transport is not supported yet.");
+                        }
 
                         // 2.2 tcp data port
                         else if(!transport.compare("tcp")){
