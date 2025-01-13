@@ -13,6 +13,7 @@
 #define FLAME_COMPONENT_INTERFACE_HPP_INCLUDED
 
 #include <zmq.hpp>
+#include <zmq_addon.hpp>
 
 namespace flame::component {
     class driver;

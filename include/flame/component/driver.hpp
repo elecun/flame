@@ -22,6 +22,7 @@
 #include <type_traits>
 #include <thread>
 #include <zmq.hpp> //libzmq3-dev
+#include <zmq_addon.hpp>
 
 using namespace std;
 namespace fs = std::filesystem;

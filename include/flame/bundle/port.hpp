@@ -13,6 +13,7 @@
 #define FLAME_BUNDLE_PORT_HPP_INCLUDED
 
 #include <zmq.hpp>
+#include <zmq_addon.hpp>
 #include <flame/arch/singleton.hpp>
 
 using dataport = zmq::context_t;

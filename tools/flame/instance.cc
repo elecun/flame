@@ -8,6 +8,7 @@
 
 #include <dep/json.hpp>
 #include <zmq.hpp>
+#include <zmq_addon.hpp>
 
 #include <flame/log.hpp>
 #include <flame/config.hpp>
