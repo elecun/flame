@@ -39,7 +39,7 @@ namespace flame::component {
                         string transport = value["transport"].get<string>();
                         int q_size = value.value("queue_size", 1000);
                         
-                        // 2.1 build data port [inproc]
+                        // 2.1 build data port [inproc
                         if(!transport.compare("inproc")){
                             _componentImpl->create_port(pipeline, name, str2type(socket_type), q_size, name);
                         }
