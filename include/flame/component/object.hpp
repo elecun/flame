@@ -55,7 +55,7 @@ namespace flame::component {
             void set_status(dtype_status s) { _status = s; }
 
             /* create inproc port */
-            pipe_socket* create_port_inproc(const string socket_name, const flame::socket_type sock_type, int q_size, string fileter_topic = ""){
+            pipe_socket* create_port_inproc(const string socket_name, const flame::socket_type sock_type, int q_size, const int timeout=500, string fileter_topic = ""){
                 string endpoint = fmt::format("inproc://{}", socket_name);
                 switch(sock_type){
                     /* pub pattern socket */
@@ -63,6 +63,7 @@ namespace flame::component {
                         _socket_map.insert(make_pair(socket_name, new pipe_socket(*pipeline_context, zmq::socket_type::pub)));
                         _socket_map[socket_name]->set(zmq::sockopt::sndhwm, q_size);
                         _socket_map[socket_name]->set(zmq::sockopt::linger, 0);
+                        _socket_map[socket_name]->set(zmq::sockopt::rcvtimeo,timeout);
                         _socket_map[socket_name]->bind(endpoint);
                     }
                     break;
@@ -73,6 +74,7 @@ namespace flame::component {
                         _socket_map[socket_name]->set(zmq::sockopt::rcvhwm, q_size);
                         _socket_map[socket_name]->set(zmq::sockopt::subscribe, fileter_topic);
                         _socket_map[socket_name]->set(zmq::sockopt::linger, 0);
+                        _socket_map[socket_name]->set(zmq::sockopt::rcvtimeo,timeout);
                         _socket_map[socket_name]->connect(endpoint);
                     }
                     break;
@@ -82,7 +84,8 @@ namespace flame::component {
                         _socket_map.insert(make_pair(socket_name, new pipe_socket(*pipeline_context, zmq::socket_type::push)));
                         _socket_map[socket_name]->set(zmq::sockopt::sndhwm, q_size);
                         _socket_map[socket_name]->set(zmq::sockopt::linger, 0);
-                        _socket_map[socket_name]->bind(endpoint);
+                        _socket_map[socket_name]->set(zmq::sockopt::rcvtimeo,timeout);
+                        _socket_map[socket_name]->connect(endpoint);
                     }
                     break;
 
@@ -91,7 +94,8 @@ namespace flame::component {
                         _socket_map.insert(make_pair(socket_name, new pipe_socket(*pipeline_context, zmq::socket_type::pull)));
                         _socket_map[socket_name]->set(zmq::sockopt::rcvhwm, q_size);
                         _socket_map[socket_name]->set(zmq::sockopt::linger, 0);
-                        _socket_map[socket_name]->connect(endpoint);
+                        _socket_map[socket_name]->set(zmq::sockopt::rcvtimeo,timeout);
+                        _socket_map[socket_name]->bind(endpoint);
                     }
                     break;
 
@@ -100,6 +104,7 @@ namespace flame::component {
                         _socket_map.insert(make_pair(socket_name, new pipe_socket(*pipeline_context, zmq::socket_type::req)));
                         _socket_map[socket_name]->set(zmq::sockopt::sndhwm, q_size);
                         _socket_map[socket_name]->set(zmq::sockopt::linger, 0);
+                        _socket_map[socket_name]->set(zmq::sockopt::rcvtimeo,timeout);
                         _socket_map[socket_name]->connect(endpoint);
                     }
                     break;
@@ -109,6 +114,7 @@ namespace flame::component {
                         _socket_map.insert(make_pair(socket_name, new pipe_socket(*pipeline_context, zmq::socket_type::rep)));
                         _socket_map[socket_name]->set(zmq::sockopt::rcvhwm, q_size);
                         _socket_map[socket_name]->set(zmq::sockopt::linger, 0);
+                        _socket_map[socket_name]->set(zmq::sockopt::rcvtimeo,timeout);
                         _socket_map[socket_name]->bind(endpoint);
                     }
                     break;
@@ -122,13 +128,14 @@ namespace flame::component {
             }
 
             /* create tcp port */
-            pipe_socket* create_port_tcp(const string socket_name, const flame::socket_type sock_type, int q_size, const string address, int port, string filter_topic=""){
+            pipe_socket* create_port_tcp(const string socket_name, const flame::socket_type sock_type, int q_size, const string address, int port, const int timeout=500, string filter_topic=""){
                 
                 switch(sock_type){
                     case flame::socket_type::pub:{
                         _socket_map.insert(make_pair(socket_name, new pipe_socket(*pipeline_context, zmq::socket_type::pub)));
                         _socket_map[socket_name]->set(zmq::sockopt::sndhwm, q_size);
                         _socket_map[socket_name]->set(zmq::sockopt::linger, 0);
+                        _socket_map[socket_name]->set(zmq::sockopt::rcvtimeo,timeout);
                         _socket_map[socket_name]->bind(fmt::format("tcp://{}:{}", address, port));
 
                     }
@@ -139,6 +146,7 @@ namespace flame::component {
                         _socket_map[socket_name]->set(zmq::sockopt::rcvhwm, q_size);
                         _socket_map[socket_name]->set(zmq::sockopt::subscribe, filter_topic);
                         _socket_map[socket_name]->set(zmq::sockopt::linger, 0);
+                        _socket_map[socket_name]->set(zmq::sockopt::rcvtimeo,timeout);
                         _socket_map[socket_name]->connect(fmt::format("tcp://{}:{}", address, port));
                     }
                     break;
@@ -147,7 +155,8 @@ namespace flame::component {
                         _socket_map.insert(make_pair(socket_name, new pipe_socket(*pipeline_context, zmq::socket_type::push)));
                         _socket_map[socket_name]->set(zmq::sockopt::sndhwm, q_size);
                         _socket_map[socket_name]->set(zmq::sockopt::linger, 0);
-                        _socket_map[socket_name]->bind(fmt::format("tcp://{}:{}", address, port));
+                        _socket_map[socket_name]->set(zmq::sockopt::rcvtimeo,timeout);
+                        _socket_map[socket_name]->connect(fmt::format("tcp://{}:{}", address, port));
                     }
                     break;
 
@@ -155,8 +164,8 @@ namespace flame::component {
                         _socket_map.insert(make_pair(socket_name, new pipe_socket(*pipeline_context, zmq::socket_type::pull)));
                         _socket_map[socket_name]->set(zmq::sockopt::rcvhwm, q_size);
                         _socket_map[socket_name]->set(zmq::sockopt::linger, 0);
-                        _socket_map[socket_name]->set(zmq::sockopt::rcvtimeo,500);
-                        _socket_map[socket_name]->connect(fmt::format("tcp://{}:{}", address, port));
+                        _socket_map[socket_name]->set(zmq::sockopt::rcvtimeo,timeout);
+                        _socket_map[socket_name]->bind(fmt::format("tcp://{}:{}", address, port));
                     }
                     break;
 
@@ -164,6 +173,7 @@ namespace flame::component {
                         _socket_map.insert(make_pair(socket_name, new pipe_socket(*pipeline_context, zmq::socket_type::req)));
                         _socket_map[socket_name]->set(zmq::sockopt::sndhwm, q_size);
                         _socket_map[socket_name]->set(zmq::sockopt::linger, 0);
+                        _socket_map[socket_name]->set(zmq::sockopt::rcvtimeo,timeout);
                         _socket_map[socket_name]->connect(fmt::format("tcp://{}:{}", address, port));
                     }
                     break;
@@ -172,6 +182,7 @@ namespace flame::component {
                         _socket_map.insert(make_pair(socket_name, new pipe_socket(*pipeline_context, zmq::socket_type::rep)));
                         _socket_map[socket_name]->set(zmq::sockopt::rcvhwm, q_size);
                         _socket_map[socket_name]->set(zmq::sockopt::linger, 0);
+                        _socket_map[socket_name]->set(zmq::sockopt::rcvtimeo,timeout);
                         _socket_map[socket_name]->bind(fmt::format("tcp://{}:{}", address, port));
                     }
                     break;

@@ -46,10 +46,11 @@ namespace flame::component {
                         string socket_type = parameter["socket_type"].get<string>();
                         string transport = parameter["transport"].get<string>();
                         int q_size = parameter.value("queue_size", 1000);
+                        int tout = parameter.value("timeout_ms", 500);
                         
                         /* create port(socket) for inproc transport */
                         if(!transport.compare("inproc")){
-                            _componentImpl->create_port_inproc(portname, str2type(socket_type), q_size, portname);
+                            _componentImpl->create_port_inproc(portname, str2type(socket_type), q_size, tout, portname);
                         }
 
                         /* create port(socket) for ipc, but not support yet */
@@ -67,6 +68,7 @@ namespace flame::component {
                                                 q_size, /* buffer size */ 
                                                 host, /* host address to bind */
                                                 port, /* host port to bind */
+                                                tout, /* rcv timeout */
                                                 portname /* topic if subscriber */);
                         }
                     }
