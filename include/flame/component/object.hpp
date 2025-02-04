@@ -18,6 +18,8 @@
 #include <flame/component/profile.hpp>
 #include <flame/component/port.hpp>
 #include <memory>
+#include <atomic>
+#include <string>
 
 using namespace std;
 using path = std::filesystem::path;
