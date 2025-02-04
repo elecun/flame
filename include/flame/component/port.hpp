@@ -26,23 +26,35 @@ namespace flame {
     using pipe_data_multipart = zmq::multipart_t; /* multipart message */
 
     enum class socket_type : int {
-        sub = 0,
+        pair = 0,
         pub,
-        push,
-        pull,
+        sub,
         req,
-        rep
+        rep,
+        dealer,
+        router,
+        pull,
+        push,
+        xpub,
+        xsub,
+        stream
     };
 
 
     inline socket_type str2type(const std::string& str_type) {
         const std::unordered_map<std::string, socket_type> s_type = {
-            {"sub", socket_type::sub},
-            {"pub", socket_type::pub},
-            {"push", socket_type::push},
-            {"pull", socket_type::pull},
-            {"req", socket_type::req},
-            {"rep", socket_type::rep}
+            {"pair", flame::socket_type::pair},
+            {"pub", flame::socket_type::pub},
+            {"sub", flame::socket_type::sub},
+            {"req", flame::socket_type::req},
+            {"rep", flame::socket_type::rep},
+            {"dealer", flame::socket_type::dealer},
+            {"router", flame::socket_type::router},
+            {"pull", flame::socket_type::pull},
+            {"push", flame::socket_type::push},
+            {"xpub", flame::socket_type::xpub},
+            {"xsub", flame::socket_type::xsub},
+            {"stream", flame::socket_type::stream}
         };
 
         auto it = s_type.find(str_type);

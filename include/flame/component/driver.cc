@@ -19,51 +19,58 @@ using namespace std;
 
 namespace flame::component {
 
-    driver::driver(path component_path, flame::pipe_context* pipeline){
+    driver::driver(path component_path){
         try{
             fs::path cobject = component_path.replace_extension(__COMPONENT_FILE_EXT__);
             fs::path cprofile = component_path.replace_extension(__PROFILE_FILE_EXT__);
 
             if(load(cobject)){
                 assert(_componentImpl!=nullptr);
-                //1. set parameters
+                
+                /* set important parameters and profile first */
                 _componentImpl->_profile = make_unique<component::profile>(cprofile);
                 _componentImpl->_name = component_path.stem().string();
                 _componentImpl->_status = dtype_status::STOPPED;
 
-                // 2. assign inproc dataport
+                /* get dataport descriptions in profile */
                 json _dataport = _componentImpl->get_profile()->dataport();
+
+                /* assign context with number of io threads */
+                int n_socket_io = static_cast<int>(_dataport.size());
+                _componentImpl->pipeline_context = make_unique<pipe_context>(n_socket_io);
+                logger::info("Component <{}> has pipeline context with {} I/O Threads", component_path.filename().string(), n_socket_io);
+
+                /* assign user defined data port */
                 if(!_dataport.empty()){
-                    for(auto& [name, value] : _dataport.items()){
-                        string socket_type = value["socket_type"].get<string>();
-                        string transport = value["transport"].get<string>();
-                        int q_size = value.value("queue_size", 1000);
+                    for(auto& [portname, parameter] : _dataport.items()){
+                        string socket_type = parameter["socket_type"].get<string>();
+                        string transport = parameter["transport"].get<string>();
+                        int q_size = parameter.value("queue_size", 1000);
                         
-                        // 2.1 build data port [inproc
+                        /* create port(socket) for inproc transport */
                         if(!transport.compare("inproc")){
-                            _componentImpl->create_port(pipeline, name, str2type(socket_type), q_size, name);
+                            _componentImpl->create_port_inproc(portname, str2type(socket_type), q_size, portname);
                         }
+
+                        /* create port(socket) for ipc, but not support yet */
                         else if(!transport.compare("ipc")){
-                            // _componentImpl->create_port(pipeline, name, str2type(socket_type), q_size, name);
                             logger::warn("ipc transport is not supported yet.");
                         }
 
-                        // 2.2 tcp data port
+                        /* create port(socket) for tcp */
                         else if(!transport.compare("tcp")){
-                            int port = value.value("port", 5555);
-                            string host = value.value("host", "*");
-                            pipe_context* pipe = _componentImpl->create_pipe(name.c_str());
-                            _componentImpl->create_port(pipe, 
-                                                name, /* socket name*/ 
+                            int port = parameter.value("port", 5555);
+                            string host = parameter.value("host", "*");
+                            _componentImpl->create_port_tcp( 
+                                                portname, /* socket name*/ 
                                                 str2type(socket_type), /* socket type */ 
                                                 q_size, /* buffer size */ 
                                                 host, /* host address to bind */
                                                 port, /* host port to bind */
-                                                name /* topic if subscriber */);
+                                                portname /* topic if subscriber */);
                         }
                     }
                 }
-                
             }
         }
         catch (std::runtime_error& e){
@@ -73,9 +80,21 @@ namespace flame::component {
     }
 
     driver::~driver(){
+        try{
+            /* clear all */
+            _componentImpl->close_port();
 
-        _componentImpl->destory_pipe();
+            /* pipeline termination */
+            _componentImpl->pipeline_context->close();
+        }
+        catch(const zmq::error_t& e){
+            logger::error("Pipeline error : {}", e.what());
+        }
+        catch(const std::runtime_error& e){
+            logger::error("Runtime Error : {}", e.what());
+        }
 
+        /* unload component */
         unload();
     }
 
@@ -112,11 +131,19 @@ namespace flame::component {
         try {
             timer_delete(_timer_id);    //delete timer
             if(_componentImpl){
+                
+                /* shutdown pipeline context, all socket will be closed */
+                //_componentImpl->pipeline_context->shutdown();
+
+                /* call after pipeline context shutdown */
                 return _componentImpl->on_close();
             }
         }
         catch(const std::runtime_error& e){
             logger::error("Runtime Error(on_close) : {}", e.what());
+        }
+        catch(const zmq::error_t& e){
+            logger::error("Pipeline error : {}", e.what());
         }
 
     }
@@ -136,11 +163,10 @@ namespace flame::component {
         try{
             // not exist
             if(!fs::exists(component_path)){
-                logger::error("{} component cannot be found.", component_path.filename().string());
+                logger::error("<{}> component cannot be found.", component_path.filename().string());
                 return false;
             }
 
-            logger::info("{}", component_path.c_str());
             _component_handle = dlopen(component_path.string().c_str(), RTLD_LAZY|RTLD_LOCAL);
             if(!_component_handle){
                 logger::error("<{}> {}", component_path.filename().string(), dlerror());
@@ -150,7 +176,7 @@ namespace flame::component {
             create_component pfcreate = (create_component)dlsym(_component_handle, "create");
             const char* dlsym_error = dlerror();
             if(dlsym_error){
-                logger::error("{} component instance cannot be created", component_path.filename().string());
+                logger::error("<{}> component instance cannot be created", component_path.filename().string());
                 dlclose(_component_handle);
                 _component_handle = nullptr;
                 return false;
@@ -222,11 +248,11 @@ namespace flame::component {
         while(1){
             sigwait(&thread_sigmask, &_sig_no); //wait until receive signal
             if(_sig_no==_signal_id){
-                auto t_now = std::chrono::high_resolution_clock::now();
+                // auto t_now = std::chrono::high_resolution_clock::now();
                 if(_componentImpl){
                     _componentImpl->on_loop();
                 }
-                auto t_elapsed = std::chrono::high_resolution_clock::now();
+                // auto t_elapsed = std::chrono::high_resolution_clock::now();
                 //logger::info("Processing Elapsed Time : {} sec", std::chrono::duration<double, std::chrono::milliseconds::period>(t_elapsed - t_now).count());
             }
         }

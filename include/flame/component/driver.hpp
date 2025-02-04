@@ -6,8 +6,8 @@
  * @date 2024-06-13
  * 
  * @copyright Copyright (c) 2024
- * 
  */
+
 
 #ifndef FLAME_COMPONENT_DRIVER_HPP_INCLUDED
 #define FLAME_COMPONENT_DRIVER_HPP_INCLUDED
@@ -30,14 +30,16 @@ namespace fs = std::filesystem;
 namespace flame::component {
     class driver : public component::interface {
         public:
-            driver(fs::path component_path, flame::pipe_context* context); //without extension
+            driver(fs::path component_path); //without extension
             virtual ~driver();
 
+            /* common component interfaces */
             bool on_init() override;
             void on_loop() override;
             void on_close() override;
             void on_message() override;
 
+            /* get component name */
             const char* get_name() {
                 if(_componentImpl)
                     return _componentImpl->get_name();

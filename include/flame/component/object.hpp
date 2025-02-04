@@ -37,10 +37,12 @@ namespace flame::component {
             const dtype_status get_status() const { return _status; }
 
         protected:
+            /* get component profile */
             component::profile* get_profile() const { 
                 return _profile.get();
             }
 
+            /* get port from portname */
             pipe_socket* get_port(const string portname) {
                 if(_socket_map.contains(portname))
                     return _socket_map[portname];
@@ -49,156 +51,145 @@ namespace flame::component {
                 return nullptr;
             }
 
-
         private:
             void set_status(dtype_status s) { _status = s; }
 
-            /**
-             * @brief Create a pipe context
-             * 
-             * @param pipename pipe name
-             * @return pipe_context* created context
-             */
-            pipe_context* create_pipe(const string pipename){
-                if(_pipe_map.contains(pipename)){
-                    logger::warn("{} pipe is already defined", pipename);
-                    return nullptr;
+            /* create inproc port */
+            pipe_socket* create_port_inproc(const string socket_name, const flame::socket_type sock_type, int q_size, string fileter_topic = ""){
+                string endpoint = fmt::format("inproc://{}", socket_name);
+                switch(sock_type){
+                    /* pub pattern socket */
+                    case flame::socket_type::pub:{
+                        _socket_map.insert(make_pair(socket_name, new pipe_socket(*pipeline_context, zmq::socket_type::pub)));
+                        _socket_map[socket_name]->set(zmq::sockopt::sndhwm, q_size);
+                        _socket_map[socket_name]->set(zmq::sockopt::linger, 0);
+                        _socket_map[socket_name]->bind(endpoint);
+                    }
+                    break;
+
+                    /* sub pattern socket */
+                    case flame::socket_type::sub:{
+                        _socket_map.insert(make_pair(socket_name, new pipe_socket(*pipeline_context, zmq::socket_type::sub)));
+                        _socket_map[socket_name]->set(zmq::sockopt::rcvhwm, q_size);
+                        _socket_map[socket_name]->set(zmq::sockopt::subscribe, fileter_topic);
+                        _socket_map[socket_name]->set(zmq::sockopt::linger, 0);
+                        _socket_map[socket_name]->connect(endpoint);
+                    }
+                    break;
+
+                    /* push pattern socket */
+                    case flame::socket_type::push:{
+                        _socket_map.insert(make_pair(socket_name, new pipe_socket(*pipeline_context, zmq::socket_type::push)));
+                        _socket_map[socket_name]->set(zmq::sockopt::sndhwm, q_size);
+                        _socket_map[socket_name]->set(zmq::sockopt::linger, 0);
+                        _socket_map[socket_name]->bind(endpoint);
+                    }
+                    break;
+
+                    /* pull pattern socket */
+                    case flame::socket_type::pull:{
+                        _socket_map.insert(make_pair(socket_name, new pipe_socket(*pipeline_context, zmq::socket_type::pull)));
+                        _socket_map[socket_name]->set(zmq::sockopt::rcvhwm, q_size);
+                        _socket_map[socket_name]->set(zmq::sockopt::linger, 0);
+                        _socket_map[socket_name]->connect(endpoint);
+                    }
+                    break;
+
+                    /* req pattern socket */
+                    case flame::socket_type::req:{
+                        _socket_map.insert(make_pair(socket_name, new pipe_socket(*pipeline_context, zmq::socket_type::req)));
+                        _socket_map[socket_name]->set(zmq::sockopt::sndhwm, q_size);
+                        _socket_map[socket_name]->set(zmq::sockopt::linger, 0);
+                        _socket_map[socket_name]->connect(endpoint);
+                    }
+                    break;
+                    
+                    /* req pattern socket */
+                    case flame::socket_type::rep:{
+                        _socket_map.insert(make_pair(socket_name, new pipe_socket(*pipeline_context, zmq::socket_type::rep)));
+                        _socket_map[socket_name]->set(zmq::sockopt::rcvhwm, q_size);
+                        _socket_map[socket_name]->set(zmq::sockopt::linger, 0);
+                        _socket_map[socket_name]->bind(endpoint);
+                    }
+                    break;
+
+                    default:
+                        logger::warn("Unsupported socket type you use.");
                 }
-                else {
-                    _pipe_map.insert(make_pair(pipename, new pipe_context(1)));
-                }
-                return _pipe_map[pipename];
+
+                logger::info("[{}] Created Inproc port({}) : {}", _name, static_cast<int>(sock_type), endpoint);
+                return _socket_map[socket_name];
             }
 
-            /**
-             * @brief Create a port object
-             * 
-             * @param pipe created pipe context
-             * @param socket_name socket name to create 
-             * @param socket_type socket type (e.g. pub, sub)
-             * @param q_size custom queue size (default:1000)
-             * @return pipe_socket* created pipe socket pointer
-             */
-            pipe_socket* create_port(pipe_context* pipe, const string socket_name, const flame::socket_type socket_type, int q_size, string filter_topic = ""){
-
-                string addr = fmt::format("inproc://{}", socket_name);
-
-                switch(socket_type){
+            /* create tcp port */
+            pipe_socket* create_port_tcp(const string socket_name, const flame::socket_type sock_type, int q_size, const string address, int port, string filter_topic=""){
+                
+                switch(sock_type){
                     case flame::socket_type::pub:{
-                        _socket_map.insert(make_pair(socket_name, new pipe_socket(*pipe, zmq::socket_type::pub)));
+                        _socket_map.insert(make_pair(socket_name, new pipe_socket(*pipeline_context, zmq::socket_type::pub)));
                         _socket_map[socket_name]->set(zmq::sockopt::sndhwm, q_size);
-                        _socket_map[socket_name]->bind(addr);
+                        _socket_map[socket_name]->set(zmq::sockopt::linger, 0);
+                        _socket_map[socket_name]->bind(fmt::format("tcp://{}:{}", address, port));
+
                     }
                     break;
 
                     case flame::socket_type::sub:{
-                        _socket_map.insert(make_pair(socket_name, new pipe_socket(*pipe, zmq::socket_type::sub)));
+                        _socket_map.insert(make_pair(socket_name, new pipe_socket(*pipeline_context, zmq::socket_type::sub)));
                         _socket_map[socket_name]->set(zmq::sockopt::rcvhwm, q_size);
                         _socket_map[socket_name]->set(zmq::sockopt::subscribe, filter_topic);
-                        _socket_map[socket_name]->connect(addr);
-                    }
-                    break;
-
-                    case flame::socket_type::push:{
-                        _socket_map.insert(make_pair(socket_name, new pipe_socket(*pipe, zmq::socket_type::push)));
-                        _socket_map[socket_name]->set(zmq::sockopt::sndhwm, q_size);
-                        _socket_map[socket_name]->bind(addr);
-                    }
-                    break;
-
-                    case flame::socket_type::pull:{
-                        _socket_map.insert(make_pair(socket_name, new pipe_socket(*pipe, zmq::socket_type::pull)));
-                        _socket_map[socket_name]->set(zmq::sockopt::rcvhwm, q_size);
-                        _socket_map[socket_name]->connect(addr);
-                    }
-                    break;
-
-                    case flame::socket_type::req:{
-                        _socket_map.insert(make_pair(socket_name, new pipe_socket(*pipe, zmq::socket_type::req)));
-                        _socket_map[socket_name]->set(zmq::sockopt::sndhwm, q_size);
-                        _socket_map[socket_name]->connect(addr);
-                    }
-                    break;
-
-                    case flame::socket_type::rep:{
-                        _socket_map.insert(make_pair(socket_name, new pipe_socket(*pipe, zmq::socket_type::rep)));
-                        _socket_map[socket_name]->set(zmq::sockopt::rcvhwm, q_size);
-                        _socket_map[socket_name]->bind(addr);
-                    }
-                    break;
-                    default:
-                        logger::warn("Undefined socket type you use.");
-                }
-                logger::info("[{}] Created port({}) : {}", _name, static_cast<int>(socket_type), addr);
-                return _socket_map[socket_name];
-            }
-
-            pipe_socket* create_port(pipe_context* pipe, const string socket_name, const flame::socket_type socket_type, int q_size, const string address, int port, string topic = ""){
-                switch(socket_type){
-                    case flame::socket_type::pub:{
-                        _socket_map.insert(make_pair(socket_name, new pipe_socket(*pipe, zmq::socket_type::pub)));
-                        _socket_map[socket_name]->set(zmq::sockopt::sndhwm, q_size);
-                        // _socket_map[socket_name]->set(zmq::sockopt::sndbuf, q_size);
-                        _socket_map[socket_name]->bind(fmt::format("tcp://{}:{}", address, port));
-
-                    }
-                    break;
-
-                    case flame::socket_type::sub:{
-                        _socket_map.insert(make_pair(socket_name, new pipe_socket(*pipe, zmq::socket_type::sub)));
-                        _socket_map[socket_name]->set(zmq::sockopt::rcvhwm, q_size);
-                        _socket_map[socket_name]->set(zmq::sockopt::subscribe, topic);
+                        _socket_map[socket_name]->set(zmq::sockopt::linger, 0);
                         _socket_map[socket_name]->connect(fmt::format("tcp://{}:{}", address, port));
                     }
                     break;
 
                     case flame::socket_type::push:{
-                        _socket_map.insert(make_pair(socket_name, new pipe_socket(*pipe, zmq::socket_type::push)));
+                        _socket_map.insert(make_pair(socket_name, new pipe_socket(*pipeline_context, zmq::socket_type::push)));
                         _socket_map[socket_name]->set(zmq::sockopt::sndhwm, q_size);
-                        // _socket_map[socket_name]->set(zmq::sockopt::sndbuf, q_size);
+                        _socket_map[socket_name]->set(zmq::sockopt::linger, 0);
                         _socket_map[socket_name]->bind(fmt::format("tcp://{}:{}", address, port));
                     }
                     break;
 
                     case flame::socket_type::pull:{
-                    _socket_map.insert(make_pair(socket_name, new pipe_socket(*pipe, zmq::socket_type::pull)));
-                    _socket_map[socket_name]->set(zmq::sockopt::rcvhwm, q_size);
-                    _socket_map[socket_name]->connect(fmt::format("tcp://{}:{}", address, port));
+                        _socket_map.insert(make_pair(socket_name, new pipe_socket(*pipeline_context, zmq::socket_type::pull)));
+                        _socket_map[socket_name]->set(zmq::sockopt::rcvhwm, q_size);
+                        _socket_map[socket_name]->set(zmq::sockopt::linger, 0);
+                        _socket_map[socket_name]->set(zmq::sockopt::rcvtimeo,500);
+                        _socket_map[socket_name]->connect(fmt::format("tcp://{}:{}", address, port));
                     }
                     break;
 
                     case flame::socket_type::req:{
-                        _socket_map.insert(make_pair(socket_name, new pipe_socket(*pipe, zmq::socket_type::req)));
+                        _socket_map.insert(make_pair(socket_name, new pipe_socket(*pipeline_context, zmq::socket_type::req)));
                         _socket_map[socket_name]->set(zmq::sockopt::sndhwm, q_size);
+                        _socket_map[socket_name]->set(zmq::sockopt::linger, 0);
                         _socket_map[socket_name]->connect(fmt::format("tcp://{}:{}", address, port));
                     }
                     break;
 
                     case flame::socket_type::rep:{
-                        _socket_map.insert(make_pair(socket_name, new pipe_socket(*pipe, zmq::socket_type::rep)));
+                        _socket_map.insert(make_pair(socket_name, new pipe_socket(*pipeline_context, zmq::socket_type::rep)));
                         _socket_map[socket_name]->set(zmq::sockopt::rcvhwm, q_size);
+                        _socket_map[socket_name]->set(zmq::sockopt::linger, 0);
                         _socket_map[socket_name]->bind(fmt::format("tcp://{}:{}", address, port));
                     }
                     break;
                     default:
-                        logger::warn("Undefined socket type you use.");
+                        logger::warn("Unsupported socket type you use.");
                 }
                 
-                logger::info("[{}] Created port({}) : {}:{}", _name, static_cast<int>(socket_type), address, port);
+                logger::info("[{}] Created TCP port({}) : {}:{}", _name, static_cast<int>(sock_type), address, port);
                 return _socket_map[socket_name];
             }
 
-            void destory_pipe(){
-                for(const auto& pair : _socket_map){
-                    pair.second->close();
-                    delete pair.second;
-                }
-
-                for(const auto& pair : _pipe_map){
-                    pair.second->close();
-                    delete pair.second;
-                }
+        /* clear all pipe data to close immediately */
+        void close_port(){
+            for(auto& [key, sock] : _socket_map){
+                sock->set(zmq::sockopt::linger, 0);
+                sock->close();
             }
+        }
 
         private:
             dtype_status _status { dtype_status::STOPPED };
@@ -206,7 +197,10 @@ namespace flame::component {
             unique_ptr<profile> _profile;
 
             unordered_map<string, pipe_socket*> _socket_map;
-            unordered_map<string, pipe_context*> _pipe_map;
+
+        protected:
+            /* pipe context */
+            unique_ptr<pipe_context> pipeline_context;
             
             
     }; /* class */

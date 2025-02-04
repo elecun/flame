@@ -13,7 +13,6 @@ namespace flame {
 
         // 1. create context
         _component_uid_map.reserve(50);
-        _inproc_context = new pipe_context(1);    // inproc transport is effective for single(1) I/O thread
     }
 
     bundle_manager::~bundle_manager(){
@@ -25,10 +24,6 @@ namespace flame {
             }
             _bundle_container.clear();
         }
-
-        // 2. shutdown context
-        if(_inproc_context)
-            _inproc_context->shutdown();
 
     }
 
@@ -54,7 +49,7 @@ namespace flame {
             for(auto& comp : _component_list){
                 string _cname = comp.filename().string();
                 _component_uid_map.insert(map<string, util::uuid_t>::value_type(_cname, _uuid_gen.generate()));
-                _bundle_container.insert(map<util::uuid_t, component::driver*>::value_type(_component_uid_map[_cname], new component::driver(comp, _inproc_context)));
+                _bundle_container.insert(map<util::uuid_t, component::driver*>::value_type(_component_uid_map[_cname], new component::driver(comp)));
 
                 logger::info("Installing component : {} (UID:{})", _cname, _component_uid_map[_cname].str());
             }
@@ -91,9 +86,12 @@ namespace flame {
         }
         else {
             for(bundle_container_t::iterator itr = _bundle_container.begin(); itr!=_bundle_container.end(); ++itr){
-                logger::info("Uninstalling component <{}>", itr->second->get_name());
-                itr->second->on_close();
-                delete itr->second;
+                if(itr->second){
+                    logger::info("Uninstalling component <{}>", itr->second->get_name());
+                    itr->second->on_close();
+                    delete itr->second;
+                    itr->second = nullptr;
+                }
             }
             _bundle_container.clear();
             _component_uid_map.clear();

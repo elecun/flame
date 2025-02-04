@@ -17,11 +17,10 @@
 
 namespace flame::component {
     class driver;
-
     class interface {
         friend class flame::component::driver;
         
-        virtual bool on_init() = 0;     // initialize
+        virtual bool on_init() = 0;     //initialize : entry
         virtual void on_close() = 0;    //destroy
         virtual void on_loop() = 0;     //cycle
         virtual void on_message() = 0;  //message event
