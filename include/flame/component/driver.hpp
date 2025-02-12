@@ -84,8 +84,12 @@ namespace flame::component {
             timer_t _timer_id {0};
             int _signal_id { 0 };
 
+        public:
+            /* inproc context to share */
+            static pipe_context inproc_pipeline_context;
 
     }; /* class */
+    
 } /* namespace */
 
 #endif

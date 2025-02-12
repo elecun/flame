@@ -17,6 +17,9 @@ using namespace std;
     static int SIG_RUNTIME_TRIGGER = (SIGRTMIN);
 #endif
 
+// [important] bundle should be handle the inproc context
+pipe_context flame::component::driver::inproc_pipeline_context = pipe_context(10);
+
 namespace flame::component {
 
     driver::driver(path component_path){
@@ -38,6 +41,7 @@ namespace flame::component {
                 /* assign context with number of io threads */
                 int n_socket_io = static_cast<int>(_dataport.size());
                 _componentImpl->pipeline_context = make_unique<pipe_context>(n_socket_io);
+                _componentImpl->inproc_pipeline_context = &this->inproc_pipeline_context;
                 logger::info("Component <{}> has pipeline context with {} I/O Threads", component_path.filename().string(), n_socket_io);
 
                 /* assign user defined data port */

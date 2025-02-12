@@ -20,6 +20,8 @@
 #include <memory>
 #include <atomic>
 #include <string>
+#include <thread>
+#include <chrono>
 
 using namespace std;
 using path = std::filesystem::path;
@@ -62,7 +64,7 @@ namespace flame::component {
                 switch(sock_type){
                     /* pub pattern socket */
                     case flame::socket_type::pub:{
-                        _socket_map.insert(make_pair(socket_name, new pipe_socket(*pipeline_context, zmq::socket_type::pub)));
+                        _socket_map.insert(make_pair(socket_name, new pipe_socket(*inproc_pipeline_context, zmq::socket_type::pub)));
                         _socket_map[socket_name]->set(zmq::sockopt::sndhwm, q_size);
                         _socket_map[socket_name]->set(zmq::sockopt::linger, 0);
                         _socket_map[socket_name]->set(zmq::sockopt::rcvtimeo,timeout);
@@ -72,7 +74,7 @@ namespace flame::component {
 
                     /* sub pattern socket */
                     case flame::socket_type::sub:{
-                        _socket_map.insert(make_pair(socket_name, new pipe_socket(*pipeline_context, zmq::socket_type::sub)));
+                        _socket_map.insert(make_pair(socket_name, new pipe_socket(*inproc_pipeline_context, zmq::socket_type::sub)));
                         _socket_map[socket_name]->set(zmq::sockopt::rcvhwm, q_size);
                         _socket_map[socket_name]->set(zmq::sockopt::subscribe, fileter_topic);
                         _socket_map[socket_name]->set(zmq::sockopt::linger, 0);
@@ -83,7 +85,7 @@ namespace flame::component {
 
                     /* push pattern socket */
                     case flame::socket_type::push:{
-                        _socket_map.insert(make_pair(socket_name, new pipe_socket(*pipeline_context, zmq::socket_type::push)));
+                        _socket_map.insert(make_pair(socket_name, new pipe_socket(*inproc_pipeline_context, zmq::socket_type::push)));
                         _socket_map[socket_name]->set(zmq::sockopt::sndhwm, q_size);
                         _socket_map[socket_name]->set(zmq::sockopt::linger, 0);
                         _socket_map[socket_name]->set(zmq::sockopt::rcvtimeo,timeout);
@@ -93,7 +95,7 @@ namespace flame::component {
 
                     /* pull pattern socket */
                     case flame::socket_type::pull:{
-                        _socket_map.insert(make_pair(socket_name, new pipe_socket(*pipeline_context, zmq::socket_type::pull)));
+                        _socket_map.insert(make_pair(socket_name, new pipe_socket(*inproc_pipeline_context, zmq::socket_type::pull)));
                         _socket_map[socket_name]->set(zmq::sockopt::rcvhwm, q_size);
                         _socket_map[socket_name]->set(zmq::sockopt::linger, 0);
                         _socket_map[socket_name]->set(zmq::sockopt::rcvtimeo,timeout);
@@ -103,7 +105,7 @@ namespace flame::component {
 
                     /* req pattern socket */
                     case flame::socket_type::req:{
-                        _socket_map.insert(make_pair(socket_name, new pipe_socket(*pipeline_context, zmq::socket_type::req)));
+                        _socket_map.insert(make_pair(socket_name, new pipe_socket(*inproc_pipeline_context, zmq::socket_type::req)));
                         _socket_map[socket_name]->set(zmq::sockopt::sndhwm, q_size);
                         _socket_map[socket_name]->set(zmq::sockopt::linger, 0);
                         _socket_map[socket_name]->set(zmq::sockopt::rcvtimeo,timeout);
@@ -113,7 +115,7 @@ namespace flame::component {
                     
                     /* req pattern socket */
                     case flame::socket_type::rep:{
-                        _socket_map.insert(make_pair(socket_name, new pipe_socket(*pipeline_context, zmq::socket_type::rep)));
+                        _socket_map.insert(make_pair(socket_name, new pipe_socket(*inproc_pipeline_context, zmq::socket_type::rep)));
                         _socket_map[socket_name]->set(zmq::sockopt::rcvhwm, q_size);
                         _socket_map[socket_name]->set(zmq::sockopt::linger, 0);
                         _socket_map[socket_name]->set(zmq::sockopt::rcvtimeo,timeout);
@@ -214,7 +216,7 @@ namespace flame::component {
         protected:
             /* pipe context */
             unique_ptr<pipe_context> pipeline_context;
-            
+            pipe_context* inproc_pipeline_context { nullptr };
             
     }; /* class */
 

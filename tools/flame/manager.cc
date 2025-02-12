@@ -2,6 +2,7 @@
 #include "manager.hpp"
 #include <flame/config_def.hpp>
 #include <flame/log.hpp>
+#include <flame/config.hpp>
 
 #if __cplusplus >= 202002L //c++20 (and later)
     #include <coroutine>
@@ -44,6 +45,13 @@ namespace flame {
                 }
             }
             logger::info("Found {} component(s) in the bundle.", _component_list.size());
+
+            /* bundle has own inproc context to share all components */
+            // if(config->get_config().contains("inproc_context_io_threads")){
+            //     int n_io_threads = config->get_config().value("inproc_context_io_threads",1);
+            //     pipe_context flame::component::driver::inproc_pipeline_context = pipe_context(n_io_threads);
+            //     logger::info("* In-process Context was created with {} IO threads", n_io_threads);
+            // }
 
             // 2. check components profiles to create and manage inproc context
             for(auto& comp : _component_list){
