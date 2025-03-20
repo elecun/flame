@@ -24,6 +24,4 @@ OTHER DEALINGS IN THE SOFTWARE.
 #ifndef _FLAME_NET_HPP_
 #define _FLAME_NET_HPP_
 
-#include <3rdparty/mosquitto/cpp/mosquittopp.h>
-
 #endif
