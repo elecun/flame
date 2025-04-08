@@ -43,7 +43,7 @@ void cleanup_and_exit(){
  */
 void signal_callback(int sig) {
     switch(sig){
-        case SIGSEGV: { logger::warn("Segmentation violation"); } break;
+        case SIGSEGV: { logger::warn("Segment violation"); } break;
         case SIGABRT: { logger::warn("Abnormal termination"); } break;
         case SIGKILL: { logger::warn("Process killed"); } break;
         case SIGBUS: { logger::warn("Bus Error"); } break;
@@ -53,6 +53,7 @@ void signal_callback(int sig) {
         logger::info("Cleaning up the program");
     }
     cleanup_and_exit();
+    logger::info("test");
 }
 
 bool init(const char* config_path){
