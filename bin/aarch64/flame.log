@@ -1,4 +1,0 @@
-[2024-07-30 23:38:15] [info] FLAME Execution Engine 0.1.159 (built Jul 30 2024/23:38:00)
-[2024-07-30 23:38:15] [error] configuration file load failed : [json.exception.parse_error.101] parse error at line 7, column 5: syntax error while parsing object key - unexpected '}'; expected string literal
-[2024-07-30 23:38:15] [critical] Configuration file load failed
-[2024-07-30 23:38:15] [info] successfully terminated

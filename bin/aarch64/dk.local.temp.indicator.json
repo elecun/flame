@@ -1,7 +1,0 @@
-{
-    "rt_cycle_ns" : 500000000,
-    "dependency": ["libserial-dev"],
-    "settings":{
-        "device":["dev/ttyS0", "dev/ttyS1"]
-    }
-}
