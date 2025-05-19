@@ -66,7 +66,7 @@ bool init(const char* config_path){
         }
     }
     catch (const std::exception& e){
-        logger::critical("{}", e.what());
+        logger::critical("[Engine] {}", e.what());
         return false;
     }
 
