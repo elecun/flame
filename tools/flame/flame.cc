@@ -71,16 +71,6 @@ int main(int argc, char* argv[])
 
     string _verbose_level = optval["verbose"].as<string>();
     int _verbose_level_i = str2level(_verbose_level);
-    switch(_verbose_level_i){
-        case logger::level::trace: { console_sink->set_level(logger::level::trace); } break;
-        case logger::level::debug: { console_sink->set_level(logger::level::debug); } break;
-        case logger::level::info: { console_sink->set_level(logger::level::info); } break;
-        case logger::level::warn: { console_sink->set_level(logger::level::warn); } break;
-        case logger::level::err: { console_sink->set_level(logger::level::err); } break;
-        case logger::level::critical: { console_sink->set_level(logger::level::critical); } break;
-        case logger::level::off: { console_sink->set_level(logger::level::off); } break;
-    }
-
     
     /* logfile configuration */
     if(optval.count("logfile")) {
@@ -93,9 +83,11 @@ int main(int argc, char* argv[])
     /* set logger set */
     auto logger = std::make_shared<logger::logger>("flame", sinks.begin(), sinks.end());
     logger::set_default_logger(logger);
+    logger::set_level(static_cast<logger::level::level_enum>(_verbose_level_i));
 
     /* program begin */
     logger::info("FLAME Execution Engine {} (built {}/{})",_FLAME_VER_, __DATE__, __TIME__);
+    logger::info("Verbose Level : {}({})", _verbose_level, _verbose_level_i);
 
     try{
         string _config_file = optval["config"].as<string>();
