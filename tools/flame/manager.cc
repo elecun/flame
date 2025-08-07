@@ -95,10 +95,10 @@ namespace flame {
         else {
             for(bundle_container_t::iterator itr = _bundle_container.begin(); itr!=_bundle_container.end(); ++itr){
                 if(itr->second){
-                    logger::info("Uninstalling component <{}>", itr->second->get_name());
                     itr->second->on_close();
                     delete itr->second;
                     itr->second = nullptr;
+                    logger::info("Uninstalling component <{}>", itr->second->get_name());
                 }
             }
             _bundle_container.clear();
