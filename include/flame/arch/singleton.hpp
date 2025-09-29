@@ -2,10 +2,10 @@
  * @file singleton.hpp
  * @author Byunghun Hwang(bh.hwang@iae.re.kr)
  * @brief Singleton Template Class
- * @version 0.1
- * @date 2023-07-22
+ * @version 0.2
+ * @date 2024-05-24
  * 
- * @copyright Copyright (c) 2023
+ * @copyright Copyright (c) 2023, 2024
  * 
  */
 
@@ -13,39 +13,25 @@
 #ifndef _FLAME_ARCH_SINGLETON_HPP_
 #define _FLAME_ARCH_SINGLETON_HPP_
 
-#include <utility>
-
 namespace flame::arch {
 
-        template<class _t>
-        class singleton {
-            public:
-            static _t* instance(){
-                if(!_instance){
-                    _instance = new _t();
-                }
-                return _instance;
+    template<class T>
+    class singleton {
+        public:
+            static T& instance() {
+                static T inst;
+                return inst;
             }
 
-            static void terminate() {
-                if(_instance){
-                    delete _instance;
-                    _instance = nullptr;
-                }
-            }
-
-            protected:
+        protected:
             singleton() = default;
             ~singleton() = default;
-            singleton(const singleton&) = delete;   //for noncopyable
-            singleton& operator=(const singleton&) = delete; //for noncopyable
+            singleton(const singleton&) = delete;
+            singleton& operator=(const singleton&) = delete;
+            singleton(singleton&&) = delete;
+            singleton& operator=(singleton&&) = delete;
+    };
 
-            private:
-            static _t* _instance;
-        };
-
-    template <class _t> _t* singleton<_t>::_instance = nullptr; //initialize
-
-} //namespace oe
+} // namespace flame::arch
 
 #endif
