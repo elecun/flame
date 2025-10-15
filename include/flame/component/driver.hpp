@@ -37,7 +37,7 @@ namespace flame::component {
             bool on_init() override;
             void on_loop() override;
             void on_close() override;
-            void on_message() override;
+            void on_message(const message_t& msg) override;
 
             /* get component name */
             const char* get_name() {

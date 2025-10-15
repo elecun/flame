@@ -15,6 +15,7 @@
 
 #include <filesystem>
 #include <flame/component/interface.hpp>
+#include <flame/component/type.hpp>
 #include <flame/component/profile.hpp>
 #include <flame/component/port.hpp>
 #include <flame/config_def.hpp>

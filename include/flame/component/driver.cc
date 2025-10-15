@@ -154,10 +154,13 @@ namespace flame::component {
 
     }
 
-    void driver::on_message(){
+    void driver::on_message(const message_t& msg){
         try {
             if(_componentImpl){
-                return _componentImpl->on_message();
+                // The driver should be responsible for receiving messages and passing them.
+                // For now, we pass an empty message to satisfy the interface.
+                flame::component::message_t msg;
+                return _componentImpl->on_message(msg);
             }
         }
         catch(const std::runtime_error& e){
