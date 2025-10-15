@@ -25,7 +25,7 @@ using json = nlohmann::json;
  * 
  */
 void cleanup(){
-    manager->uninstall();
+    manager.uninstall();
 }
 
 void cleanup_and_exit(){
@@ -59,7 +59,7 @@ void signal_callback(int sig) {
 bool init(const char* config_path){
 
     try{
-        config->load(config_path);
+        config.load(config_path);
         
         if(install_bundle()){
             run_bundle();
@@ -77,19 +77,19 @@ bool init(const char* config_path){
 bool install_bundle(const char* bundle){
 
     // install by configuration file
-    if(!bundle && config->is_loaded()){
-        fs::path _bundle_path = config->get_config_path().parent_path() / fs::path(config->get_bundle_name());
+    if(!bundle && config.is_loaded()){
+        fs::path _bundle_path = config.get_config_path().parent_path() / fs::path(config.get_bundle_name());
         logger::info("Bundle Repository : {}", _bundle_path.string());
         
         if(fs::is_directory(_bundle_path)){
-            logger::info("Now installing '{}' bundle..", config->get_bundle_name());
+            logger::info("Now installing '{}' bundle..", config.get_bundle_name());
 
             // install bundle
-            manager->install(_bundle_path);
+            manager.install(_bundle_path);
 
         }
         else{
-            logger::critical("{} bundle cannot be found. Check your configurations.", config->get_bundle_name());
+            logger::critical("{} bundle cannot be found. Check your configurations.", config.get_bundle_name());
             return false;
         }
     }
@@ -102,5 +102,5 @@ bool install_bundle(const char* bundle){
 }
 
 void run_bundle(){
-    manager->start_bundle_service();
+    manager.start_bundle_service();
 }
