@@ -8,7 +8,7 @@
 #include <chrono>
 #include <string>
 
-#include <flame/config_def.hpp>
+#include <flame/def.hpp>
 #include <flame/log.hpp>
 
 using namespace std;
@@ -24,8 +24,8 @@ namespace flame::component {
 
     driver::driver(path component_path){
         try{
-            fs::path cobject = component_path.replace_extension(__COMPONENT_FILE_EXT__);
-            fs::path cprofile = component_path.replace_extension(__PROFILE_FILE_EXT__);
+            fs::path cobject = component_path.replace_extension(def::COMPONENT_EXT);
+            fs::path cprofile = component_path.replace_extension(def::PROFILE_EXT);
 
             if(load(cobject)){
                 assert(_componentImpl!=nullptr);
@@ -122,7 +122,7 @@ namespace flame::component {
         try {
             if(_componentImpl){
                 if(_componentImpl->get_status()==flame::component::dtype_status::STOPPED){
-                    unsigned long long _rtime = _componentImpl->get_profile()->raw()[__PROFILE_RT_CYCLE_NS__].get<unsigned long long>();
+                    unsigned long long _rtime = _componentImpl->get_profile()->raw()[def::PROFILE_RT_CYCLE_NS].get<unsigned long long>();
                     set_rt_timer(_rtime);
                     _ptrThread = new thread{ &flame::component::driver::do_cycle, this };
                 }

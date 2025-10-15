@@ -16,7 +16,7 @@
 #include <filesystem>
 #include <flame/log.hpp>
 #include <fstream>
-#include <flame/config_def.hpp>
+#include <flame/def.hpp>
 
 using namespace std;
 using namespace flame;
@@ -78,8 +78,8 @@ namespace flame::component {
              */
             json parameters() {
                 try{
-                    if(raw_profile.contains(__PROFILE_PARAMETERS__)){
-                        return raw_profile[__PROFILE_PARAMETERS__];
+                    if(raw_profile.contains(def::PROFILE_PARAMETERS)){
+                        return raw_profile[def::PROFILE_PARAMETERS];
                     }
                     return json::object();
 
@@ -98,8 +98,8 @@ namespace flame::component {
              */
             json dataport() {
                 try {
-                    if(raw_profile.contains(__PROFILE_DATAPORT__)){
-                        return raw_profile[__PROFILE_DATAPORT__];
+                    if(raw_profile.contains(def::PROFILE_DATAPORT)){
+                        return raw_profile[def::PROFILE_DATAPORT];
                     }
                     return json::object();
                 }

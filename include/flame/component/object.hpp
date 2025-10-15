@@ -18,7 +18,7 @@
 #include <flame/component/type.hpp>
 #include <flame/component/profile.hpp>
 #include <flame/component/port.hpp>
-#include <flame/config_def.hpp>
+#include <flame/def.hpp>
 #include <flame/log.hpp>
 #include <memory>
 #include <atomic>

@@ -1,7 +1,12 @@
 
 #include "manager.hpp"
-#include <flame/config_def.hpp>
+#include <flame/def.hpp>
 #include <flame/log.hpp>
+
+// 'config' is defined as a macro in config.hpp, which conflicts with the 'flame::config' namespace.
+// Undefine the macro here as this file does not need the singleton instance via the macro.
+#undef config
+
 #include <flame/config.hpp>
 
 #if __cplusplus >= 202002L //c++20 (and later)
@@ -35,9 +40,9 @@ namespace flame {
             // 1. find component files and check profile existance in bundle repository
             vector<fs::path> _component_list; 
             for(const auto& cfile : fs::directory_iterator(bundle_repo)){
-                if(cfile.is_regular_file() && cfile.path().extension() == __COMPONENT_FILE_EXT__){
+                if(cfile.is_regular_file() && cfile.path().extension() == def::COMPONENT_EXT){ // .comp
                     fs::path pfile = cfile.path();
-                    pfile.replace_extension(__PROFILE_FILE_EXT__);
+                    pfile.replace_extension(def::PROFILE_EXT); // .profile
                     
                     if(fs::exists(pfile)){
                         _component_list.push_back(pfile.replace_extension(""));

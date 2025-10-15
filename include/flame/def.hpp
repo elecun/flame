@@ -1,5 +1,5 @@
 /**
- * @file config_def.hpp
+ * @file def.hpp
  * @author Byunghun Hwang(bh.hwang@iae.re.kr)
  * @brief Definitions for Configuration Parsing
  * @version 0.1
@@ -9,12 +9,12 @@
  * 
  */
 
-#ifndef FLAME_CONFIG_DEF_HPP_INCLUDED
-#define FLAME_CONFIG_DEF_HPP_INCLUDED
+#ifndef FLAME_DEF_HPP_INCLUDED
+#define FLAME_DEF_HPP_INCLUDED
 
 #include <string>
 
-namespace flame::config::def {
+namespace flame::def {
     // root config key
     constexpr const char* ENVIRONMENTS = "environments";
     constexpr const char* BUNDLE = "bundle";
@@ -30,6 +30,8 @@ namespace flame::config::def {
     // bundle key properties
     constexpr const char* BUNDLE_NAME = "name";
     constexpr const char* BUNDLE_TOPOLOGY = "topology";
+
+    
 }
 
 #endif

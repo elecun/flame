@@ -12,7 +12,7 @@
 
 #include <flame/log.hpp>
 #include <flame/config.hpp>
-#include <flame/config_def.hpp>
+#include <flame/def.hpp>
 #include "manager.hpp"
 
 

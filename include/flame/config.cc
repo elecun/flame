@@ -1,7 +1,7 @@
 
 #include "config.hpp"
 #include <flame/log.hpp>
-#include <flame/config_def.hpp>
+#include <flame/def.hpp>
 #include <filesystem>
 #include <fstream>
 #include <stdexcept>
@@ -88,9 +88,9 @@ namespace flame {
 
     string config_loader::get_bundle_name() {
         if(!_config.empty()){
-            if(_config.contains(__CONFIG_KEY_BUNDLE__)){
-                if(_config[__CONFIG_KEY_BUNDLE__].contains(__CONFIG_KEY_BUNDLE_NAME__)){
-                    string name = _config[__CONFIG_KEY_BUNDLE__][__CONFIG_KEY_BUNDLE_NAME__].get<string>();
+            if(_config.contains(def::BUNDLE)){
+                if(_config[def::BUNDLE].contains(def::BUNDLE_NAME)){
+                    string name = _config[def::BUNDLE][def::BUNDLE_NAME].get<string>();
                     return name;
                 }
             }
@@ -101,7 +101,7 @@ namespace flame {
     filesystem::path config_loader::get_bundle_path() const{
         if(!_config.empty()){
             filesystem::path _conf_path(_config_abs_path);
-            filesystem::path _bundle_path = filesystem::canonical(_conf_path).parent_path() / filesystem::path(__CONFIG_KEY_BUNDLE__);
+            filesystem::path _bundle_path = filesystem::canonical(_conf_path).parent_path() / filesystem::path(def::BUNDLE);
             return _bundle_path;
         }
         else{
@@ -114,7 +114,7 @@ namespace flame {
     map<string, string> config_loader::get_data_topology(){
         map<string, string> _topology_map;
         try{
-            json _topology = _config[__CONFIG_KEY_BUNDLE__][__CONFIG_KEY_BUNDLE_TOPOLOGY__];
+            json _topology = _config[def::BUNDLE][def::BUNDLE_TOPOLOGY];
             if(_topology.contains("data")){
                 for(const auto& con: _topology){
                     _topology_map.insert(make_pair(con.at("provided").get<string>(), con.at("required").get<string>()));
