@@ -53,7 +53,6 @@ void signal_callback(int sig) {
         logger::info("Cleaning up the program");
     }
     cleanup_and_exit();
-    logger::info("test");
 }
 
 bool init(const char* config_path){
