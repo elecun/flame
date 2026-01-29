@@ -1,7 +1,9 @@
 # Author : Byunghun Hwang <bh.hwang@iae.re.kr>
 
 
-# Build for architecture selection (editable!!)
+# -----------------------------------------------------------------------------
+# Architecture & OS Detection
+# -----------------------------------------------------------------------------
 ARCH := $(shell uname -m)
 OS := $(shell uname)
 
@@ -39,16 +41,19 @@ else
 #	LD_LIBRARY_PATH += -L./lib/x86_64
 	OUTDIR		= $(CURRENT_DIR)/bin/x86_64/
 	BUILDDIR		= $(CURRENT_DIR)/bin/x86_64/
-	INCLUDE_DIR = -I./ -I$(CURRENT_DIR) -I$(CURRENT_DIR)/include -I$(CURRENT_DIR)/include/dep -I/usr/include -I/usr/local/include -I/opt/pylon/include -I/usr/include/opencv4
-	LIBDIR = -L/usr/local/lib -L$(CURRENT_DIR)/lib/x86_64/ -L/opt/pylon/lib/
+	INCLUDE_DIR = -I./ -I$(CURRENT_DIR) -I$(CURRENT_DIR)/include -I$(CURRENT_DIR)/include/dep -I$(CURRENT_DIR)/include/dep/libzmq -I/usr/include -I/usr/local/include -I/opt/pylon/include -I/usr/include/opencv4 -I/usr/local/cuda/include
+	LIBDIR = -L/usr/local/lib -L$(CURRENT_DIR)/lib/x86_64/ -L/usr/lib/x86-64-linux-gnu -L/usr/local/cuda/lib64 -L/opt/pylon/lib/
 export LD_LIBRARY_PATH := $(LIBDIR):$(LD_LIBRARY_PATH)
 endif
 
+# LDFLAGS definition
+# Always include LIBDIR
+LDFLAGS = $(LIBDIR)
+
 # OS
 ifeq ($(OS),Linux) #for Linux
-#LDFLAGS = -Wl,--export-dynamic -Wl,-rpath,$(LD_LIBRARY_PATH)
-	LDFLAGS = -Wl,--export-dynamic -Wl,-rpath,$(LIBDIR) -L$(LIBDIR)
-	LDLIBS = -pthread -lrt -ldl -lm -lzmq -lboost_atomic
+	LDFLAGS += -Wl,--export-dynamic -Wl,-rpath=.
+	LDLIBS = -pthread -lrt -ldl -lm -lzmq
 endif
 
 
@@ -60,7 +65,7 @@ MIN_COUNT = $(shell git tag | wc -l)
 
 #if release(-O3), debug(-O0)
 # if release mode compile, remove -DNDEBUG
-CXXFLAGS = -O3 -fPIC -Wall -std=c++20 -D__cplusplus=202002L
+CXXFLAGS = -O3 -fPIC -Wall -std=c++20 -D__cplusplus=202002L -Wno-deprecated-enum-enum-conversion
 
 #custom definitions
 CXXFLAGS += -D__MAJOR__=0 -D__MINOR__=$(MIN_COUNT) -D__REV__=$(REV_COUNT)
@@ -78,7 +83,7 @@ flame:	$(BUILDDIR)flame.o \
 		$(BUILDDIR)manager.o \
 		$(BUILDDIR)driver.o \
 		$(BUILDDIR)instance.o
-		$(CC) $(LDFLAGS) $(LD_LIBRARY_PATH) -o $(BUILDDIR)$@ $^ $(LDLIBS)
+		$(CC) $(LDFLAGS) -o $(BUILDDIR)$@ $^ $(LDLIBS)
 
 $(BUILDDIR)flame.o:	$(CURRENT_DIR)/tools/flame/flame.cc
 					$(CC) $(CXXFLAGS) $(INCLUDE_DIR) -c $^ -o $@
@@ -103,4 +108,5 @@ debug:
 	@echo "Building for Architecture : $(ARCH)"
 	@echo "Building for OS : $(OS)"
 
-FORCE : 
+FORCE :
+ 
