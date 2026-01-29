@@ -14,17 +14,19 @@
 #include <flame/config.hpp>
 #include <flame/def.hpp>
 #include "manager.hpp"
-
+#include "monitor.hpp"
 
 using namespace std;
 using json = nlohmann::json;
 
+flame::monitor_service _monitor;
 
 /**
  * @brief cleanup and termination
  * 
  */
 void cleanup(){
+    _monitor.stop_service();
     manager.uninstall();
 }
 
@@ -54,6 +56,7 @@ void signal_callback(int sig) {
     }
     cleanup_and_exit();
 }
+
 
 bool init(const char* config_path){
 
@@ -101,5 +104,6 @@ bool install_bundle(const char* bundle){
 }
 
 void run_bundle(){
+    _monitor.start_service();
     manager.start_bundle_service();
 }

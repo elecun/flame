@@ -36,6 +36,8 @@ namespace flame {
             bool install(fs::path bundle_repo); //install the all components in bundle repository
             void uninstall(const char* component_name = nullptr); // uninstall the all components or specific component
             void start_bundle_service();
+            int get_component_count() const { return _bundle_container.size(); }
+            vector<string> get_component_list();
             
 
         private:

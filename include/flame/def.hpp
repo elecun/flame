@@ -31,7 +31,10 @@ namespace flame::def {
     constexpr const char* BUNDLE_NAME = "name";
     constexpr const char* BUNDLE_TOPOLOGY = "topology";
 
+    // monitor
+    constexpr const char* FLAME_MONITOR_IPC_ADDR = "ipc:///tmp/flame_mon.ipc";
     
 }
+
 
 #endif

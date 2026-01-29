@@ -15,15 +15,22 @@
 #include <vector>
 #include <sys/mman.h>
 #include <csignal>
+#include <iomanip>
 
 #include <dep/cxxopts.hpp>
 #include <flame/log.hpp>
 #include <flame/version.hpp>
+#include <flame/def.hpp>
 
 #include "instance.hpp"
 #include <flame/config.hpp>
 
+#include <zmq.hpp>
+#include <zmq_addon.hpp>
+#include <dep/json.hpp>
+
 using namespace std;
+using json = nlohmann::json;
 
 
 int main(int argc, char* argv[])
@@ -36,11 +43,61 @@ int main(int argc, char* argv[])
         ("c,config", "user configuration file(*.conf)", cxxopts::value<string>()->default_value("default.conf"))
         ("l,logfile", "save logs in file(flame.log)")
         ("v,verbose", "verbose log level [trace|debug|info|warn|err|critical|off]", cxxopts::value<string>()->default_value("trace"))
+        ("i,info", "show information of the running flame instance")
         ("h,help", "Print usage");
 
     auto optval = options.parse(argc, argv);
     if(optval.count("help")){
         cout << options.help() << endl;
+        exit(EXIT_SUCCESS);
+    }
+    
+    // INFO Command Handler
+    if(optval.count("info")){
+        zmq::context_t ctx(1);
+        zmq::socket_t sock(ctx, ZMQ_REQ);
+        
+        try {
+            sock.connect(flame::def::FLAME_MONITOR_IPC_ADDR);
+            sock.set(zmq::sockopt::rcvtimeo, 1000); // 1 sec timeout
+            sock.set(zmq::sockopt::linger, 0);
+
+            sock.send(zmq::buffer("INFO"), zmq::send_flags::none);
+
+            zmq::message_t reply;
+            if(sock.recv(reply, zmq::recv_flags::none)){
+                string rep_str = reply.to_string();
+                try {
+                    auto j = json::parse(rep_str);
+                    int count = j["count"];
+                    vector<string> components = j["components"];
+
+                    cout << "------------------------------------------" << endl;
+                    cout << " Running Flame Instance Info" << endl;
+                    cout << "------------------------------------------" << endl;
+                    cout << left << setw(20) << " PID File" << " : " << "/tmp/flame.pid" << endl; // Assuming standard PID location or dummy
+                    cout << left << setw(20) << " Component Count" << " : " << count << endl;
+                    cout << "------------------------------------------" << endl;
+                    cout << " Component List " << endl;
+                    cout << "------------------------------------------" << endl;
+                    for(const auto& c : components){
+                        cout << " " << c << endl;
+                    }
+                    cout << "------------------------------------------" << endl;
+                }
+                catch(...){
+                    cout << "Invalid response from flame instance." << endl;
+                }
+            }
+            else {
+                cout << "No flame process running (Timeout)." << endl;
+            }
+        }
+        catch(const zmq::error_t& e){
+            cout << "Failed to connect to flame instance: " << e.what() << endl;
+            cout << "Make sure flame is running." << endl;
+        }
+
         exit(EXIT_SUCCESS);
     }
 

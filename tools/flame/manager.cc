@@ -119,4 +119,14 @@ namespace flame {
         }
     }
 
+    vector<string> bundle_manager::get_component_list(){
+        vector<string> _list;
+        for(bundle_container_t::iterator itr=_bundle_container.begin(); itr!=_bundle_container.end();++itr){
+            if(itr->second){
+                _list.push_back(itr->second->get_name());
+            }
+        }
+        return _list;
+    }
+
 } /* namespace */
