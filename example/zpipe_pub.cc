@@ -12,7 +12,7 @@
 #include <iostream>
 #include <thread>
 #include <chrono>
-#include <flame/pipe/zpipe.hpp>
+#include <flame/common/zpipe.hpp>
 
 int main() {
     

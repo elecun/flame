@@ -78,6 +78,16 @@ namespace flame {
                             std::string rep_str = j_info.dump();
                             sock.send(zmq::buffer(rep_str), zmq::send_flags::none);
                         }
+                        else if(req_str == "STATUS"){
+                            // Get status from manager
+                            json j_info;
+                            j_info["status"] = "Active";
+                            j_info["count"] = manager.get_component_count();
+                            j_info["components"] = manager.get_component_info();
+                            
+                            std::string rep_str = j_info.dump();
+                            sock.send(zmq::buffer(rep_str), zmq::send_flags::none);
+                        }
                         else {
                             sock.send(zmq::buffer("Unknown Command"), zmq::send_flags::none);
                         }

@@ -12,6 +12,7 @@
 #ifndef FLAME_MANAGER_HPP_INCLUDED
 #define FLAME_MANAGER_HPP_INCLUDED
 
+#include <dep/json.hpp>
 #include <vector>
 #include <map>
 #include <filesystem>
@@ -22,6 +23,7 @@
 #include <flame/component/port.hpp>
 
 using namespace std;
+using json = nlohmann::json;
 namespace fs = std::filesystem;
 
 namespace flame {
@@ -38,6 +40,7 @@ namespace flame {
             void start_bundle_service();
             int get_component_count() const { return _bundle_container.size(); }
             vector<string> get_component_list();
+            json get_component_info();
             
 
         private:

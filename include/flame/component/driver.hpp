@@ -46,6 +46,31 @@ namespace flame::component {
                 return nullptr;
             }
 
+            /* get component type */
+            string get_type() {
+                if(_componentImpl) {
+                   auto profile = _componentImpl->get_profile();
+                   if(profile) {
+                        string type_s = profile->get_dumped("type");
+                        if(type_s != "{}") {
+                            if(profile->raw().contains("type")) {
+                                return profile->raw()["type"].get<string>();
+                            }
+                        }
+                   }
+                }
+                return "unknown";
+            }
+
+            /* get component status */
+            string get_status_str() {
+                if(_componentImpl) {
+                    if(_componentImpl->get_status() == dtype_status::STOPPED) return "Stopped";
+                    if(_componentImpl->get_status() == dtype_status::WORKING) return "Working";
+                }
+                return "Unknown";
+            }
+
         private:
             /**
              * @brief component file(*.comp) load

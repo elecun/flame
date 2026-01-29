@@ -25,8 +25,8 @@
 #include "instance.hpp"
 #include <flame/config.hpp>
 
-#include <zmq.hpp>
-#include <zmq_addon.hpp>
+#include <flame/config.hpp>
+#include <flame/common/zpipe.hpp>
 #include <dep/json.hpp>
 
 using namespace std;
@@ -43,7 +43,7 @@ int main(int argc, char* argv[])
         ("c,config", "user configuration file(*.conf)", cxxopts::value<string>()->default_value("default.conf"))
         ("l,logfile", "save logs in file(flame.log)")
         ("v,verbose", "verbose log level [trace|debug|info|warn|err|critical|off]", cxxopts::value<string>()->default_value("trace"))
-        ("i,info", "show information of the running flame instance")
+        ("show_status", "show information of the running flame instance")
         ("h,help", "Print usage");
 
     auto optval = options.parse(argc, argv);
@@ -52,52 +52,113 @@ int main(int argc, char* argv[])
         exit(EXIT_SUCCESS);
     }
     
-    // INFO Command Handler
-    if(optval.count("info")){
-        zmq::context_t ctx(1);
-        zmq::socket_t sock(ctx, ZMQ_REQ);
+    // Commands Handler
+    // Commands Handler
+    if(optval.count("show_status")){
         
-        try {
-            sock.connect(flame::def::FLAME_MONITOR_IPC_ADDR);
-            sock.set(zmq::sockopt::rcvtimeo, 1000); // 1 sec timeout
-            sock.set(zmq::sockopt::linger, 0);
+        auto pipe = flame::pipe::create_pipe(1);
+        auto sock = make_shared<flame::pipe::AsyncZSocket>("cli_status", flame::pipe::Pattern::DEALER);
 
-            sock.send(zmq::buffer("INFO"), zmq::send_flags::none);
+        bool response_received = false;
+        if(sock->create(pipe)){
+            // callback lambda
+            sock->set_message_callback([&](const vector<string>& msg){
+                if(msg.empty()) return;
 
-            zmq::message_t reply;
-            if(sock.recv(reply, zmq::recv_flags::none)){
-                string rep_str = reply.to_string();
+                // DEALER receives what REP sent. REP usually sends [result] (or [empty][result] if REQ envelope)
+                // However, our monitor is REP.
+                // REP -> DEALER: REP will strip the envelope from REQ.
+                // DEALER should send [empty][content] to mimic REQ if it wants to be treated as REQ by REP?
+                // Actually if monitor uses REP, it expects an identity frame if it's async? No, ZMQ_REP handles envelopes automatically.
+                // If we use DEALER to talk to REP:
+                // We must send [empty frame][request].
+                // REP receives [request].
+                // REP sends [reply].
+                // DEALER receives [empty frame][reply] because REP prepends the envelope? 
+                // Wait, REQ adds empty delimiter. DEALER does not.
+                // So DEALER must send ["", "STATUS"].
+                
+                string rep_str;
+                if(msg.size() > 1 && msg[0].empty()){
+                    rep_str = msg[1];
+                } else if(msg.size() == 1) {
+                    rep_str = msg[0];
+                } 
+                else {
+                    return; // invalid format?
+                }
+
                 try {
                     auto j = json::parse(rep_str);
                     int count = j["count"];
-                    vector<string> components = j["components"];
+                    auto components = j["components"];
 
-                    cout << "------------------------------------------" << endl;
+                    cout << "----------------------------------------------------------------------" << endl;
                     cout << " Running Flame Instance Info" << endl;
-                    cout << "------------------------------------------" << endl;
+                    cout << "----------------------------------------------------------------------" << endl;
                     cout << left << setw(20) << " PID File" << " : " << "/tmp/flame.pid" << endl; // Assuming standard PID location or dummy
+                    cout << left << setw(20) << " Status" << " : " << j["status"].get<string>() << endl;
                     cout << left << setw(20) << " Component Count" << " : " << count << endl;
-                    cout << "------------------------------------------" << endl;
-                    cout << " Component List " << endl;
-                    cout << "------------------------------------------" << endl;
+                    cout << "----------------------------------------------------------------------" << endl;
+                    cout << left << setw(30) << " Name" << setw(20) << " Type" << setw(20) << " Status" << endl;
+                    cout << "----------------------------------------------------------------------" << endl;
                     for(const auto& c : components){
-                        cout << " " << c << endl;
+                        cout << left << setw(30) << c["name"].get<string>() 
+                             << setw(20) << c["type"].get<string>() 
+                             << setw(20) << c["status"].get<string>() << endl;
                     }
-                    cout << "------------------------------------------" << endl;
+                    cout << "----------------------------------------------------------------------" << endl;
+                    response_received = true;
+                }
+                catch(const json::exception& e){
+                    cout << "Invalid response from flame instance. (JSON Parse Error: " << e.what() << ")" << endl;
+                    cout << "Raw Response: " << rep_str << endl;
+                    response_received = true; // exit anyway
                 }
                 catch(...){
-                    cout << "Invalid response from flame instance." << endl;
+                    cout << "Invalid response from flame instance. (Unknown Error)" << endl;
+                    cout << "Raw Response: " << rep_str << endl;
+                    response_received = true; // exit anyway
                 }
-            }
-            else {
-                cout << "No flame process running (Timeout)." << endl;
-            }
-        }
-        catch(const zmq::error_t& e){
-            cout << "Failed to connect to flame instance: " << e.what() << endl;
-            cout << "Make sure flame is running." << endl;
-        }
+            });
 
+            // Connect
+            // FLAME_MONITOR_IPC_ADDR is likely "ipc:///tmp/..."
+            // zpipe's join takes transport, address, port.
+            // Parse FLAME_MONITOR_IPC_ADDR
+            string ipc_addr = flame::def::FLAME_MONITOR_IPC_ADDR;
+            string transport = "ipc";
+            string address = ipc_addr.substr(ipc_addr.find("://") + 3);
+            int port = 0; // not used for IPC
+
+            if(sock->join("ipc", address, 0)){
+                // Send Request
+                vector<string> req;
+                req.push_back(""); // Emulate REQ envelope
+                req.push_back("STATUS");
+                
+                sock->dispatch(req);
+
+                // Wait for response with timeout
+                int timeout_ms = 1000;
+                int elapsed = 0;
+                while(!response_received && elapsed < timeout_ms){
+                    std::this_thread::sleep_for(std::chrono::milliseconds(10));
+                    elapsed += 10;
+                }
+                
+                if(!response_received){
+                    cout << "No flame process running (Timeout)." << endl;
+                }
+
+            } else {
+                cout << "Failed to connect to flame instance." << endl;
+            }
+
+            sock->close();
+        }
+        
+        flame::pipe::destroy_pipe();
         exit(EXIT_SUCCESS);
     }
 

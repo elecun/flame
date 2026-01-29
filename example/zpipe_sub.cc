@@ -8,7 +8,7 @@
 #include <string>
 #include <thread>
 #include <chrono>
-#include <flame/pipe/zpipe.hpp>
+#include <flame/common/zpipe.hpp>
 
 // Callback function
 void on_message(const std::vector<std::string>& data) {

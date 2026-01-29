@@ -129,4 +129,18 @@ namespace flame {
         return _list;
     }
 
+    json bundle_manager::get_component_info(){
+        json _info = json::array();
+        for(bundle_container_t::iterator itr=_bundle_container.begin(); itr!=_bundle_container.end();++itr){
+            if(itr->second){
+                json c;
+                c["name"] = itr->second->get_name();
+                c["type"] = itr->second->get_type();
+                c["status"] = itr->second->get_status_str();
+                _info.push_back(c);
+            }
+        }
+        return _info;
+    }
+
 } /* namespace */
