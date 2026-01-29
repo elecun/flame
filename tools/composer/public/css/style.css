@@ -1,0 +1,344 @@
+body,
+html {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    overflow: hidden;
+    background-color: #f0f0f0;
+}
+
+#top-bar {
+    height: 50px;
+    background-color: #333;
+    color: white;
+    display: flex;
+    align-items: center;
+    padding: 0 20px;
+    justify-content: space-between;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+.logo {
+    font-weight: bold;
+    font-size: 1.2em;
+}
+
+.controls {
+    display: flex;
+    gap: 10px;
+}
+
+.path-input {
+    width: 300px;
+    padding: 5px;
+    border: none;
+    border-radius: 3px;
+}
+
+button {
+    padding: 5px 15px;
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+    background-color: #555;
+    color: white;
+    transition: background-color 0.2s;
+}
+
+button:hover {
+    background-color: #666;
+}
+
+button.primary {
+    background-color: #e67e22;
+    /* Flame color */
+}
+
+button.primary:hover {
+    background-color: #d35400;
+}
+
+#main-container {
+    display: flex;
+    height: calc(100% - 50px);
+}
+
+#cy-container {
+    flex-grow: 1;
+    background-color: #fff;
+    position: relative;
+}
+
+#properties-panel {
+    width: 350px;
+    background-color: #fafafa;
+    border-left: 1px solid #ddd;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.panel-header {
+    background-color: #eee;
+    padding: 10px;
+    border-bottom: 1px solid #ddd;
+}
+
+.panel-header h3 {
+    margin: 0;
+    font-size: 1em;
+}
+
+#selected-component-name {
+    font-size: 0.8em;
+    color: #666;
+    display: block;
+    margin-top: 5px;
+    word-break: break-all;
+}
+
+#editor-content {
+    flex-grow: 1;
+    padding: 10px;
+    overflow-y: auto;
+}
+
+/* Editor Form Styles */
+.section {
+    margin-bottom: 20px;
+    border: 1px solid #e0e0e0;
+    border-radius: 4px;
+    padding: 10px;
+    background-color: white;
+}
+
+.section h4 {
+    margin-top: 0;
+    margin-bottom: 10px;
+    border-bottom: 2px solid #e67e22;
+    padding-bottom: 5px;
+    color: #333;
+}
+
+.form-group {
+    margin-bottom: 10px;
+}
+
+.form-group label {
+    display: block;
+    font-size: 0.85em;
+    color: #555;
+    margin-bottom: 3px;
+    font-weight: bold;
+}
+
+.form-group input,
+.form-group select {
+    width: 100%;
+    padding: 6px;
+    box-sizing: border-box;
+    border: 1px solid #ddd;
+    border-radius: 3px;
+}
+
+.form-group input:focus {
+    border-color: #e67e22;
+    outline: none;
+}
+
+.dataport-item {
+    background-color: #f9f9f9;
+    border: 1px solid #eee;
+    padding: 8px;
+    margin-bottom: 8px;
+    border-radius: 3px;
+    position: relative;
+}
+
+.dataport-header {
+    font-weight: bold;
+    margin-bottom: 5px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+/* Helper classes */
+.hidden {
+    display: none !important;
+}
+
+/* Modal Styles */
+#modal-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#file-browser-modal {
+    background-color: white;
+    width: 600px;
+    height: 500px;
+    border-radius: 5px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    display: flex;
+    flex-direction: column;
+}
+
+.modal-header {
+    padding: 15px;
+    border-bottom: 1px solid #ddd;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #f8f8f8;
+    border-radius: 5px 5px 0 0;
+}
+
+.modal-header h3 {
+    margin: 0;
+}
+
+#modal-close {
+    cursor: pointer;
+    font-size: 1.5em;
+    color: #888;
+}
+
+#modal-close:hover {
+    color: #333;
+}
+
+.modal-body {
+    flex-grow: 1;
+    padding: 15px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.browser-controls {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+#browser-current-path {
+    flex-grow: 1;
+    padding: 5px 10px;
+    background-color: #eee;
+    border: 1px solid #ccc;
+    color: #333;
+}
+
+#dir-list {
+    flex-grow: 1;
+    border: 1px solid #ddd;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    overflow-y: auto;
+    background-color: white;
+}
+
+#dir-list li {
+    padding: 8px 10px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    border-bottom: 1px solid #eee;
+}
+
+#dir-list li:hover {
+    background-color: #f0f8ff;
+}
+
+#dir-list li.selected {
+    background-color: #e6f7ff;
+    color: #007bff;
+}
+
+.folder-icon {
+    margin-right: 10px;
+}
+
+.modal-footer {
+    padding: 15px;
+    border-top: 1px solid #ddd;
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    background-color: #f8f8f8;
+    border-radius: 0 0 5px 5px;
+}
+/* Button Helper Styles */
+.btn-sm {
+    padding: 2px 8px;
+    font-size: 0.8em;
+    margin-left: auto;
+}
+
+.btn-icon {
+    border: 1px solid #ccc;
+    background: #f0f0f0;
+    cursor: pointer;
+    border-radius: 3px;
+    width: 24px;
+    height: 24px;
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    padding: 0;
+    font-weight: bold;
+}
+
+.btn-icon:hover {
+    background: #e0e0e0;
+}
+
+.btn-icon.add {
+    color: green;
+    border-color: #aaddaa;
+    background: #eeffee;
+}
+
+.btn-icon.remove {
+    color: red;
+    border-color: #ddaaaa;
+    background: #ffeeee;
+}
+
+.btn-icon.remove-small {
+    width: 20px;
+    height: 20px;
+    font-size: 1.2em;
+    line-height: 1;
+    color: #cc0000;
+    margin-left: auto;
+}
+
+/* Ensure header buttons are right-aligned if needed */
+.section-header button {
+    margin-left: auto;
+}
+
+.dataport-header button.remove {
+    margin-left: auto;
+}
+
+#btn-create {
+    background-color: #27ae60;
+}
+
+#btn-create:hover {
+    background-color: #2ecc71;
+}
