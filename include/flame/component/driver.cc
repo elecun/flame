@@ -22,7 +22,7 @@ pipe_context flame::component::driver::inproc_pipeline_context = pipe_context(10
 
 namespace flame::component {
 
-    driver::driver(path component_path){
+    driver::driver(path component_path) : _is_running(false){
         try{
             fs::path cobject = component_path.replace_extension(def::COMPONENT_EXT);
             fs::path cprofile = component_path.replace_extension(def::PROFILE_EXT);
@@ -86,6 +86,17 @@ namespace flame::component {
     }
 
     driver::~driver(){
+        /* stop thread */
+        _is_running.store(false);
+        if(_ptrThread){
+            pthread_kill(_ptrThread->native_handle(), _signal_id);
+            if(_ptrThread->joinable()){
+                _ptrThread->join();
+            }
+            delete _ptrThread;
+            _ptrThread = nullptr;
+        }
+
         try{
             /* clear all */
             _componentImpl->close_port();
@@ -124,7 +135,11 @@ namespace flame::component {
                 if(_componentImpl->get_status()==flame::component::dtype_status::STOPPED){
                     unsigned long long _rtime = _componentImpl->get_profile()->raw()[def::PROFILE_RT_CYCLE_NS].get<unsigned long long>();
                     set_rt_timer(_rtime);
-                    _ptrThread = new thread{ &flame::component::driver::do_cycle, this };
+                    
+                    if(!_ptrThread){
+                        _is_running.store(true);
+                        _ptrThread = new thread{ &flame::component::driver::do_cycle, this };
+                    }
                 }
             }
         }
@@ -254,15 +269,12 @@ namespace flame::component {
         sigaddset(&thread_sigmask, _signal_id); //block SIG_RUNTIME_TRIGGER signal
         int _sig_no;
 
-        while(1){
+        while(_is_running.load()){
             sigwait(&thread_sigmask, &_sig_no); //wait until receive signal
             if(_sig_no==_signal_id){
-                // auto t_now = std::chrono::high_resolution_clock::now();
                 if(_componentImpl){
                     _componentImpl->on_loop();
                 }
-                // auto t_elapsed = std::chrono::high_resolution_clock::now();
-                //logger::info("Processing Elapsed Time : {} sec", std::chrono::duration<double, std::chrono::milliseconds::period>(t_elapsed - t_now).count());
             }
         }
 

@@ -10,22 +10,16 @@
  */
 
 #include <cstdlib>
-#include <iostream>
 #include <string>
 #include <vector>
 #include <sys/mman.h>
 #include <csignal>
-#include <iomanip>
-
 #include <dep/cxxopts.hpp>
 #include <flame/log.hpp>
 #include <flame/version.hpp>
 #include <flame/def.hpp>
 
 #include "instance.hpp"
-#include <flame/config.hpp>
-
-#include <flame/config.hpp>
 #include <flame/common/zpipe.hpp>
 #include <dep/json.hpp>
 
@@ -41,18 +35,16 @@ int main(int argc, char* argv[])
     /* program options */
     options.add_options()
         ("c,config", "user configuration file(*.conf)", cxxopts::value<string>()->default_value("default.conf"))
-        ("l,logfile", "save logs in file(flame.log)")
         ("v,verbose", "verbose log level [trace|debug|info|warn|err|critical|off]", cxxopts::value<string>()->default_value("trace"))
         ("show_status", "show information of the running flame instance")
         ("h,help", "Print usage");
 
     auto optval = options.parse(argc, argv);
     if(optval.count("help")){
-        cout << options.help() << endl;
+        console::info("{}", options.help());
         exit(EXIT_SUCCESS);
     }
     
-    // Commands Handler
     // Commands Handler
     if(optval.count("show_status")){
         
@@ -65,19 +57,6 @@ int main(int argc, char* argv[])
             sock->set_message_callback([&](const vector<string>& msg){
                 if(msg.empty()) return;
 
-                // DEALER receives what REP sent. REP usually sends [result] (or [empty][result] if REQ envelope)
-                // However, our monitor is REP.
-                // REP -> DEALER: REP will strip the envelope from REQ.
-                // DEALER should send [empty][content] to mimic REQ if it wants to be treated as REQ by REP?
-                // Actually if monitor uses REP, it expects an identity frame if it's async? No, ZMQ_REP handles envelopes automatically.
-                // If we use DEALER to talk to REP:
-                // We must send [empty frame][request].
-                // REP receives [request].
-                // REP sends [reply].
-                // DEALER receives [empty frame][reply] because REP prepends the envelope? 
-                // Wait, REQ adds empty delimiter. DEALER does not.
-                // So DEALER must send ["", "STATUS"].
-                
                 string rep_str;
                 if(msg.size() > 1 && msg[0].empty()){
                     rep_str = msg[1];
@@ -93,31 +72,32 @@ int main(int argc, char* argv[])
                     int count = j["count"];
                     auto components = j["components"];
 
-                    cout << "----------------------------------------------------------------------" << endl;
-                    cout << " Running Flame Instance Info" << endl;
-                    cout << "----------------------------------------------------------------------" << endl;
-                    cout << left << setw(20) << " PID File" << " : " << "/tmp/flame.pid" << endl; // Assuming standard PID location or dummy
-                    cout << left << setw(20) << " Status" << " : " << j["status"].get<string>() << endl;
-                    cout << left << setw(20) << " Component Count" << " : " << count << endl;
-                    cout << "----------------------------------------------------------------------" << endl;
-                    cout << left << setw(30) << " Name" << setw(20) << " Type" << setw(20) << " Status" << endl;
-                    cout << "----------------------------------------------------------------------" << endl;
+                    console::info("----------------------------------------------------------------------");
+                    console::info(" Running Flame Instance Info");
+                    console::info("----------------------------------------------------------------------");
+                    console::info("{:<20} : {}", " PID File", "/tmp/flame.pid"); 
+                    console::info("{:<20} : {}", " Status", j["status"].get<string>());
+                    console::info("{:<20} : {}", " Component Count", count);
+                    console::info("----------------------------------------------------------------------");
+                    console::info("{:<30}{:<20}{:<20}", " Name", " Type", " Status");
+                    console::info("----------------------------------------------------------------------");
                     for(const auto& c : components){
-                        cout << left << setw(30) << c["name"].get<string>() 
-                             << setw(20) << c["type"].get<string>() 
-                             << setw(20) << c["status"].get<string>() << endl;
+                        console::info("{:<30}{:<20}{:<20}", 
+                            c["name"].get<string>(), 
+                            c["type"].get<string>(), 
+                            c["status"].get<string>());
                     }
-                    cout << "----------------------------------------------------------------------" << endl;
+                    console::info("----------------------------------------------------------------------");
                     response_received = true;
                 }
                 catch(const json::exception& e){
-                    cout << "Invalid response from flame instance. (JSON Parse Error: " << e.what() << ")" << endl;
-                    cout << "Raw Response: " << rep_str << endl;
+                    console::warn("Invalid response from flame instance. (JSON Parse Error: {})", e.what());
+                    console::warn("Raw Response: {}", rep_str);
                     response_received = true; // exit anyway
                 }
                 catch(...){
-                    cout << "Invalid response from flame instance. (Unknown Error)" << endl;
-                    cout << "Raw Response: " << rep_str << endl;
+                    console::warn("Invalid response from flame instance. (Unknown Error)");
+                    console::warn("Raw Response: {}", rep_str);
                     response_received = true; // exit anyway
                 }
             });
@@ -148,11 +128,11 @@ int main(int argc, char* argv[])
                 }
                 
                 if(!response_received){
-                    cout << "No flame process running (Timeout)." << endl;
+                    console::warn("No flame process running (Timeout).");
                 }
 
             } else {
-                cout << "Failed to connect to flame instance." << endl;
+                console::warn("Failed to connect to flame instance.");
             }
 
             sock->close();
@@ -182,26 +162,10 @@ int main(int argc, char* argv[])
 
     mlockall(MCL_CURRENT|MCL_FUTURE); //avoid memory swaping
 
-    /* verbose control arguments */
-    auto console_sink = std::make_shared<logger::sinks::stdout_color_sink_mt>();
-    console_sink->set_pattern("[%Y-%m-%d %H:%M:%S] [%^%l%$] %v");
-    std::vector<logger::sink_ptr> sinks { console_sink };
-
+    /* logger configuration */
     string _verbose_level = optval["verbose"].as<string>();
     int _verbose_level_i = str2level(_verbose_level);
-    
-    /* logfile configuration */
-    if(optval.count("logfile")) {
-        auto file_sink = std::make_shared<logger::sinks::basic_file_sink_mt>("flame.log", true);
-        file_sink->set_level(static_cast<logger::level::level_enum>(_verbose_level_i));
-        file_sink->set_pattern("[%Y-%m-%d %H:%M:%S] [%l] %v");
-        sinks.push_back(file_sink);
-    }
-
-    /* set logger set */
-    auto logger = std::make_shared<logger::logger>("flame", sinks.begin(), sinks.end());
-    logger::set_default_logger(logger);
-    logger::set_level(static_cast<logger::level::level_enum>(_verbose_level_i));
+    create(_verbose_level);
 
     /* program begin */
     logger::info("FLAME Execution Engine {} (built {}/{})",_FLAME_VER_, __DATE__, __TIME__);
@@ -211,8 +175,10 @@ int main(int argc, char* argv[])
         string _config_file = optval["config"].as<string>();
         if(!_config_file.empty()){
             if(init(_config_file.c_str())){
-                logger::info("Bundle is now working...");
-                pause(); //wait until getting SIGINT
+                console::info("Bundle is now working...");
+                while(!g_shutdown_requested.load()) {
+                    pause(); 
+                }
             }
         }
         else{

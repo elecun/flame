@@ -12,6 +12,10 @@
 #ifndef FLAME_INSTANCE_HPP_INCLUDED
 #define FLAME_INSTANCE_HPP_INCLUDED
 
+#include <atomic>
+
+extern volatile std::atomic<bool> g_shutdown_requested;
+
 bool init(const char* config_path);
 void cleanup_and_exit();
 void cleanup();

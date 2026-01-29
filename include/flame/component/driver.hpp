@@ -21,6 +21,7 @@
 #include <chrono>
 #include <type_traits>
 #include <thread>
+#include <atomic>
 #include <zmq.hpp> //libzmq3-dev
 #include <zmq_addon.hpp>
 
@@ -108,6 +109,7 @@ namespace flame::component {
             std::thread* _ptrThread = nullptr;
             timer_t _timer_id {0};
             int _signal_id { 0 };
+            std::atomic<bool> _is_running { false };
 
         public:
             /* inproc context to share */

@@ -20,6 +20,7 @@ using namespace std;
 using json = nlohmann::json;
 
 flame::monitor_service _monitor;
+volatile std::atomic<bool> g_shutdown_requested{false};
 
 /**
  * @brief cleanup and termination
@@ -45,16 +46,16 @@ void cleanup_and_exit(){
  */
 void signal_callback(int sig) {
     switch(sig){
-        case SIGSEGV: { logger::warn("Segment violation"); } break;
-        case SIGABRT: { logger::warn("Abnormal termination"); } break;
-        case SIGKILL: { logger::warn("Process killed"); } break;
-        case SIGBUS: { logger::warn("Bus Error"); } break;
-        case SIGTERM: { logger::warn("Termination requested"); } break;
-        case SIGINT: { logger::warn("Interrupted"); } break;
+        case SIGSEGV: { logger::warn("Segment violation"); _exit(EXIT_FAILURE); } break; // Unsafe to continue
+        case SIGABRT: { logger::warn("Abnormal termination"); _exit(EXIT_FAILURE); } break;
+        case SIGKILL: { logger::warn("Process killed"); _exit(EXIT_FAILURE); } break;
+        case SIGBUS: { logger::warn("Bus Error"); _exit(EXIT_FAILURE); } break;
+        case SIGTERM: { logger::warn("Termination requested"); g_shutdown_requested.store(true); } break;
+        case SIGINT: { logger::warn("Interrupted"); g_shutdown_requested.store(true); } break;
         default:
         logger::info("Cleaning up the program");
+        g_shutdown_requested.store(true);
     }
-    cleanup_and_exit();
 }
 
 
