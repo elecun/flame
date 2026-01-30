@@ -25,7 +25,8 @@ int main() {
     auto pipe = flame::pipe::create_pipe(1);
 
     // 2. Create Subscriber Socket
-    auto sub_socket = std::make_shared<flame::pipe::AsyncZSocket>("sub1", flame::pipe::Pattern::SUBSCRIBE);
+    // Socket ID must match the Publisher's Socket ID for implicit topic subscription
+    auto sub_socket = std::make_shared<flame::pipe::AsyncZSocket>("pub1", flame::pipe::Pattern::SUBSCRIBE);
     if (!sub_socket->create(pipe)) {
         std::cerr << "Failed to create socket" << std::endl;
         return -1;
@@ -35,14 +36,14 @@ int main() {
     sub_socket->set_message_callback(on_message);
 
     // 4. Connect
-    if (!sub_socket->join("tcp", "localhost", 5555)) {
+    if (!sub_socket->join(flame::pipe::Transport::TCP, "localhost", 5555)) {
         std::cerr << "Failed to join" << std::endl;
         return -1;
     }
 
     // 5. Subscribe
-    sub_socket->subscribe("topicA");
-    std::cout << "Subscriber started on tcp://localhost:5555, topic: topicA" << std::endl;
+    // Indirectly subscribed to "pub1" because of socket_id
+    std::cout << "Subscriber started on tcp://localhost:5555, topic: pub1" << std::endl;
 
     // 6. Wait (Callback handles data)
     while (true) {

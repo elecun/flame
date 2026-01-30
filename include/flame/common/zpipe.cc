@@ -29,6 +29,17 @@ namespace pipe {
         }
     }
 
+    std::string transport2str(Transport t) {
+        switch(t) {
+            case Transport::TCP: return "tcp";
+            case Transport::INPROC: return "inproc";
+            case Transport::IPC: return "ipc";
+            case Transport::PGM: return "pgm";
+            case Transport::EPGM: return "epgm";
+            default: return "unknown";
+        }
+    }
+
     // -------------------------------------------------------------------------
     // AsyncZSocket Implementation
     // -------------------------------------------------------------------------
@@ -86,6 +97,13 @@ namespace pipe {
             
             _is_created = true;
             logger::debug("Created socket {} with pattern {}", _socket_id, pattern_to_string(_pattern));
+
+            // Auto-subscribe if pattern is SUBSCRIBE
+            if (_pattern == Pattern::SUBSCRIBE) {
+                _socket->set(zmq::sockopt::subscribe, _socket_id);
+                logger::debug("Socket {} auto-subscribed to topic '{}'", _socket_id, _socket_id);
+            }
+
             return true;
         }
         catch (const zmq::error_t& e) {
@@ -94,7 +112,7 @@ namespace pipe {
         }
     }
 
-    bool AsyncZSocket::join(const std::string& transport, const std::string& address, int port) {
+    bool AsyncZSocket::join(Transport transport, const std::string& address, int port) {
         if (!_is_created || !_socket) {
             logger::error("Socket {} not created", _socket_id);
             return false;
@@ -106,11 +124,12 @@ namespace pipe {
         }
 
         try {
+            std::string transport_str = transport2str(transport);
             std::string conn_str;
-            if (transport == "inproc" || transport == "ipc") {
-                conn_str = transport + "://" + address;
+            if (transport == Transport::INPROC || transport == Transport::IPC) {
+                conn_str = transport_str + "://" + address;
             } else {
-                conn_str = transport + "://" + address + ":" + std::to_string(port);
+                conn_str = transport_str + "://" + address + ":" + std::to_string(port);
             }
 
             if (_pattern == Pattern::PUBLISH || _pattern == Pattern::PULL || _pattern == Pattern::ROUTER || _pattern == Pattern::SERVER_PAIR) {
@@ -173,6 +192,12 @@ namespace pipe {
 
         try {
             zmq::multipart_t multipart;
+
+            // Auto-prepend topic if pattern is PUBLISH
+            if (_pattern == Pattern::PUBLISH) {
+                multipart.add(zmq::message_t(_socket_id.begin(), _socket_id.end()));
+            }
+
             for(const auto& s : data) {
                 multipart.add(zmq::message_t(s.begin(), s.end()));
             }
@@ -188,39 +213,7 @@ namespace pipe {
         }
     }
 
-    bool AsyncZSocket::subscribe(const std::string& topic) {
-        if (_pattern != Pattern::SUBSCRIBE) {
-            logger::error("Subscribe can only be called on subscribe pattern");
-            return false;
-        }
-        try {
-            _socket->set(zmq::sockopt::subscribe, topic);
-            logger::debug("Subscribed to topic: {}", topic);
-            
-            if (_is_joined && _callback) {
-                _start_receiver_thread();
-            }
-            return true;
-        } catch (const zmq::error_t& e) {
-            logger::error("Failed to subscribe: {}", e.what());
-            return false;
-        }
-    }
 
-    bool AsyncZSocket::unsubscribe(const std::string& topic) {
-        if (_pattern != Pattern::SUBSCRIBE) {
-             logger::error("Unsubscribe can only be called on subscribe pattern");
-            return false;
-        }
-        try {
-            _socket->set(zmq::sockopt::unsubscribe, topic);
-            logger::debug("Unsubscribed from topic: {}", topic);
-            return true;
-        } catch (const zmq::error_t& e) {
-            logger::error("Failed to unsubscribe: {}", e.what());
-            return false;
-        }
-    }
 
     void AsyncZSocket::_start_receiver_thread() {
         if (_worker_thread) return;
@@ -240,11 +233,32 @@ namespace pipe {
                     zmq::multipart_t multipart;
                     if(multipart.recv(*_socket, ZMQ_NOBLOCK)) {
                         std::vector<std::string> data;
-                        while(!multipart.empty()){
-                            data.push_back(multipart.pop().to_string());
+                        
+                        bool valid_msg = true;
+                        // If SUB, check topic match (implicit in ZMQ but good to be aware of structure)
+                        // If the first frame is topic, we might want to strip it or pass it? 
+                        // The user request says "topic is socket_id", so transparently, they might expect just the data.
+                        // However, standard ZMQ SUB behavior filters by prefix. The application "receives" the whole multipart.
+                        // Let's remove the topic frame if it matches our ID (which it should), 
+                        // effectively hiding the complexity from the user callback.
+                        
+                        if (_pattern == Pattern::SUBSCRIBE) {
+                            if (!multipart.empty()) {
+                                std::string topic = multipart.pop().to_string();
+                                // We trust ZMQ filtering, but if we want to hide it:
+                                // continue to extract data
+                            } else {
+                                valid_msg = false;
+                            }
                         }
-                        if (_callback) {
-                            _callback(data);
+
+                        if (valid_msg) {
+                            while(!multipart.empty()){
+                                data.push_back(multipart.pop().to_string());
+                            }
+                            if (_callback) {
+                                _callback(data);
+                            }
                         }
                     }
                 }

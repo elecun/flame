@@ -27,7 +27,7 @@ int main() {
     }
 
     // 3. Bind
-    if (!pub_socket->join("tcp", "*", 5555)) {
+    if (!pub_socket->join(flame::pipe::Transport::TCP, "*", 5555)) {
         std::cerr << "Failed to join" << std::endl;
         return -1;
     }
@@ -38,7 +38,7 @@ int main() {
     int count = 0;
     while (true) {
         std::vector<std::string> msg;
-        msg.push_back("topicA"); // Topic
+        // Topic is auto-appended based on socket_id ("pub1")
         msg.push_back("Message " + std::to_string(count));
 
         if (pub_socket->dispatch(msg)) {

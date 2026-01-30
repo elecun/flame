@@ -111,7 +111,7 @@ int main(int argc, char* argv[])
             string address = ipc_addr.substr(ipc_addr.find("://") + 3);
             int port = 0; // not used for IPC
 
-            if(sock->join("ipc", address, 0)){
+            if(sock->join(flame::pipe::Transport::IPC, address, 0)){
                 // Send Request
                 vector<string> req;
                 req.push_back(""); // Emulate REQ envelope

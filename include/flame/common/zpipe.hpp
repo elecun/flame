@@ -34,13 +34,23 @@ namespace pipe {
         CLIENT_PAIR
     };
 
+    enum class Transport {
+        TCP,
+        INPROC,
+        IPC,
+        PGM,
+        EPGM
+    };
+
+    std::string transport2str(Transport t);
+
     class AsyncZSocket : public std::enable_shared_from_this<AsyncZSocket> {
     public:
         AsyncZSocket(const std::string& socket_id, Pattern pattern);
         virtual ~AsyncZSocket();
 
         bool create(std::shared_ptr<ZPipe> pipeline);
-        bool join(const std::string& transport, const std::string& address = "localhost", int port = 5555);
+        bool join(Transport transport, const std::string& address = "localhost", int port = 5555);
         void close();
 
         // Callback for receiving multipart data
@@ -50,9 +60,6 @@ namespace pipe {
         // Send multipart data
         bool dispatch(const std::vector<std::string>& data);
 
-        // Pub/Sub specific
-        bool subscribe(const std::string& topic = "");
-        bool unsubscribe(const std::string& topic = "");
 
         std::string get_id() const { return _socket_id; }
 
