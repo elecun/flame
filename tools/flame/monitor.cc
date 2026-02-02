@@ -44,7 +44,7 @@ namespace flame {
                 _t_service->join();
             }
             delete _t_service;
-            _t_service = nullptr;\
+            _t_service = nullptr;
         }
     }
 

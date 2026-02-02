@@ -20,8 +20,14 @@
 #include <flame/def.hpp>
 
 #include "instance.hpp"
+#include "provider.hpp"
+#include <flame/config.hpp>
+#include <flame/common/zpipe.hpp>
+#include <dep/json.hpp>
 
 using namespace std;
+using json = nlohmann::json;
+
 
 
 
@@ -34,6 +40,7 @@ int main(int argc, char* argv[])
     options.add_options()
         ("c,config", "user configuration file(*.conf)", cxxopts::value<string>()->default_value("default.conf"))
         ("v,verbose", "verbose log level [trace|debug|info|warn|err|critical|off]", cxxopts::value<string>()->default_value("trace"))
+        ("show", "show information", cxxopts::value<string>()->implicit_value("true"))
         ("h,help", "Print usage");
 
     auto optval = options.parse(argc, argv);
@@ -42,6 +49,30 @@ int main(int argc, char* argv[])
         exit(EXIT_SUCCESS);
     }
     
+    // Commands Handler
+    if(optval.count("show")){
+        // check sub-commands
+        // argc > 2
+        // argv[2] == "bundle" ?
+        bool show_bundle = false;
+        for(int i=0;i<argc;i++){
+            if(string(argv[i])=="bundle") show_bundle = true;
+        }
+
+
+        if(show_bundle){
+            string _config_file = optval["config"].as<string>();
+            config.load(_config_file.c_str());
+
+            flame::StateProvider provider;
+            provider.start_subscribe();
+            
+            console::info("Listening for flame status... (Press Ctrl+C to exit)");
+            while(true){
+                std::this_thread::sleep_for(std::chrono::milliseconds(100));
+            }
+        }
+    }
 
     /* set signals to catch the abnormal interrupts */
     const int signals[] = { SIGINT, SIGTERM, SIGBUS, SIGKILL, SIGABRT, SIGSEGV };
@@ -76,7 +107,6 @@ int main(int argc, char* argv[])
         string _config_file = optval["config"].as<string>();
         if(!_config_file.empty()){
             if(init(_config_file.c_str())){
-                console::info("Bundle is now working...");
                 while(!g_shutdown_requested.load()) {
                     pause(); 
                 }

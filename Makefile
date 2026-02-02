@@ -83,7 +83,7 @@ flame:	$(BUILDDIR)flame.o \
 		$(BUILDDIR)manager.o \
 		$(BUILDDIR)driver.o \
 		$(BUILDDIR)instance.o \
-		$(BUILDDIR)monitor.o \
+		$(BUILDDIR)provider.o \
 		$(BUILDDIR)zpipe.o
 		$(CC) $(LDFLAGS) -o $(BUILDDIR)$@ $^ $(LDLIBS)
 
@@ -93,7 +93,7 @@ $(BUILDDIR)instance.o: $(CURRENT_DIR)/tools/flame/instance.cc
 						$(CC) $(CXXFLAGS) $(INCLUDE_DIR) -c $^ -o $@
 $(BUILDDIR)manager.o: $(CURRENT_DIR)/tools/flame/manager.cc
 						$(CC) $(CXXFLAGS) $(INCLUDE_DIR) -c $^ -o $@
-$(BUILDDIR)monitor.o: $(CURRENT_DIR)/tools/flame/monitor.cc
+$(BUILDDIR)provider.o: $(CURRENT_DIR)/tools/flame/provider.cc
 						$(CC) $(CXXFLAGS) $(INCLUDE_DIR) -c $^ -o $@
 $(BUILDDIR)driver.o: $(INCLUDES)/flame/component/driver.cc
 						$(CC) $(CXXFLAGS) $(INCLUDE_DIR) -c $^ -o $@

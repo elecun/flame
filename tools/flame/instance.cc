@@ -2,6 +2,8 @@
 #include "instance.hpp"
 
 #include <csignal>
+#include <execinfo.h>
+#include <unistd.h>
 #include <filesystem>
 #include <fstream>
 #include <memory>
@@ -14,12 +16,12 @@
 #include <flame/config.hpp>
 #include <flame/def.hpp>
 #include "manager.hpp"
-#include "monitor.hpp"
+#include "provider.hpp"
 
 using namespace std;
 using json = nlohmann::json;
 
-flame::monitor_service _monitor;
+flame::StateProvider _provider;
 volatile std::atomic<bool> g_shutdown_requested{false};
 
 /**
@@ -27,7 +29,7 @@ volatile std::atomic<bool> g_shutdown_requested{false};
  * 
  */
 void cleanup(){
-    _monitor.stop_service();
+    _provider.stop();
     manager.uninstall();
 }
 
@@ -45,15 +47,36 @@ void cleanup_and_exit(){
  * @param sig signal number
  */
 void signal_callback(int sig) {
-    switch(sig){
-        case SIGSEGV: { logger::warn("Segment violation"); _exit(EXIT_FAILURE); } break; // Unsafe to continue
-        case SIGABRT: { logger::warn("Abnormal termination"); _exit(EXIT_FAILURE); } break;
-        case SIGKILL: { logger::warn("Process killed"); _exit(EXIT_FAILURE); } break;
-        case SIGBUS: { logger::warn("Bus Error"); _exit(EXIT_FAILURE); } break;
-        case SIGTERM: { logger::warn("Termination requested"); g_shutdown_requested.store(true); } break;
-        case SIGINT: { logger::warn("Interrupted"); g_shutdown_requested.store(true); } break;
-        default:
-        logger::info("Cleaning up the program");
+    if (sig == SIGSEGV || sig == SIGBUS || sig == SIGABRT || sig == SIGKILL) {
+        const char* msg;
+        switch(sig) {
+            case SIGSEGV: msg = "\nError: Segmentation violation (SIGSEGV)\n"; break;
+            case SIGBUS:  msg = "\nError: Bus Error (SIGBUS)\n"; break;
+            case SIGABRT: msg = "\nError: Abnormal termination (SIGABRT)\n"; break;
+            case SIGKILL: msg = "\nError: Process killed (SIGKILL)\n"; break;
+            default:      msg = "\nError: Fatal Signal\n"; break;
+        }
+        // Async-signal-safe write
+        if(write(STDERR_FILENO, msg, strlen(msg)) < 0) {} // ignore error
+
+        // Print backtrace (depth : 20)
+        void* array[20];
+        size_t size;
+        size = backtrace(array, 20);
+        
+        const char* bt_msg = "Stack trace:\n";
+        if(write(STDERR_FILENO, bt_msg, strlen(bt_msg)) < 0) {} // ignore error
+        
+        backtrace_symbols_fd(array, size, STDERR_FILENO);
+        
+        _exit(EXIT_FAILURE);
+    } 
+    else if (sig == SIGINT || sig == SIGTERM) {
+        g_shutdown_requested.store(true);
+        const char* msg = (sig == SIGINT) ? "\nInterrupted (SIGINT)\n" : "\nTerminated (SIGTERM)\n";
+        if(write(STDERR_FILENO, msg, strlen(msg)) < 0) {} // ignore error
+    }
+    else {
         g_shutdown_requested.store(true);
     }
 }
@@ -105,6 +128,6 @@ bool install_bundle(const char* bundle){
 }
 
 void run_bundle(){
-    _monitor.start_service();
+    _provider.start();
     manager.start_bundle_service();
 }

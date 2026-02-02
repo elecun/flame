@@ -32,7 +32,9 @@ namespace flame::def {
     constexpr const char* BUNDLE_TOPOLOGY = "topology";
 
     // monitor
-    constexpr const char* FLAME_MONITOR_IPC_ADDR = "ipc:///tmp/flame_mon.ipc";
+    constexpr const char* FLAME_CONF_MONITOR = "monitor";
+    constexpr const char* FLAME_CONF_MONITOR_ADDR = "address";
+    constexpr const char* FLAME_MONITOR_EPGM_ADDR_DEFAULT = "epgm://wlp58s0;239.192.1.1:5555";
     
 }
 
