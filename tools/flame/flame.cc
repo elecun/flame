@@ -34,32 +34,28 @@ int main(int argc, char *argv[]) {
 
   /* program options */
   options.add_options()(
-      "c,config", "user configuration file(*.conf)",
-      cxxopts::value<string>()->default_value("default.conf"))(
-      "v,verbose", "verbose log level [trace|debug|info|warn|err|critical|off]",
-      cxxopts::value<string>()->default_value("trace"))(
-      "show", "show information",
-      cxxopts::value<string>()->implicit_value("true"))("h,help",
-                                                        "Print usage");
+      "c,config", "user configuration file(*.conf)", cxxopts::value<string>()->default_value("default.conf"))(
+      "v,verbose", "verbose log level [trace|debug|info|warn|err|critical|off]", cxxopts::value<string>()->default_value("trace"))(
+      "show", "show information", cxxopts::value<string>()->implicit_value("true"))("h,help", "Print usage");
 
   auto optval = options.parse(argc, argv);
-  if (optval.count("help")) {
+  if(optval.count("help")){
     logger::log("{}", options.help());
     exit(EXIT_SUCCESS);
   }
 
   // Commands Handler
-  if (optval.count("show")) {
+  if(optval.count("show")){
     // check sub-commands
     // argc > 2
     // argv[2] == "bundle" ?
     bool show_bundle = false;
-    for (int i = 0; i < argc; i++) {
-      if (string(argv[i]) == "bundle")
+    for(int i = 0; i < argc; i++){
+      if(string(argv[i]) == "bundle")
         show_bundle = true;
     }
 
-    if (show_bundle) {
+    if(show_bundle){
       string _config_file = optval["config"].as<string>();
       config.load(_config_file.c_str());
 
@@ -75,19 +71,18 @@ int main(int argc, char *argv[]) {
 
   /* set signals to catch the abnormal interrupts */
   const int signals[] = {SIGINT, SIGTERM, SIGBUS, SIGKILL, SIGABRT, SIGSEGV};
-  for (const int &s : signals)
+  for(const int &s : signals)
     signal(s, signal_callback);
 
   sigset_t sigmask;
-  if (!sigfillset(&sigmask)) {
-    for (int signal : signals)
+  if(!sigfillset(&sigmask)){
+    for(int signal : signals)
       sigdelset(&sigmask, signal); // delete signal from mask
   } else {
     cleanup_and_exit();
   }
 
-  if (pthread_sigmask(SIG_SETMASK, &sigmask, nullptr) !=
-      0) { // signal masking for main thread
+  if(pthread_sigmask(SIG_SETMASK, &sigmask, nullptr) != 0){ // signal masking for main thread
     cleanup_and_exit();
   }
 
@@ -99,15 +94,14 @@ int main(int argc, char *argv[]) {
   create(_verbose_level);
 
   /* program begin */
-  logger::info("FLAME Execution Engine {} (built {}/{})", _FLAME_VER_, __DATE__,
-               __TIME__);
+  logger::info("FLAME Execution Engine {} (built {}/{})", _FLAME_VER_, __DATE__, __TIME__);
   logger::info("Verbose Level : {}({})", _verbose_level, _verbose_level_i);
 
   try {
     string _config_file = optval["config"].as<string>();
-    if (!_config_file.empty()) {
-      if (init(_config_file.c_str())) {
-        while (!g_shutdown_requested.load()) {
+    if(!_config_file.empty()){
+      if(init(_config_file.c_str())){
+        while(!g_shutdown_requested.load()){
           pause();
         }
       }
@@ -115,7 +109,7 @@ int main(int argc, char *argv[]) {
       logger::warn("No Arguments. Burner will run with default configuration");
     }
 
-  } catch (const std::exception &e) {
+  } catch(const std::exception &e){
     logger::error("Exception : {}", e.what());
   }
 
