@@ -4,41 +4,81 @@
  * @brief State Provider for Flame Instance
  * @version 0.1
  * @date 2024-07-25
- * 
+ *
  * @copyright Copyright (c) 2024
- * 
+ *
  */
 
 #ifndef FLAME_PROVIDER_HPP_INCLUDED
 #define FLAME_PROVIDER_HPP_INCLUDED
 
+#include <atomic>
+#include <flame/common/zpipe.hpp>
+#include <memory>
 #include <string>
 #include <thread>
-#include <atomic>
-#include <memory>
-#include <flame/common/zpipe.hpp>
 
 namespace flame {
 
-    class StateProvider {
-    public:
-        StateProvider();
-        virtual ~StateProvider();
+class StateProvider {
+public:
+  /**
+   * @brief Construct a new State Provider object
+   *
+   */
+  StateProvider();
 
-        void start();
-        void start_subscribe();
-        void stop();
+  /**
+   * @brief Destroy the State Provider object
+   *
+   */
+  virtual ~StateProvider();
 
-    private:
-        void _publish_loop();
-        void _subscribe_loop();
+  /**
+   * @brief Start the state provider service
+   *
+   */
+  void start();
 
-    private:
-        std::atomic<bool> _run_service;
-        std::thread* _t_service;
-        std::string _epgm_addr;
-    };
+  /**
+   * @brief Connect to the flame instance
+   *
+   */
+  void connect();
 
-} /* namespace */
+  /**
+   * @brief Stop the service
+   *
+   */
+  void stop();
+
+private:
+  /**
+   * @brief Publish loop
+   *
+   */
+  void _publish_loop();
+
+private:
+  /**
+   * @brief Service running flag
+   *
+   */
+  std::atomic<bool> _run_service;
+
+  /**
+   * @brief Service thread
+   *
+   */
+  std::thread *_t_service;
+
+  /**
+   * @brief IPC address
+   *
+   */
+  std::string _ipc_addr;
+};
+
+} // namespace flame
 
 #endif

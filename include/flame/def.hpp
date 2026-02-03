@@ -4,9 +4,9 @@
  * @brief Definitions for Configuration Parsing
  * @version 0.1
  * @date 2024-06-13
- * 
+ *
  * @copyright Copyright (c) 2024
- * 
+ *
  */
 
 #ifndef FLAME_DEF_HPP_INCLUDED
@@ -15,28 +15,27 @@
 #include <string>
 
 namespace flame::def {
-    // root config key
-    constexpr const char* ENVIRONMENTS = "environments";
-    constexpr const char* BUNDLE = "bundle";
-    constexpr const char* COMPONENT_EXT = ".comp";
-    constexpr const char* PROFILE_EXT = ".json";
-    constexpr const char* BUNDLE_CONFIG_EXT = ".conf";
+// root config key
+constexpr const char *ENVIRONMENTS = "environments";
+constexpr const char *BUNDLE = "bundle";
+constexpr const char *COMPONENT_EXT = ".comp";
+constexpr const char *PROFILE_EXT = ".json";
+constexpr const char *BUNDLE_CONFIG_EXT = ".conf";
 
-    // profile key
-    constexpr const char* PROFILE_RT_CYCLE_NS = "rt_cycle_ns";
-    constexpr const char* PROFILE_DATAPORT = "dataport";
-    constexpr const char* PROFILE_PARAMETERS = "parameters";
+// profile key
+constexpr const char *PROFILE_RT_CYCLE_NS = "rt_cycle_ns";
+constexpr const char *PROFILE_DATAPORT = "dataport";
+constexpr const char *PROFILE_PARAMETERS = "parameters";
 
-    // bundle key properties
-    constexpr const char* BUNDLE_NAME = "name";
-    constexpr const char* BUNDLE_TOPOLOGY = "topology";
+// bundle key properties
+constexpr const char *BUNDLE_NAME = "name";
+constexpr const char *BUNDLE_TOPOLOGY = "topology";
 
-    // monitor
-    constexpr const char* FLAME_CONF_MONITOR = "monitor";
-    constexpr const char* FLAME_CONF_MONITOR_ADDR = "address";
-    constexpr const char* FLAME_MONITOR_EPGM_ADDR_DEFAULT = "epgm://wlp58s0;239.192.1.1:5555";
-    
-}
+// monitor
+constexpr const char *FLAME_CONF_MONITOR = "monitor";
+constexpr const char *FLAME_CONF_MONITOR_ADDR = "address";
+constexpr const char *FLAME_MONITOR_IPC_ADDR_DEFAULT = "ipc:///tmp/flame.ipc";
 
+} // namespace flame::def
 
 #endif
