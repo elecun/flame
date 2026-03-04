@@ -28,7 +28,7 @@ volatile std::atomic<bool> g_shutdown_requested{false};
  * @brief cleanup and termination
  *
  */
-void cleanup(){
+void cleanup() {
   _provider.stop();
   manager.uninstall();
   flame::pipe::destroy_pipe();
@@ -39,17 +39,16 @@ void cleanup_and_exit() {
   logger::info("successfully terminated");
   logger::default_logger()->flush();
 
-  exit(EXIT_SUCCESS);
+  _exit(EXIT_SUCCESS);
 }
-
 
 /**
  * @brief signal event callback functions
  *
  * @param sig signal number
  */
-void signal_callback(int sig){
-  if(sig == SIGSEGV || sig == SIGBUS || sig == SIGABRT || sig == SIGKILL){
+void signal_callback(int sig) {
+  if (sig == SIGSEGV || sig == SIGBUS || sig == SIGABRT || sig == SIGKILL) {
     const char *msg;
     switch (sig) {
     case SIGSEGV:
@@ -69,7 +68,7 @@ void signal_callback(int sig){
       break;
     }
     // Async-signal-safe write
-    if(write(STDERR_FILENO, msg, strlen(msg)) < 0){
+    if (write(STDERR_FILENO, msg, strlen(msg)) < 0) {
     } // ignore error
 
     // Print backtrace (depth : 20)
@@ -78,30 +77,30 @@ void signal_callback(int sig){
     size = backtrace(array, 20);
 
     const char *bt_msg = "Stack trace:\n";
-    if(write(STDERR_FILENO, bt_msg, strlen(bt_msg)) < 0){
+    if (write(STDERR_FILENO, bt_msg, strlen(bt_msg)) < 0) {
     } // ignore error
 
     backtrace_symbols_fd(array, size, STDERR_FILENO);
 
     _exit(EXIT_FAILURE);
-  } else if(sig == SIGINT || sig == SIGTERM){
+  } else if (sig == SIGINT || sig == SIGTERM) {
     g_shutdown_requested.store(true);
     const char *msg = (sig == SIGINT) ? "\nInterrupted (SIGINT)\n"
                                       : "\nTerminated (SIGTERM)\n";
-    if(write(STDERR_FILENO, msg, strlen(msg)) < 0){
+    if (write(STDERR_FILENO, msg, strlen(msg)) < 0) {
     } // ignore error
   } else {
     g_shutdown_requested.store(true);
   }
 }
 
-bool init(const char *config_path){
+bool init(const char *config_path) {
 
   try {
     flame::pipe::create_pipe(1);
     config.load(config_path);
 
-    if(install_bundle()){
+    if (install_bundle()) {
       run_bundle();
     }
   } catch (const std::exception &e) {
@@ -112,18 +111,20 @@ bool init(const char *config_path){
   return true;
 }
 
-bool install_bundle(const char *bundle){
+bool install_bundle(const char *bundle) {
 
   // install by configuration file
-  if(!bundle && config.is_loaded()){
-    fs::path _bundle_path = config.get_config_path().parent_path() / fs::path(config.get_bundle_name());
+  if (!bundle && config.is_loaded()) {
+    fs::path _bundle_path = config.get_config_path().parent_path() /
+                            fs::path(config.get_bundle_name());
     logger::info("Bundle Repository : {}", _bundle_path.string());
 
-    if(fs::is_directory(_bundle_path)){
+    if (fs::is_directory(_bundle_path)) {
       logger::info("Now installing '{}' bundle..", config.get_bundle_name());
       manager.install(_bundle_path);
     } else {
-      logger::critical("{} bundle cannot be found. Check your configurations.", config.get_bundle_name());
+      logger::critical("{} bundle cannot be found. Check your configurations.",
+                       config.get_bundle_name());
       return false;
     }
   } else {
@@ -134,7 +135,7 @@ bool install_bundle(const char *bundle){
   return true;
 }
 
-void run_bundle(){
+void run_bundle() {
   _provider.start();
   manager.start_bundle_service();
 }
