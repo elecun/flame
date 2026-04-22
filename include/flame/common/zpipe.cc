@@ -56,24 +56,25 @@ std::string transport2str(Transport t) {
 }
 
 // -------------------------------------------------------------------------
-// AsyncZSocket Implementation
+// zsocket Implementation
 // -------------------------------------------------------------------------
 
-AsyncZSocket::AsyncZSocket(const std::string &socket_id, Pattern pattern)
+zsocket::zsocket(const std::string &socket_id, Pattern pattern)
     : _socket_id(socket_id), _pattern(pattern), _socket(nullptr),
       _is_server(false), _is_created(false), _is_joined(false),
       _worker_thread(nullptr), _stop_event(false), _callback(nullptr) {}
 
-AsyncZSocket::~AsyncZSocket() { close(); }
+zsocket::~zsocket() { close(); }
 
-bool AsyncZSocket::create(std::shared_ptr<ZPipe> pipeline) {
+bool zsocket::create(std::shared_ptr<ZPipe> pipeline) {
   if (_is_created) {
     logger::warn("Socket {} already created", _socket_id);
     return true;
   }
 
   try {
-    auto context = pipeline->get_context();
+    auto pipe = pipeline ? pipeline : ZPipe::get_instance();
+    auto context = pipe->get_context();
     if (!context) {
       logger::error("ZPipe context is null");
       return false;
@@ -128,7 +129,7 @@ bool AsyncZSocket::create(std::shared_ptr<ZPipe> pipeline) {
       _socket->set(zmq::sockopt::reconnect_ivl, 500);
     }
 
-    pipeline->register_socket(shared_from_this());
+    pipe->register_socket(shared_from_this());
 
     _is_created = true;
     logger::debug("Created socket {} with pattern {}", _socket_id,
@@ -148,7 +149,7 @@ bool AsyncZSocket::create(std::shared_ptr<ZPipe> pipeline) {
   }
 }
 
-bool AsyncZSocket::join(Transport transport, const std::string &address,
+bool zsocket::join(Transport transport, const std::string &address,
                         int port) {
   if (!_is_created || !_socket) {
     logger::error("Socket {} not created", _socket_id);
@@ -200,7 +201,7 @@ bool AsyncZSocket::join(Transport transport, const std::string &address,
   }
 }
 
-void AsyncZSocket::close() {
+void zsocket::close() {
   // Idempotent: skip if already closed
   if (!_is_created && !_socket && !_worker_thread) {
     return;
@@ -230,29 +231,23 @@ void AsyncZSocket::close() {
   logger::debug("Destroyed socket {}", _socket_id);
 }
 
-bool AsyncZSocket::set_message_callback(callback_t callback) {
+bool zsocket::set_message_callback(callback_t callback) {
   _callback = callback;
   return true;
 }
 
-bool AsyncZSocket::dispatch(const std::vector<std::string> &data) {
+bool zsocket::dispatch(zdata& data) {
   if (!_socket || !_is_joined) {
     logger::error("Socket not joined");
     return false;
   }
 
   try {
-    zmq::multipart_t multipart;
-
     // Auto-prepend topic if pattern is PUBLISH
     if (_pattern == Pattern::PUBLISH) {
-      multipart.add(zmq::message_t(_socket_id.begin(), _socket_id.end()));
+      data.pushmem(_socket_id.data(), _socket_id.size());
     }
-
-    for (const auto &s : data) {
-      multipart.add(zmq::message_t(s.begin(), s.end()));
-    }
-    multipart.send(*_socket);
+    data.send(*_socket);
     return true;
   } catch (const zmq::error_t &e) {
     if (e.num() == EAGAIN) {
@@ -264,16 +259,16 @@ bool AsyncZSocket::dispatch(const std::vector<std::string> &data) {
   }
 }
 
-void AsyncZSocket::_start_receiver_thread() {
+void zsocket::_start_receiver_thread() {
   if (_worker_thread)
     return;
 
   _stop_event = false;
-  _worker_thread = new std::thread(&AsyncZSocket::_receiver_worker, this);
+  _worker_thread = new std::thread(&zsocket::_receiver_worker, this);
   logger::debug("Receiver thread started for socket {}", _socket_id);
 }
 
-void AsyncZSocket::_receiver_worker() {
+void zsocket::_receiver_worker() {
   while (!_stop_event) {
     try {
       zmq::pollitem_t items[] = {
@@ -281,9 +276,8 @@ void AsyncZSocket::_receiver_worker() {
       zmq::poll(&items[0], 1, std::chrono::milliseconds(1000)); // 1 sec timeout
 
       if (items[0].revents & ZMQ_POLLIN) {
-        zmq::multipart_t multipart;
+        zdata multipart;
         if (multipart.recv(*_socket, ZMQ_NOBLOCK)) {
-          std::vector<std::string> data;
 
           bool valid_msg = true;
           // If SUB, check topic match (implicit in ZMQ but good to be aware of
@@ -306,11 +300,8 @@ void AsyncZSocket::_receiver_worker() {
           }
 
           if (valid_msg) {
-            while (!multipart.empty()) {
-              data.push_back(multipart.pop().to_string());
-            }
             if (_callback) {
-              _callback(data);
+              _callback(multipart);  // pass multipart_t directly, zero-copy
             }
           }
         }
@@ -352,7 +343,7 @@ void ZPipe::destroy_instance() {
 
   if (inst) {
     // Closes all sockets
-    std::map<std::string, std::shared_ptr<AsyncZSocket>> temp_sockets;
+    std::map<std::string, std::shared_ptr<zsocket>> temp_sockets;
     {
       std::lock_guard<std::mutex> sock_lock(inst->_socket_mutex);
       temp_sockets = inst->_sockets; // Copy to iterate safely
@@ -389,7 +380,7 @@ bool ZPipe::init(int io_threads) {
 
 zmq::context_t *ZPipe::get_context() { return _context; }
 
-bool ZPipe::register_socket(std::shared_ptr<AsyncZSocket> socket) {
+bool ZPipe::register_socket(std::shared_ptr<zsocket> socket) {
   std::lock_guard<std::mutex> lock(_socket_mutex);
   if (_sockets.find(socket->get_id()) != _sockets.end()) {
     logger::warn("Socket {} already registered", socket->get_id());
@@ -411,7 +402,7 @@ bool ZPipe::unregister_socket(const std::string &socket_id) {
   return false;
 }
 
-std::shared_ptr<AsyncZSocket> ZPipe::get_socket(const std::string &socket_id) {
+std::shared_ptr<zsocket> ZPipe::get_socket(const std::string &socket_id) {
   std::lock_guard<std::mutex> lock(_socket_mutex);
   auto it = _sockets.find(socket_id);
   if (it != _sockets.end()) {
@@ -429,7 +420,7 @@ std::shared_ptr<ZPipe> create_pipe(int io_threads) {
 
 void destroy_pipe() { ZPipe::destroy_instance(); }
 
-std::shared_ptr<AsyncZSocket> get_socket(const std::string &socket_id) {
+std::shared_ptr<zsocket> get_socket(const std::string &socket_id) {
   auto pipe = ZPipe::get_instance();
   return pipe->get_socket(socket_id);
 }

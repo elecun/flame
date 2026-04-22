@@ -12,18 +12,15 @@
 #ifndef FLAME_COMPONENT_PORT_HPP_INCLUDED
 #define FLAME_COMPONENT_PORT_HPP_INCLUDED
 
-#include <zmq.hpp>
-#include <zmq_addon.hpp>
+#include <string>
+#include <stdexcept>
 #include <unordered_map>
 
 using namespace std;
 
 namespace flame {
     
-    using pipe_context = zmq::context_t;    /* pipeline */
-    using pipe_socket = zmq::socket_t;      /* socket */
-    using pipe_data = zmq::message_t;       /* message */
-    using pipe_data_multipart = zmq::multipart_t; /* multipart message */
+
 
     enum class socket_type : int {
         pair = 0,

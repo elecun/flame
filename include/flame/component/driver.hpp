@@ -38,7 +38,7 @@ namespace flame::component {
             bool on_init() override;
             void on_loop() override;
             void on_close() override;
-            void on_message(const message_t& msg) override;
+            void on_data(flame::component::zdata& data) override;
 
             /* get component name */
             const char* get_name() {
@@ -111,9 +111,7 @@ namespace flame::component {
             int _signal_id { 0 };
             std::atomic<bool> _is_running { false };
 
-        public:
-            /* inproc context to share */
-            static pipe_context inproc_pipeline_context;
+
 
     }; /* class */
     

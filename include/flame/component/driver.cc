@@ -16,9 +16,7 @@ using namespace std;
 static int SIG_RUNTIME_TRIGGER = (SIGRTMIN);
 #endif
 
-// [important] bundle should be handle the inproc context
-pipe_context flame::component::driver::inproc_pipeline_context =
-    pipe_context(10);
+
 
 namespace flame::component {
 
@@ -39,43 +37,46 @@ driver::driver(path component_path) : _is_running(false) {
       json _dataport = _componentImpl->get_profile()->dataport();
 
       /* assign context with number of io threads */
-      int n_socket_io = static_cast<int>(_dataport.size());
-      _componentImpl->pipeline_context = make_unique<pipe_context>(n_socket_io);
-      _componentImpl->inproc_pipeline_context = &this->inproc_pipeline_context;
-      logger::info("Component <{}> has pipeline context with {} I/O Threads",
-                   component_path.filename().string(), n_socket_io);
+      logger::info("Component <{}> loaded dataport config",
+                   component_path.filename().string());
 
       /* assign user defined data port */
       if (!_dataport.empty()) {
         for (auto &[portname, parameter] : _dataport.items()) {
           string socket_type = parameter["socket_type"].get<string>();
           string transport = parameter["transport"].get<string>();
-          int q_size = parameter.value("queue_size", 1000);
-          int tout = parameter.value("timeout_ms", 500);
 
           /* create port(socket) for inproc transport */
           if (!transport.compare("inproc")) {
-            _componentImpl->create_port_inproc(portname, str2type(socket_type),
-                                               q_size, tout, portname);
+            auto sock = _componentImpl->create_zsocket(portname, str2type(socket_type), transport, portname, 0);
+            if (sock) {
+                sock->set_message_callback([this](zmq::multipart_t& data) {
+                    this->on_data(data);
+                });
+            }
           }
 
           /* create port(socket) for ipc, but not support yet */
           else if (!transport.compare("ipc")) {
             logger::warn("ipc transport is not supported yet.");
+            auto sock = _componentImpl->create_zsocket(portname, str2type(socket_type), transport, portname, 0);
+            if (sock) {
+                sock->set_message_callback([this](zmq::multipart_t& data) {
+                    this->on_data(data);
+                });
+            }
           }
 
-          /* create port(socket) for tcp */
-          else if (!transport.compare("tcp")) {
+          /* create port(socket) for tcp and multicast */
+          else if (!transport.compare("tcp") || !transport.compare("epgm") || !transport.compare("pgm")) {
             int port = parameter.value("port", 5555);
             string host = parameter.value("host", "*");
-            _componentImpl->create_port_tcp(
-                portname,              /* socket name*/
-                str2type(socket_type), /* socket type */
-                q_size,                /* buffer size */
-                host,                  /* host address to bind */
-                port,                  /* host port to bind */
-                tout,                  /* rcv timeout */
-                portname /* topic if subscriber */);
+            auto sock = _componentImpl->create_zsocket(portname, str2type(socket_type), transport, host, port);
+            if (sock) {
+                sock->set_message_callback([this](zmq::multipart_t& data) {
+                    this->on_data(data);
+                });
+            }
           }
         }
       }
@@ -104,7 +105,6 @@ driver::~driver() {
     _componentImpl->close_port();
 
     /* pipeline termination */
-    _componentImpl->pipeline_context->close();
   } catch (const zmq::error_t &e) {
     if (e.num() == ENOTSOCK || e.num() == ETERM) {
       logger::debug("Pipeline cleanup: {}", e.what());
@@ -171,16 +171,14 @@ void driver::on_close() {
   }
 }
 
-void driver::on_message(const message_t &msg) {
-  try {
-    if (_componentImpl) {
-      // The driver should be responsible for receiving messages and passing
-      // them. For now, we pass an empty message to satisfy the interface.
-      flame::component::message_t msg;
-      return _componentImpl->on_message(msg);
+void driver::on_data(flame::component::zdata& data) {
+  if (_componentImpl) {
+    try {
+      _componentImpl->on_data(data);
+    } catch (const std::exception &e) {
+      logger::error("Exception in on_data for component {}: {}", get_name(),
+                    e.what());
     }
-  } catch (const std::runtime_error &e) {
-    logger::error("Runtime Error(on_message) : {}", e.what());
   }
 }
 

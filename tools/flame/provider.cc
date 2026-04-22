@@ -63,7 +63,7 @@ void StateProvider::stop(){
 void StateProvider::_publish_loop(){
 
   auto pipe = flame::pipe::ZPipe::get_instance();
-  auto sock = std::make_shared<flame::pipe::AsyncZSocket>(
+  auto sock = std::make_shared<flame::pipe::zsocket>(
       "state_pub", flame::pipe::Pattern::ROUTER);
 
   if(sock->create(pipe)){
@@ -72,14 +72,13 @@ void StateProvider::_publish_loop(){
     std::string address = ipc_addr.substr(ipc_addr.find("://") + 3);
 
     // server bind
-    sock->set_message_callback([&](const std::vector<std::string> &msg) {
+    sock->set_message_callback([&](zmq::multipart_t& msg) {
       if(!msg.empty()){
-        // msg[0] : identity frame
-        // msg[1] : empty frame
-        // msg[2] : data
-
-        std::string identity = msg[0];
-        // logger::info("Received from client : {}", identity);
+        // frame[0] : identity frame
+        // frame[1] : empty frame
+        // frame[2] : data
+        std::string identity = msg.popstr();
+        msg.popstr(); // empty delimiter
 
         // Gather info
         json j_info;
@@ -89,7 +88,11 @@ void StateProvider::_publish_loop(){
         std::string rep_str = j_info.dump();
 
         // Send Reply
-        sock->dispatch({identity, "", rep_str});
+        zmq::multipart_t reply;
+        reply.addstr(identity);
+        reply.addstr("");
+        reply.addstr(rep_str);
+        sock->dispatch(reply);
       }
     });
 
@@ -110,7 +113,7 @@ void StateProvider::_publish_loop(){
 
 void StateProvider::connect(){
   auto pipe = flame::pipe::ZPipe::get_instance();
-  auto sock = std::make_shared<flame::pipe::AsyncZSocket>(
+  auto sock = std::make_shared<flame::pipe::zsocket>(
       "cli_dealer", flame::pipe::Pattern::DEALER);
 
   if(sock->create(pipe)){
@@ -118,20 +121,22 @@ void StateProvider::connect(){
     std::string address = ipc_addr.substr(ipc_addr.find("://") + 3);
 
     // client connect
-    sock->set_message_callback([&](const std::vector<std::string> &msg) {
+    sock->set_message_callback([&](zmq::multipart_t& msg) {
       if(!msg.empty()){
-        // msg[0] : empty frame
-        // msg[1] : data
-
-        if(msg.size() > 1 && msg[1].size() > 0){
-          // logger::info("Received : {}", msg[1]);
-          std::cout << msg[1] << std::endl;
+        // frame[0] : empty frame
+        // frame[1] : data
+        msg.popstr(); // empty delimiter
+        if(!msg.empty()){
+          std::cout << msg.popstr() << std::endl;
         }
       }
     });
 
     if(sock->join(flame::pipe::Transport::IPC, address)){
-      sock->dispatch({"", "Hello"}); // Request
+      zmq::multipart_t req;
+      req.addstr("");      // empty delimiter
+      req.addstr("Hello"); // Request
+      sock->dispatch(req);
       std::this_thread::sleep_for(
           std::chrono::milliseconds(1000)); // wait for reply
     } else {

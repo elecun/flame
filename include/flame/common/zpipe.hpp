@@ -15,8 +15,8 @@
 #include <mutex>
 #include <string>
 #include <thread>
-#include <vector>
 #include <zmq.hpp>
+#include <zmq_addon.hpp>
 
 namespace flame {
 namespace pipe {
@@ -36,24 +36,27 @@ enum class Pattern {
 
 enum class Transport { TCP, INPROC, IPC, PGM, EPGM };
 
+/* zdata: standard multipart message carrier within flame::pipe */
+using zdata = zmq::multipart_t;
+
 std::string transport2str(Transport t);
 
-class AsyncZSocket : public std::enable_shared_from_this<AsyncZSocket> {
+class zsocket : public std::enable_shared_from_this<zsocket> {
 public:
-  AsyncZSocket(const std::string &socket_id, Pattern pattern);
-  virtual ~AsyncZSocket();
+  zsocket(const std::string &socket_id, Pattern pattern);
+  virtual ~zsocket();
 
-  bool create(std::shared_ptr<ZPipe> pipeline);
+  bool create(std::shared_ptr<ZPipe> pipeline = nullptr);
   bool join(Transport transport, const std::string &address = "localhost",
             int port = 5555);
   void close();
 
-  // Callback for receiving multipart data
-  typedef std::function<void(const std::vector<std::string> &)> callback_t;
+  // Callback: called with received zdata (topic frame already stripped for SUB)
+  typedef std::function<void(zdata&)> callback_t;
   bool set_message_callback(callback_t callback);
 
-  // Send multipart data
-  bool dispatch(const std::vector<std::string> &data);
+  // Send zdata (non-const: send() consumes the frames)
+  bool dispatch(zdata& data);
 
   std::string get_id() const { return _socket_id; }
 
@@ -85,9 +88,9 @@ public:
 
   zmq::context_t *get_context();
 
-  bool register_socket(std::shared_ptr<AsyncZSocket> socket);
+  bool register_socket(std::shared_ptr<zsocket> socket);
   bool unregister_socket(const std::string &socket_id);
-  std::shared_ptr<AsyncZSocket> get_socket(const std::string &socket_id);
+  std::shared_ptr<zsocket> get_socket(const std::string &socket_id);
 
   ~ZPipe();
 
@@ -101,14 +104,14 @@ private:
   static std::mutex _mutex;
 
   zmq::context_t *_context = nullptr;
-  std::map<std::string, std::shared_ptr<AsyncZSocket>> _sockets;
+  std::map<std::string, std::shared_ptr<zsocket>> _sockets;
   std::mutex _socket_mutex;
 };
 
 // Global helper functions
 std::shared_ptr<ZPipe> create_pipe(int io_threads = 1);
 void destroy_pipe();
-std::shared_ptr<AsyncZSocket> get_socket(const std::string &socket_id);
+std::shared_ptr<zsocket> get_socket(const std::string &socket_id);
 
 } // namespace pipe
 } // namespace flame

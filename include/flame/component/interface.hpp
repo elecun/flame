@@ -23,7 +23,7 @@ namespace flame::component {
         virtual bool on_init() = 0;                     //initialize : entry
         virtual void on_close() = 0;                    //destroy
         virtual void on_loop() = 0;                     //cycle
-        virtual void on_message(const message_t& msg) = 0;  //message event
+        virtual void on_data(zdata& data) = 0;  // data event (multipart_t - moved from socket receiver)
     }; /* class */
 
 } /* namespace */
