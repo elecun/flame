@@ -16,15 +16,15 @@
 
 namespace flame::component {
 
-    using zcontext = zmq::context_t;
+    using ZContext = zmq::context_t;
 
     /* Standard data carrier: zmq::multipart_t
      * Use addstr() for string/json frames, addmem() for binary frames.
      * Frame layout: [src_port, dst_port, payload_type, payload]
      */
-    using zdata = zmq::multipart_t;
+    using ZData = zmq::multipart_t;
 
-    enum class payload_type { string, json, binary, number };
+    enum class PayloadType { kString, kJson, kBinary, kNumber };
 
 }
 

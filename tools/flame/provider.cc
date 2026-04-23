@@ -23,15 +23,15 @@ using json = nlohmann::json;
 namespace flame {
 
 StateProvider::StateProvider()
-    : _run_service(false), _t_service(nullptr),
-      _ipc_addr(def::FLAME_MONITOR_IPC_ADDR_DEFAULT) {
-  if(config.is_loaded()){
-    if(config.get_config().contains(def::FLAME_CONF_MONITOR)){
-      if(config.get_config()[def::FLAME_CONF_MONITOR].contains(
-              def::FLAME_CONF_MONITOR_ADDR)){
-        _ipc_addr = config
-                        .get_config()[def::FLAME_CONF_MONITOR]
-                                     [def::FLAME_CONF_MONITOR_ADDR]
+    : run_service_(false), service_thread_(nullptr),
+      ipc_addr_(def::kFlameMonitorIpcAddrDefault) {
+  if(CONFIG.isLoaded()){
+    if(CONFIG.getConfig().contains(def::kFlameConfMonitor)){
+      if(CONFIG.getConfig()[def::kFlameConfMonitor].contains(
+              def::kFlameConfMonitorAddr)){
+        ipc_addr_ = CONFIG
+                        .getConfig()[def::kFlameConfMonitor]
+                                     [def::kFlameConfMonitorAddr]
                         .get<std::string>();
       }
     }
@@ -41,38 +41,38 @@ StateProvider::StateProvider()
 StateProvider::~StateProvider() { stop(); }
 
 void StateProvider::start(){
-  if(!_run_service){
-    _run_service = true;
-    _t_service = new std::thread(&StateProvider::_publish_loop, this);
+  if(!run_service_){
+    run_service_ = true;
+    service_thread_ = new std::thread(&StateProvider::publishLoop, this);
   }
 }
 
 void StateProvider::stop(){
-  if(_run_service){
-    _run_service = false;
-    if(_t_service && _t_service->joinable()){
-      _t_service->join();
+  if(run_service_){
+    run_service_ = false;
+    if(service_thread_ && service_thread_->joinable()){
+      service_thread_->join();
     }
-    if(_t_service){
-      delete _t_service;
-      _t_service = nullptr;
+    if(service_thread_){
+      delete service_thread_;
+      service_thread_ = nullptr;
     }
   }
 }
 
-void StateProvider::_publish_loop(){
+void StateProvider::publishLoop(){
 
-  auto pipe = flame::pipe::ZPipe::get_instance();
-  auto sock = std::make_shared<flame::pipe::zsocket>(
-      "state_pub", flame::pipe::Pattern::ROUTER);
+  auto pipe = flame::pipe::ZPipe::instance();
+  auto sock = std::make_shared<flame::pipe::ZSocket>(
+      "state_pub", flame::pipe::Pattern::kRouter);
 
   if(sock->create(pipe)){
     // Parse IPC address
-    std::string ipc_addr = _ipc_addr;
+    std::string ipc_addr = ipc_addr_;
     std::string address = ipc_addr.substr(ipc_addr.find("://") + 3);
 
     // server bind
-    sock->set_message_callback([&](zmq::multipart_t& msg) {
+    sock->setMessageCallback([&](zmq::multipart_t& msg) {
       if(!msg.empty()){
         // frame[0] : identity frame
         // frame[1] : empty frame
@@ -83,8 +83,8 @@ void StateProvider::_publish_loop(){
         // Gather info
         json j_info;
         j_info["status"] = "Active";
-        j_info["count"] = manager.get_component_count();
-        j_info["components"] = manager.get_component_info();
+        j_info["count"] = MANAGER.getComponentCount();
+        j_info["components"] = MANAGER.getComponentInfo();
         std::string rep_str = j_info.dump();
 
         // Send Reply
@@ -96,10 +96,10 @@ void StateProvider::_publish_loop(){
       }
     });
 
-    if(sock->join(flame::pipe::Transport::IPC, address)){
-      logger::info("State Provider Started : {}", _ipc_addr);
+    if(sock->join(flame::pipe::Transport::kIpc, address)){
+      logger::info("State Provider Started : {}", ipc_addr_);
 
-      while(_run_service){
+      while(run_service_){
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
       }
     } else {
@@ -112,16 +112,16 @@ void StateProvider::_publish_loop(){
 }
 
 void StateProvider::connect(){
-  auto pipe = flame::pipe::ZPipe::get_instance();
-  auto sock = std::make_shared<flame::pipe::zsocket>(
-      "cli_dealer", flame::pipe::Pattern::DEALER);
+  auto pipe = flame::pipe::ZPipe::instance();
+  auto sock = std::make_shared<flame::pipe::ZSocket>(
+      "cli_dealer", flame::pipe::Pattern::kDealer);
 
   if(sock->create(pipe)){
-    std::string ipc_addr = _ipc_addr;
+    std::string ipc_addr = ipc_addr_;
     std::string address = ipc_addr.substr(ipc_addr.find("://") + 3);
 
     // client connect
-    sock->set_message_callback([&](zmq::multipart_t& msg) {
+    sock->setMessageCallback([&](zmq::multipart_t& msg) {
       if(!msg.empty()){
         // frame[0] : empty frame
         // frame[1] : data
@@ -132,7 +132,7 @@ void StateProvider::connect(){
       }
     });
 
-    if(sock->join(flame::pipe::Transport::IPC, address)){
+    if(sock->join(flame::pipe::Transport::kIpc, address)){
       zmq::multipart_t req;
       req.addstr("");      // empty delimiter
       req.addstr("Hello"); // Request

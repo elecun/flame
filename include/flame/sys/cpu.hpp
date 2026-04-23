@@ -8,43 +8,41 @@
  * @copyright Copyright (c) 2023
  * 
  */
-#ifndef _FLAME_SYS_CPU_HPP_
-#define _FLAME_SYS_CPU_HPP_
+#ifndef FLAME_SYS_CPU_HPP_INCLUDED
+#define FLAME_SYS_CPU_HPP_INCLUDED
 
 #include <flame/arch/singleton.hpp>
 #include <fstream>
 #include <stdexcept>
-
-using namespace std;
 
 #if defined(__linux__)
 #include <sys/sysinfo.h>
 
 namespace flame::sys {
 
-    class cpu {
+    class Cpu {
         public:
-            cpu() = default;
-            virtual ~cpu() = default;
+            Cpu() = default;
+            virtual ~Cpu() = default;
             
 
     }; /* class */
 
     namespace stat {
-        class cpu : public flame::sys::cpu {
+        class Cpu : public flame::sys::Cpu {
             public:
-            cpu(const char* procfile = "/proc/stat"):_profile(procfile){
+            Cpu(const char* procfile = "/proc/stat"):profile_(procfile){
 
             }
-            ~cpu() = default;
+            ~Cpu() = default;
 
-            int get_nprocs() { return ::get_nprocs(); } /* return number of processors */
+            int getNProcs() { return ::get_nprocs(); } /* return number of processors */
 
             private:
-            const char* _profile { nullptr };
+            const char* profile_ { nullptr };
 
             }; /* class */
-        } /* perf namespace */
+        } /* stat namespace */
 } /* namespace */
 
 #endif // for linux

@@ -57,15 +57,15 @@ int main(int argc, char *argv[]) {
 
     if(show_bundle){
       string _config_file = optval["config"].as<string>();
-      config.load(_config_file.c_str());
+      CONFIG.load(_config_file.c_str());
 
       // Create local zpipe context for client
-      flame::pipe::create_pipe(1);
+      flame::pipe::createPipe(1);
 
       flame::StateProvider provider;
       provider.connect();
 
-      flame::pipe::destroy_pipe();
+      flame::pipe::destroyPipe();
     }
   }
 
@@ -94,7 +94,7 @@ int main(int argc, char *argv[]) {
   create(_verbose_level);
 
   /* program begin */
-  logger::info("FLAME Execution Engine {} (built {}/{})", _FLAME_VER_, __DATE__, __TIME__);
+  logger::info("FLAME Execution Engine {} (built {}/{})", FLAME_VER, __DATE__, __TIME__);
   logger::info("Verbose Level : {}({})", _verbose_level, _verbose_level_i);
 
   try {

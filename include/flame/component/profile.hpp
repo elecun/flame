@@ -25,25 +25,25 @@ using json = nlohmann::json;
 
 
 namespace flame::component {
-    class driver;
-    class profile final{
+    class Driver;
+    class Profile final{
 
-        friend class flame::component::driver;
+        friend class flame::component::Driver;
         public:
-            profile(fs::path profile_path){ // profile_path = *.profile absolute path
+            Profile(fs::path profile_path){ // profile_path = *.profile absolute path
                 try{
                     std::ifstream file(profile_path.string().c_str());
-                    file >> raw_profile;
+                    file >> raw_profile_;
                     
                 }
                 catch(const json::exception& e){
-                    raw_profile.clear();
+                    raw_profile_.clear();
                     throw std::runtime_error(e.what());
                 }
             }
             
-            virtual ~profile() {
-                raw_profile.clear();
+            virtual ~Profile() {
+                raw_profile_.clear();
             }
 
             /**
@@ -52,23 +52,23 @@ namespace flame::component {
              * @param key find by key
              * @return string dumped string
              */
-            string get_dumped(const char* key = nullptr) const {
+            string getDumped(const char* key = nullptr) const {
                 if(key){
-                    if(raw_profile.contains(key)){
-                        return raw_profile[key].dump();
+                    if(raw_profile_.contains(key)){
+                        return raw_profile_[key].dump();
                     }
                     else {
                         logger::warn("{} key cannot be found.", key);
                     }
                 }
                 else {
-                    return raw_profile.dump();
+                    return raw_profile_.dump();
                 }
                 return string("{}");
             }
 
             const json& raw() const {
-                return raw_profile;
+                return raw_profile_;
             }
 
             /**
@@ -78,8 +78,8 @@ namespace flame::component {
              */
             json parameters() {
                 try{
-                    if(raw_profile.contains(def::PROFILE_PARAMETERS)){
-                        return raw_profile[def::PROFILE_PARAMETERS];
+                    if(raw_profile_.contains(def::kProfileParameters)){
+                        return raw_profile_[def::kProfileParameters];
                     }
                     return json::object();
 
@@ -96,10 +96,10 @@ namespace flame::component {
              * 
              * @return json 
              */
-            json dataport() {
+            json dataPort() {
                 try {
-                    if(raw_profile.contains(def::PROFILE_DATAPORT)){
-                        return raw_profile[def::PROFILE_DATAPORT];
+                    if(raw_profile_.contains(def::kProfileDataport)){
+                        return raw_profile_[def::kProfileDataport];
                     }
                     return json::object();
                 }
@@ -111,9 +111,9 @@ namespace flame::component {
             
 
         protected:
-            json raw_profile;
+            json raw_profile_;
 
-    }; //class profile interface
+    }; //class Profile interface
 
 } /* namespace */
  

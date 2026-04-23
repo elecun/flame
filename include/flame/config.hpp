@@ -25,11 +25,11 @@ namespace fs = std::filesystem;
 
 namespace flame {
 
-    class config_loader : public flame::arch::singleton<config_loader>{
+    class ConfigLoader : public flame::arch::Singleton<ConfigLoader>{
         public:
-            config_loader(const char* config_filepath);
-            config_loader();
-            virtual ~config_loader();
+            ConfigLoader(const char* config_filepath);
+            ConfigLoader();
+            virtual ~ConfigLoader();
 
             /**
              * @brief load configuration file
@@ -41,7 +41,7 @@ namespace flame {
             bool load(const char* config_filepath);
             bool load(filesystem::path config_filepath);
 
-            bool is_loaded();
+            bool isLoaded();
 
 
             /**
@@ -66,8 +66,8 @@ namespace flame {
              * 
              * @return json configuration parameters (read only)
              */
-            json get_config() const {
-                return _config;
+            json getConfig() const {
+                return config_;
             }
 
             /**
@@ -75,30 +75,30 @@ namespace flame {
              * 
              * @return const char* return configuration file path
              */
-            filesystem::path get_config_path() const {
-                return _config_abs_path;
+            filesystem::path getConfigPath() const {
+                return config_abs_path_;
             }
 
-            map<string, string> get_data_topology();
-            map<string, string> get_service_topology();
+            map<string, string> getDataTopology();
+            map<string, string> getServiceTopology();
 
-            filesystem::path get_bundle_path() const;
-            string get_bundle_name();
+            filesystem::path getBundlePath() const;
+            string getBundleName();
 
-            json get_parameters();
-
-        private:
-            bool __load(fs::path filepath);
+            json getParameters();
 
         private:
-            fs::path _config_abs_path;
-            json _config;
+            bool loadInternal(fs::path filepath);
+
+        private:
+            fs::path config_abs_path_;
+            json config_;
 
     }; /* class */
 
 } /* namespace */
 
-#define config flame::config_loader::instance()
+#define CONFIG flame::ConfigLoader::instance()
 
 
 #endif

@@ -57,26 +57,26 @@ private:
    * @brief Publish loop
    *
    */
-  void _publish_loop();
+  void publishLoop();
 
 private:
   /**
    * @brief Service running flag
    *
    */
-  std::atomic<bool> _run_service;
+  std::atomic<bool> run_service_;
 
   /**
    * @brief Service thread
    *
    */
-  std::thread *_t_service;
+  std::thread *service_thread_;
 
   /**
    * @brief IPC address
    *
    */
-  std::string _ipc_addr;
+  std::string ipc_addr_;
 };
 
 } // namespace flame

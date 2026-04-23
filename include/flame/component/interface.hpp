@@ -16,14 +16,14 @@
 #include <flame/component/type.hpp>
 
 namespace flame::component {
-    class driver;
-    class interface {
-        friend class flame::component::driver;
+    class Driver;
+    class Interface {
+        friend class flame::component::Driver;
         
-        virtual bool on_init() = 0;                     //initialize : entry
-        virtual void on_close() = 0;                    //destroy
-        virtual void on_loop() = 0;                     //cycle
-        virtual void on_data(zdata& data) = 0;  // data event (multipart_t - moved from socket receiver)
+        virtual bool onInit() = 0;                     //initialize : entry
+        virtual void onClose() = 0;                    //destroy
+        virtual void onLoop() = 0;                     //cycle
+        virtual void onData(ZData& data) = 0;  // data event (multipart_t - moved from socket receiver)
     }; /* class */
 
 } /* namespace */

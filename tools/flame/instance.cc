@@ -30,8 +30,8 @@ volatile std::atomic<bool> g_shutdown_requested{false};
  */
 void cleanup() {
   _provider.stop();
-  manager.uninstall();
-  flame::pipe::destroy_pipe();
+  MANAGER.uninstall();
+  flame::pipe::destroyPipe();
 }
 
 void cleanup_and_exit() {
@@ -97,8 +97,8 @@ void signal_callback(int sig) {
 bool init(const char *config_path) {
 
   try {
-    flame::pipe::create_pipe(1);
-    config.load(config_path);
+    flame::pipe::createPipe(1);
+    CONFIG.load(config_path);
 
     if (install_bundle()) {
       run_bundle();
@@ -114,17 +114,17 @@ bool init(const char *config_path) {
 bool install_bundle(const char *bundle) {
 
   // install by configuration file
-  if (!bundle && config.is_loaded()) {
-    fs::path _bundle_path = config.get_config_path().parent_path() /
-                            fs::path(config.get_bundle_name());
+  if (!bundle && CONFIG.isLoaded()) {
+    fs::path _bundle_path = CONFIG.getConfigPath().parent_path() /
+                            fs::path(CONFIG.getBundleName());
     logger::info("Bundle Repository : {}", _bundle_path.string());
 
     if (fs::is_directory(_bundle_path)) {
-      logger::info("Now installing '{}' bundle..", config.get_bundle_name());
-      manager.install(_bundle_path);
+      logger::info("Now installing '{}' bundle..", CONFIG.getBundleName());
+      MANAGER.install(_bundle_path);
     } else {
       logger::critical("{} bundle cannot be found. Check your configurations.",
-                       config.get_bundle_name());
+                       CONFIG.getBundleName());
       return false;
     }
   } else {
@@ -137,5 +137,5 @@ bool install_bundle(const char *bundle) {
 
 void run_bundle() {
   _provider.start();
-  manager.start_bundle_service();
+  MANAGER.startBundleService();
 }

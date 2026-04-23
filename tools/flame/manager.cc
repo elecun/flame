@@ -15,41 +15,42 @@
 
 namespace flame {
 
-    bundle_manager::bundle_manager() {
+    BundleManager::BundleManager() {
 
         // 1. create context
-        _component_uid_map.reserve(50);
+        component_uid_map_.reserve(50);
     }
 
-    bundle_manager::~bundle_manager(){
+    BundleManager::~BundleManager(){
 
         //1. call close function for all components, then clear the bundle container
-        if(!_bundle_container.empty()){
-            for(bundle_container_t::iterator itr = _bundle_container.begin(); itr != _bundle_container.end(); ++itr){
-                itr->second->on_close();
+        if(!bundle_container_.empty()){
+            for(auto& [id, driver] : bundle_container_){
+                if(driver)
+                  driver->onClose();
             }
-            _bundle_container.clear();
+            bundle_container_.clear();
         }
 
     }
 
-    bool bundle_manager::install(fs::path bundle_repo){
+    bool BundleManager::install(fs::path bundle_repo){
 
         try{
             
             // 1. find component files and check profile existance in bundle repository
-            vector<fs::path> _component_list; 
+            vector<fs::path> component_list; 
             for(const auto& cfile : fs::directory_iterator(bundle_repo)){
-                if(cfile.is_regular_file() && cfile.path().extension() == def::COMPONENT_EXT){ // .comp
+                if(cfile.is_regular_file() && cfile.path().extension() == def::kComponentExt){ // .comp
                     fs::path pfile = cfile.path();
-                    pfile.replace_extension(def::PROFILE_EXT); // .profile
+                    pfile.replace_extension(def::kProfileExt); // .profile
                     
                     if(fs::exists(pfile)){
-                        _component_list.push_back(pfile.replace_extension(""));
+                        component_list.push_back(pfile.replace_extension(""));
                     }
                 }
             }
-            logger::info("Found {} component(s) in the bundle.", _component_list.size());
+            logger::info("Found {} component(s) in the bundle.", component_list.size());
 
             /* bundle has own inproc context to share all components */
             // if(config->get_config().contains("inproc_context_io_threads")){
@@ -59,20 +60,20 @@ namespace flame {
             // }
 
             // 2. check components profiles to create and manage inproc context
-            for(auto& comp : _component_list){
-                string _cname = comp.filename().string();
-                _component_uid_map.insert(map<string, util::uuid_t>::value_type(_cname, _uuid_gen.generate()));
-                _bundle_container.insert(map<util::uuid_t, component::driver*>::value_type(_component_uid_map[_cname], new component::driver(comp)));
+            for(auto& comp : component_list){
+                string cname = comp.filename().string();
+                component_uid_map_.insert(unordered_map<string, util::UuidT>::value_type(cname, uuid_gen_.generate()));
+                bundle_container_.insert(BundleContainerT::value_type(component_uid_map_[cname], new component::Driver(comp)));
 
-                logger::info("Installing component : {} (UID:{})", _cname, _component_uid_map[_cname].str());
+                logger::info("Installing component : {} (UID:{})", cname, component_uid_map_[cname].str());
             }
 
-            // 3. call on_init function for all components
-            for(auto& comp : _component_list){
-                string _cname = comp.filename().string();
-                if(!_bundle_container[_component_uid_map[_cname]]->on_init()){
-                    logger::error("<{}> component has a problem to initialize", _cname);
-                    this->uninstall(_cname.c_str());
+            // 3. call onInit function for all components
+            for(auto& comp : component_list){
+                string cname = comp.filename().string();
+                if(!bundle_container_[component_uid_map_[cname]]->onInit()){
+                    logger::error("<{}> component has a problem to initialize", cname);
+                    this->uninstall(cname.c_str());
                 }
             }
         }
@@ -85,62 +86,63 @@ namespace flame {
         return true;
     }
     
-    void bundle_manager::uninstall(const char* component_name){
+    void BundleManager::uninstall(const char* component_name){
         if(component_name!=nullptr){
-            if(_component_uid_map.find(component_name)==_component_uid_map.end()){
+            if(component_uid_map_.find(component_name)==component_uid_map_.end()){
                 logger::warn("<{}> cannot be found in the repository", component_name);
                 return;
             }
 
-            _bundle_container[_component_uid_map[component_name]]->on_close(); // call on_close
-            delete _bundle_container[_component_uid_map[component_name]]; // delete driver instance
-            _bundle_container.erase(_component_uid_map[component_name]); //erase in container
-            _component_uid_map.erase(component_name); //erase in udi map
+            bundle_container_[component_uid_map_[component_name]]->onClose(); // call onClose
+            delete bundle_container_[component_uid_map_[component_name]]; // delete Driver instance
+            bundle_container_.erase(component_uid_map_[component_name]); //erase in container
+            component_uid_map_.erase(component_name); //erase in udi map
         }
         else {
-            for(bundle_container_t::iterator itr = _bundle_container.begin(); itr!=_bundle_container.end(); ++itr){
-                if(itr->second){
-                    logger::info("Uninstalling component <{}>", itr->second->get_name());
-                    itr->second->on_close();
-                    delete itr->second;
-                    itr->second = nullptr;
+            for(auto& [id, driver] : bundle_container_){
+                if(driver){
+                    logger::info("Uninstalling component <{}>", driver->getName());
+                    driver->onClose();
+                    delete driver;
+                    driver = nullptr;
                 }
             }
-            _bundle_container.clear();
-            _component_uid_map.clear();
+            bundle_container_.clear();
+            component_uid_map_.clear();
         }
     }
 
-    void bundle_manager::start_bundle_service(){
+    void BundleManager::startBundleService(){
 
         // call for all thread
-        for(bundle_container_t::iterator itr=_bundle_container.begin(); itr!=_bundle_container.end();++itr){
-            itr->second->on_loop();
+        for(auto& [id, driver] : bundle_container_){
+            if(driver)
+              driver->onLoop();
         }
     }
 
-    vector<string> bundle_manager::get_component_list(){
-        vector<string> _list;
-        for(bundle_container_t::iterator itr=_bundle_container.begin(); itr!=_bundle_container.end();++itr){
-            if(itr->second){
-                _list.push_back(itr->second->get_name());
+    vector<string> BundleManager::getComponentList(){
+        vector<string> list;
+        for(auto& [id, driver] : bundle_container_){
+            if(driver){
+                list.push_back(driver->getName());
             }
         }
-        return _list;
+        return list;
     }
 
-    json bundle_manager::get_component_info(){
-        json _info = json::array();
-        for(bundle_container_t::iterator itr=_bundle_container.begin(); itr!=_bundle_container.end();++itr){
-            if(itr->second){
+    json BundleManager::getComponentInfo(){
+        json info = json::array();
+        for(auto& [id, driver] : bundle_container_){
+            if(driver){
                 json c;
-                c["name"] = itr->second->get_name();
-                c["type"] = itr->second->get_type();
-                c["status"] = itr->second->get_status_str();
-                _info.push_back(c);
+                c["name"] = driver->getName();
+                c["type"] = driver->getType();
+                c["status"] = driver->getStatusStr();
+                info.push_back(c);
             }
         }
-        return _info;
+        return info;
     }
 
 } /* namespace */

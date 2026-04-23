@@ -29,30 +29,30 @@ using namespace std;
 namespace fs = std::filesystem;
 
 namespace flame::component {
-    class driver : public component::interface {
+    class Driver : public component::Interface {
         public:
-            driver(fs::path component_path); //without extension
-            virtual ~driver();
+            Driver(fs::path component_path); //without extension
+            virtual ~Driver();
 
             /* common component interfaces */
-            bool on_init() override;
-            void on_loop() override;
-            void on_close() override;
-            void on_data(flame::component::zdata& data) override;
+            bool onInit() override;
+            void onLoop() override;
+            void onClose() override;
+            void onData(flame::component::ZData& data) override;
 
             /* get component name */
-            const char* get_name() {
-                if(_componentImpl)
-                    return _componentImpl->get_name();
+            const char* getName() {
+                if(component_impl_)
+                    return component_impl_->getName();
                 return nullptr;
             }
 
             /* get component type */
-            string get_type() {
-                if(_componentImpl) {
-                   auto profile = _componentImpl->get_profile();
+            string getType() {
+                if(component_impl_) {
+                   auto profile = component_impl_->getProfile();
                    if(profile) {
-                        string type_s = profile->get_dumped("type");
+                        string type_s = profile->getDumped("type");
                         if(type_s != "{}") {
                             if(profile->raw().contains("type")) {
                                 return profile->raw()["type"].get<string>();
@@ -64,10 +64,10 @@ namespace flame::component {
             }
 
             /* get component status */
-            string get_status_str() {
-                if(_componentImpl) {
-                    if(_componentImpl->get_status() == dtype_status::STOPPED) return "Stopped";
-                    if(_componentImpl->get_status() == dtype_status::WORKING) return "Working";
+            string getStatusStr() {
+                if(component_impl_) {
+                    if(component_impl_->getStatus() == DTypeStatus::kStopped) return "Stopped";
+                    if(component_impl_->getStatus() == DTypeStatus::kWorking) return "Working";
                 }
                 return "Unknown";
             }
@@ -92,24 +92,24 @@ namespace flame::component {
              * @brief concrete periodic process
              * 
              */
-            void do_cycle();
+            void doCycle();
             
             /**
              * @brief Set the rt timer object
              * 
              * @param nsec time period
              */
-            void set_rt_timer(unsigned long long nsec);
+            void setRTTimer(unsigned long long nsec);
 
         private:
-            flame::component::object* _componentImpl { nullptr };
-            void* _component_handle { nullptr };
-            struct sigevent _signal_event;
-            struct itimerspec _time_spec;
-            std::thread* _ptrThread = nullptr;
-            timer_t _timer_id {0};
-            int _signal_id { 0 };
-            std::atomic<bool> _is_running { false };
+            flame::component::Object* component_impl_ { nullptr };
+            void* component_handle_ { nullptr };
+            struct sigevent signal_event_;
+            struct itimerspec time_spec_;
+            std::thread* ptr_thread_ = nullptr;
+            timer_t timer_id_ {0};
+            int signal_id_ { 0 };
+            std::atomic<bool> is_running_ { false };
 
 
 

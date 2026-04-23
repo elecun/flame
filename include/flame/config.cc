@@ -8,44 +8,43 @@
 #include <vector>
 
 namespace flame {
-    config_loader::config_loader(){
+    ConfigLoader::ConfigLoader(){
 
     }
 
-    config_loader::config_loader(const char* config_filepath){
+    ConfigLoader::ConfigLoader(const char* config_filepath){
 
-        _config_abs_path = fs::canonical(fs::path(config_filepath));
+        config_abs_path_ = fs::canonical(fs::path(config_filepath));
 
-        if(!load(_config_abs_path)){
+        if(!load(config_abs_path_)){
             throw std::runtime_error("Configuration file load failed");
         }
     }
 
-    config_loader::~config_loader(){
-        this->_config.clear();
+    ConfigLoader::~ConfigLoader(){
+        this->config_.clear();
     }
 
-    bool config_loader::load(const char* config_filepath){
-        _config_abs_path = fs::canonical(fs::path(config_filepath));
-        if(!load(_config_abs_path)){
+    bool ConfigLoader::load(const char* config_filepath){
+        config_abs_path_ = fs::canonical(fs::path(config_filepath));
+        if(!load(config_abs_path_)){
             throw std::runtime_error("Configuration file load failed");
             return false;
         }
         return true;
     }
 
-    bool config_loader::is_loaded(){
-        if(!_config.empty())
+    bool ConfigLoader::isLoaded(){
+        if(!config_.empty())
             return true;
         return false;
     }
 
-    bool config_loader::load(filesystem::path config_filepath){
-        return __load(config_filepath);
-        return true;
+    bool ConfigLoader::load(filesystem::path config_filepath){
+        return loadInternal(config_filepath);
     }
 
-    bool config_loader::__load(fs::path filepath){
+    bool ConfigLoader::loadInternal(fs::path filepath){
     
         try {
 
@@ -57,7 +56,7 @@ namespace flame {
 
             /* load configurations from file*/
             std::ifstream file(filepath.string());
-            file >> this->_config;
+            file >> this->config_;
         }
         catch(const json::exception& e){
             logger::error("configuration file load failed : {}", e.what());
@@ -76,21 +75,21 @@ namespace flame {
 
     }
 
-    bool config_loader::reload(){
-        this->_config.clear();
-        this->load(this->_config_abs_path);
+    bool ConfigLoader::reload(){
+        this->config_.clear();
+        this->load(this->config_abs_path_);
         return false;
     }
 
-    bool config_loader::exist(initializer_list<string> keys){
+    bool ConfigLoader::exist(initializer_list<string> keys){
         return true;
     }
 
-    string config_loader::get_bundle_name() {
-        if(!_config.empty()){
-            if(_config.contains(def::BUNDLE)){
-                if(_config[def::BUNDLE].contains(def::BUNDLE_NAME)){
-                    string name = _config[def::BUNDLE][def::BUNDLE_NAME].get<string>();
+    string ConfigLoader::getBundleName() {
+        if(!config_.empty()){
+            if(config_.contains(def::kBundle)){
+                if(config_[def::kBundle].contains(def::kBundleName)){
+                    string name = config_[def::kBundle][def::kBundleName].get<string>();
                     return name;
                 }
             }
@@ -98,10 +97,10 @@ namespace flame {
         return string("");
     }
 
-    filesystem::path config_loader::get_bundle_path() const{
-        if(!_config.empty()){
-            filesystem::path _conf_path(_config_abs_path);
-            filesystem::path _bundle_path = filesystem::canonical(_conf_path).parent_path() / filesystem::path(def::BUNDLE);
+    filesystem::path ConfigLoader::getBundlePath() const{
+        if(!config_.empty()){
+            filesystem::path _conf_path(config_abs_path_);
+            filesystem::path _bundle_path = filesystem::canonical(_conf_path).parent_path() / filesystem::path(def::kBundle);
             return _bundle_path;
         }
         else{
@@ -111,10 +110,10 @@ namespace flame {
         return string("");
     }
 
-    map<string, string> config_loader::get_data_topology(){
+    map<string, string> ConfigLoader::getDataTopology(){
         map<string, string> _topology_map;
         try{
-            json _topology = _config[def::BUNDLE][def::BUNDLE_TOPOLOGY];
+            json _topology = config_[def::kBundle][def::kBundleTopology];
             if(_topology.contains("data")){
                 for(const auto& con: _topology){
                     _topology_map.insert(make_pair(con.at("provided").get<string>(), con.at("required").get<string>()));
@@ -134,33 +133,12 @@ namespace flame {
         return map<string, string>(); //empty
     }
 
-    map<string, string> config_loader::get_service_topology(){
+    map<string, string> ConfigLoader::getServiceTopology(){
         return map<string, string>(); //empty
     }
 
-    json config_loader::get_parameters(){
+    json ConfigLoader::getParameters(){
         return json::object();
     }
 
-    // bool config_loader::exist(const char* key){
-    //     if(_config){
-    //         if(_config.find(key)!=_config.end())
-    //             return true;
-
-    //         if(config.find(_CONFIG_REQ_KEY_)!=config.end()){
-
-    //         /* components */
-    //         if(config[_CONFIG_REQ_KEY_].find(_CONFIG_COMPONENTS_KEY_)!=config[_CONFIG_REQ_KEY_].end()){
-    //             vector<string> required_components = config[_CONFIG_REQ_KEY_][_CONFIG_COMPONENTS_KEY_].get<std::vector<string>>();
-    //             for(string& component:required_components){
-    //                 manager->install(component.c_str());
-    //             }
-    //             logger::info("Totally installed : {}", manager->size());
-    //         }
-    //     }
-
-    //     }
-
-    //     return false;
-    // }
 }

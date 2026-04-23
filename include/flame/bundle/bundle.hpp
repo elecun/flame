@@ -20,17 +20,17 @@ using namespace std;
 
 namespace flame::bundle {
 
-    class object {
+    class Object {
         public:
-            object() = default;
-            ~object() = default;
+            Object() = default;
+            ~Object() = default;
 
     }; /* class */
 
-    class interface {
+    class Interface {
         public:
-            interface() = default;
-            virtual ~interface() = default;
+            Interface() = default;
+            virtual ~Interface() = default;
 
     }; /* class */
 

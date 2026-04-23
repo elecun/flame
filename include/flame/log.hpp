@@ -13,9 +13,9 @@
 #define FLAME_LOG_HPP_INCLUDED
 
 /* pre-defined & editable */
-#define _USE_SPDLOG_
+#define USE_SPDLOG
 
-#ifdef _USE_SPDLOG_
+#ifdef USE_SPDLOG
 #include <dep/spdlog/sinks/stdout_color_sinks.h>
 #include <dep/spdlog/spdlog.h>
 #include <iostream>
@@ -45,7 +45,7 @@ inline int str2level(string &str) {
 }
 
 inline void create(string verbose_level = "info") {
-  int _verbose_level_i = str2level(verbose_level);
+  int verbose_level_i = str2level(verbose_level);
 
   /* default logger sink */
   auto console_sink = std::make_shared<logger::sinks::stdout_color_sink_mt>();
@@ -58,16 +58,16 @@ inline void create(string verbose_level = "info") {
   std::vector<logger::sink_ptr> console_sinks{quiet_sink};
 
   /* set logger set */
-  auto logger =
+  auto logger_inst =
       std::make_shared<logger::logger>("flame", sinks.begin(), sinks.end());
-  logger::set_default_logger(logger);
-  logger::set_level(static_cast<logger::level::level_enum>(_verbose_level_i));
+  logger::set_default_logger(logger_inst);
+  logger::set_level(static_cast<logger::level::level_enum>(verbose_level_i));
 
   /* set console logger */
   auto console_logger = std::make_shared<logger::logger>(
       "console", console_sinks.begin(), console_sinks.end());
   console_logger->set_level(
-      static_cast<logger::level::level_enum>(_verbose_level_i));
+      static_cast<logger::level::level_enum>(verbose_level_i));
   logger::register_logger(console_logger);
 }
 

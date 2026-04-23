@@ -21,6 +21,7 @@
 #include <map>
 #include <tuple>
 #include <vector>
+#include <unordered_map>
 
 using namespace std;
 using json = nlohmann::json;
@@ -28,21 +29,21 @@ namespace fs = std::filesystem;
 
 namespace flame {
 
-class bundle_manager : public flame::arch::singleton<bundle_manager> {
+class BundleManager : public flame::arch::Singleton<BundleManager> {
 public:
-  typedef map<util::uuid_t, flame::component::driver *> bundle_container_t;
+  typedef map<util::UuidT, flame::component::Driver *> BundleContainerT;
 
   /**
    * @brief Construct a new bundle manager object
    *
    */
-  bundle_manager();
+  BundleManager();
 
   /**
    * @brief Destroy the bundle manager object
    *
    */
-  virtual ~bundle_manager();
+  virtual ~BundleManager();
 
   /**
    * @brief Install the bundle from the repository
@@ -64,52 +65,52 @@ public:
    * @brief Start the bundle service
    *
    */
-  void start_bundle_service();
+  void startBundleService();
 
   /**
    * @brief Get the component count object
    *
    * @return int Number of components
    */
-  int get_component_count() const { return _bundle_container.size(); }
+  int getComponentCount() const { return bundle_container_.size(); }
 
   /**
    * @brief Get the component list object
    *
    * @return vector<string> List of component names
    */
-  vector<string> get_component_list();
+  vector<string> getComponentList();
 
   /**
    * @brief Get the component info object
    *
    * @return json Component information
    */
-  json get_component_info();
+  json getComponentInfo();
 
 private:
   /**
    * @brief Bundle container
    *
    */
-  bundle_container_t _bundle_container;
+  BundleContainerT bundle_container_;
 
   /**
    * @brief Component Name-UUID Map
    *
    */
-  unordered_map<string, util::uuid_t> _component_uid_map;
+  unordered_map<string, util::UuidT> component_uid_map_;
 
   /**
    * @brief UUID Generator
    *
    */
-  util::uuid_generator _uuid_gen;
+  util::UuidGenerator uuid_gen_;
 
 }; /* class */
 
 } // namespace flame
 
-#define manager flame::bundle_manager::instance()
+#define MANAGER flame::BundleManager::instance()
 
 #endif

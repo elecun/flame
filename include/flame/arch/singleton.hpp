@@ -10,13 +10,13 @@
  */
 
 
-#ifndef _FLAME_ARCH_SINGLETON_HPP_
-#define _FLAME_ARCH_SINGLETON_HPP_
+#ifndef FLAME_ARCH_SINGLETON_HPP_INCLUDED
+#define FLAME_ARCH_SINGLETON_HPP_INCLUDED
 
 namespace flame::arch {
 
     template<class T>
-    class singleton {
+    class Singleton {
         public:
             static T& instance() {
                 static T inst;
@@ -24,12 +24,12 @@ namespace flame::arch {
             }
 
         protected:
-            singleton() = default;
-            ~singleton() = default;
-            singleton(const singleton&) = delete;
-            singleton& operator=(const singleton&) = delete;
-            singleton(singleton&&) = delete;
-            singleton& operator=(singleton&&) = delete;
+            Singleton() = default;
+            ~Singleton() = default;
+            Singleton(const Singleton&) = delete;
+            Singleton& operator=(const Singleton&) = delete;
+            Singleton(Singleton&&) = delete;
+            Singleton& operator=(Singleton&&) = delete;
     };
 
 } // namespace flame::arch

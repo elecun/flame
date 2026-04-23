@@ -15,40 +15,40 @@ namespace pipe {
 // -------------------------------------------------------------------------
 // Helper
 // -------------------------------------------------------------------------
-std::string pattern2str(Pattern p) {
+std::string pattern2Str(Pattern p) {
   switch (p) {
-  case Pattern::PUBLISH:
+  case Pattern::kPublish:
     return "publish";
-  case Pattern::SUBSCRIBE:
+  case Pattern::kSubscribe:
     return "subscribe";
-  case Pattern::PUSH:
+  case Pattern::kPush:
     return "push";
-  case Pattern::PULL:
+  case Pattern::kPull:
     return "pull";
-  case Pattern::DEALER:
+  case Pattern::kDealer:
     return "dealer";
-  case Pattern::ROUTER:
+  case Pattern::kRouter:
     return "router";
-  case Pattern::SERVER_PAIR:
+  case Pattern::kServerPair:
     return "server_pair";
-  case Pattern::CLIENT_PAIR:
+  case Pattern::kClientPair:
     return "client_pair";
   default:
     return "unknown";
   }
 }
 
-std::string transport2str(Transport t) {
+std::string transport2Str(Transport t) {
   switch (t) {
-  case Transport::TCP:
+  case Transport::kTcp:
     return "tcp";
-  case Transport::INPROC:
+  case Transport::kInproc:
     return "inproc";
-  case Transport::IPC:
+  case Transport::kIpc:
     return "ipc";
-  case Transport::PGM:
+  case Transport::kPgm:
     return "pgm";
-  case Transport::EPGM:
+  case Transport::kEpgm:
     return "epgm";
   default:
     return "unknown";
@@ -56,198 +56,198 @@ std::string transport2str(Transport t) {
 }
 
 // -------------------------------------------------------------------------
-// zsocket Implementation
+// ZSocket Implementation
 // -------------------------------------------------------------------------
 
-zsocket::zsocket(const std::string &socket_id, Pattern pattern)
-    : _socket_id(socket_id), _pattern(pattern), _socket(nullptr),
-      _is_server(false), _is_created(false), _is_joined(false),
-      _worker_thread(nullptr), _stop_event(false), _callback(nullptr) {}
+ZSocket::ZSocket(const std::string &socket_id, Pattern pattern)
+    : socket_id_(socket_id), pattern_(pattern), socket_(nullptr),
+      is_server_(false), is_created_(false), is_joined_(false),
+      worker_thread_(nullptr), stop_event_(false), callback_(nullptr) {}
 
-zsocket::~zsocket() { close(); }
+ZSocket::~ZSocket() { close(); }
 
-bool zsocket::create(std::shared_ptr<ZPipe> pipeline) {
-  if (_is_created) {
-    logger::warn("Socket {} already created", _socket_id);
+bool ZSocket::create(std::shared_ptr<ZPipe> pipeline) {
+  if (is_created_) {
+    logger::warn("Socket {} already created", socket_id_);
     return true;
   }
 
   try {
-    auto pipe = pipeline ? pipeline : ZPipe::get_instance();
-    auto context = pipe->get_context();
+    auto pipe = pipeline ? pipeline : ZPipe::instance();
+    auto context = pipe->getContext();
     if (!context) {
       logger::error("ZPipe context is null");
       return false;
     }
 
-    switch (_pattern) {
-    case Pattern::PUBLISH:
-      _socket =
+    switch (pattern_) {
+    case Pattern::kPublish:
+      socket_ =
           std::make_shared<zmq::socket_t>(*context, zmq::socket_type::pub);
       break;
-    case Pattern::SUBSCRIBE:
-      _socket =
+    case Pattern::kSubscribe:
+      socket_ =
           std::make_shared<zmq::socket_t>(*context, zmq::socket_type::sub);
       break;
-    case Pattern::PUSH:
-      _socket =
+    case Pattern::kPush:
+      socket_ =
           std::make_shared<zmq::socket_t>(*context, zmq::socket_type::push);
       break;
-    case Pattern::PULL:
-      _socket =
+    case Pattern::kPull:
+      socket_ =
           std::make_shared<zmq::socket_t>(*context, zmq::socket_type::pull);
       break;
-    case Pattern::ROUTER:
-      _socket =
+    case Pattern::kRouter:
+      socket_ =
           std::make_shared<zmq::socket_t>(*context, zmq::socket_type::router);
       break;
-    case Pattern::DEALER:
-      _socket =
+    case Pattern::kDealer:
+      socket_ =
           std::make_shared<zmq::socket_t>(*context, zmq::socket_type::dealer);
       break;
-    case Pattern::SERVER_PAIR:
-    case Pattern::CLIENT_PAIR:
-      _socket =
+    case Pattern::kServerPair:
+    case Pattern::kClientPair:
+      socket_ =
           std::make_shared<zmq::socket_t>(*context, zmq::socket_type::pair);
       break;
     }
 
     // Configure socket options
-    _socket->set(zmq::sockopt::linger, 0);
+    socket_->set(zmq::sockopt::linger, 0);
 
-    if (_pattern == Pattern::SUBSCRIBE || _pattern == Pattern::PULL ||
-        _pattern == Pattern::DEALER || _pattern == Pattern::SERVER_PAIR) {
-      _socket->set(zmq::sockopt::rcvhwm, 100);
-      _socket->set(zmq::sockopt::rcvtimeo, 100);
-      _socket->set(zmq::sockopt::reconnect_ivl, 500);
+    if (pattern_ == Pattern::kSubscribe || pattern_ == Pattern::kPull ||
+        pattern_ == Pattern::kDealer || pattern_ == Pattern::kServerPair) {
+      socket_->set(zmq::sockopt::rcvhwm, 100);
+      socket_->set(zmq::sockopt::rcvtimeo, 100);
+      socket_->set(zmq::sockopt::reconnect_ivl, 500);
     }
 
-    if (_pattern == Pattern::PUBLISH || _pattern == Pattern::PUSH ||
-        _pattern == Pattern::ROUTER || _pattern == Pattern::CLIENT_PAIR) {
-      _socket->set(zmq::sockopt::sndhwm, 100);
-      _socket->set(zmq::sockopt::sndtimeo, 100);
-      _socket->set(zmq::sockopt::reconnect_ivl, 500);
+    if (pattern_ == Pattern::kPublish || pattern_ == Pattern::kPush ||
+        pattern_ == Pattern::kRouter || pattern_ == Pattern::kClientPair) {
+      socket_->set(zmq::sockopt::sndhwm, 100);
+      socket_->set(zmq::sockopt::sndtimeo, 100);
+      socket_->set(zmq::sockopt::reconnect_ivl, 500);
     }
 
-    pipe->register_socket(shared_from_this());
+    pipe->registerSocket(shared_from_this());
 
-    _is_created = true;
-    logger::debug("Created socket {} with pattern {}", _socket_id,
-                  pattern2str(_pattern));
+    is_created_ = true;
+    logger::debug("Created socket {} with pattern {}", socket_id_,
+                  pattern2Str(pattern_));
 
-    // Auto-subscribe if pattern is SUBSCRIBE
-    if (_pattern == Pattern::SUBSCRIBE) {
-      _socket->set(zmq::sockopt::subscribe, _socket_id);
-      logger::debug("Socket {} auto-subscribed to topic '{}'", _socket_id,
-                    _socket_id);
+    // Auto-subscribe if pattern is kSubscribe
+    if (pattern_ == Pattern::kSubscribe) {
+      socket_->set(zmq::sockopt::subscribe, socket_id_);
+      logger::debug("Socket {} auto-subscribed to topic '{}'", socket_id_,
+                    socket_id_);
     }
 
     return true;
   } catch (const zmq::error_t &e) {
-    logger::error("Failed to create socket {}: {}", _socket_id, e.what());
+    logger::error("Failed to create socket {}: {}", socket_id_, e.what());
     return false;
   }
 }
 
-bool zsocket::join(Transport transport, const std::string &address,
+bool ZSocket::join(Transport transport, const std::string &address,
                         int port) {
-  if (!_is_created || !_socket) {
-    logger::error("Socket {} not created", _socket_id);
+  if (!is_created_ || !socket_) {
+    logger::error("Socket {} not created", socket_id_);
     return false;
   }
 
-  if (_is_joined) {
-    logger::warn("Socket {} already joined", _socket_id);
+  if (is_joined_) {
+    logger::warn("Socket {} already joined", socket_id_);
     return true;
   }
 
   try {
-    std::string transport_str = transport2str(transport);
+    std::string transport_str = transport2Str(transport);
     std::string conn_str;
-    if (transport == Transport::INPROC || transport == Transport::IPC) {
+    if (transport == Transport::kInproc || transport == Transport::kIpc) {
       conn_str = transport_str + "://" + address;
     } else {
       conn_str = transport_str + "://" + address + ":" + std::to_string(port);
     }
 
-    if (_pattern == Pattern::PUBLISH || _pattern == Pattern::PULL ||
-        _pattern == Pattern::ROUTER || _pattern == Pattern::SERVER_PAIR) {
-      _is_server = true;
-      _socket->bind(conn_str);
-      logger::debug("Socket {} ({}) bound to: {}", _socket_id,
-                    pattern2str(_pattern), conn_str);
+    if (pattern_ == Pattern::kPublish || pattern_ == Pattern::kPull ||
+        pattern_ == Pattern::kRouter || pattern_ == Pattern::kServerPair) {
+      is_server_ = true;
+      socket_->bind(conn_str);
+      logger::debug("Socket {} ({}) bound to: {}", socket_id_,
+                    pattern2Str(pattern_), conn_str);
     } else {
-      _is_server = false;
-      _socket->connect(conn_str);
-      logger::debug("Socket {} ({}) connected to: {}", _socket_id,
-                    pattern2str(_pattern), conn_str);
+      is_server_ = false;
+      socket_->connect(conn_str);
+      logger::debug("Socket {} ({}) connected to: {}", socket_id_,
+                    pattern2Str(pattern_), conn_str);
     }
 
-    _is_joined = true;
+    is_joined_ = true;
 
-    if ((_pattern == Pattern::SUBSCRIBE || _pattern == Pattern::PULL ||
-         _pattern == Pattern::ROUTER || _pattern == Pattern::DEALER ||
-         _pattern == Pattern::CLIENT_PAIR ||
-         _pattern == Pattern::SERVER_PAIR) &&
-        _callback) {
-      _start_receiver_thread();
+    if ((pattern_ == Pattern::kSubscribe || pattern_ == Pattern::kPull ||
+         pattern_ == Pattern::kRouter || pattern_ == Pattern::kDealer ||
+         pattern_ == Pattern::kClientPair ||
+         pattern_ == Pattern::kServerPair) &&
+        callback_) {
+      startReceiverThread();
     }
 
     return true;
 
   } catch (const zmq::error_t &e) {
-    logger::error("Failed to join socket {}: {}", _socket_id, e.what());
+    logger::error("Failed to join socket {}: {}", socket_id_, e.what());
     return false;
   }
 }
 
-void zsocket::close() {
+void ZSocket::close() {
   // Idempotent: skip if already closed
-  if (!_is_created && !_socket && !_worker_thread) {
+  if (!is_created_ && !socket_ && !worker_thread_) {
     return;
   }
 
-  if (!_stop_event) {
-    _stop_event = true;
+  if (!stop_event_) {
+    stop_event_ = true;
   }
 
   // Close the socket first to interrupt zmq::poll waiting in the worker thread
-  if (_socket) {
-    _socket->close();
-    // Do NOT set _socket to nullptr yet, as _worker_thread might still be
+  if (socket_) {
+    socket_->close();
+    // Do NOT set socket_ to nullptr yet, as worker_thread_ might still be
     // accessing it
   }
 
-  if (_worker_thread && _worker_thread->joinable()) {
-    _worker_thread->join();
-    delete _worker_thread;
-    _worker_thread = nullptr;
+  if (worker_thread_ && worker_thread_->joinable()) {
+    worker_thread_->join();
+    delete worker_thread_;
+    worker_thread_ = nullptr;
   }
 
-  _socket = nullptr;
+  socket_ = nullptr;
 
-  _is_created = false;
-  _is_joined = false;
-  logger::debug("Destroyed socket {}", _socket_id);
+  is_created_ = false;
+  is_joined_ = false;
+  logger::debug("Destroyed socket {}", socket_id_);
 }
 
-bool zsocket::set_message_callback(callback_t callback) {
-  _callback = callback;
+bool ZSocket::setMessageCallback(CallbackFunc callback) {
+  callback_ = callback;
   return true;
 }
 
-bool zsocket::dispatch(zdata& data) {
-  if (!_socket || !_is_joined) {
+bool ZSocket::dispatch(ZData& data) {
+  if (!socket_ || !is_joined_) {
     logger::error("Socket not joined");
     return false;
   }
 
   try {
-    // Auto-prepend topic if pattern is PUBLISH
-    if (_pattern == Pattern::PUBLISH) {
-      data.pushmem(_socket_id.data(), _socket_id.size());
+    // Auto-prepend topic if pattern is kPublish
+    if (pattern_ == Pattern::kPublish) {
+      data.pushmem(socket_id_.data(), socket_id_.size());
     }
-    data.send(*_socket);
+    data.send(*socket_);
     return true;
   } catch (const zmq::error_t &e) {
     if (e.num() == EAGAIN) {
@@ -259,25 +259,25 @@ bool zsocket::dispatch(zdata& data) {
   }
 }
 
-void zsocket::_start_receiver_thread() {
-  if (_worker_thread)
+void ZSocket::startReceiverThread() {
+  if (worker_thread_)
     return;
 
-  _stop_event = false;
-  _worker_thread = new std::thread(&zsocket::_receiver_worker, this);
-  logger::debug("Receiver thread started for socket {}", _socket_id);
+  stop_event_ = false;
+  worker_thread_ = new std::thread(&ZSocket::receiverWorker, this);
+  logger::debug("Receiver thread started for socket {}", socket_id_);
 }
 
-void zsocket::_receiver_worker() {
-  while (!_stop_event) {
+void ZSocket::receiverWorker() {
+  while (!stop_event_) {
     try {
       zmq::pollitem_t items[] = {
-          {static_cast<void *>(*_socket), 0, ZMQ_POLLIN, 0}};
+          {static_cast<void *>(*socket_), 0, ZMQ_POLLIN, 0}};
       zmq::poll(&items[0], 1, std::chrono::milliseconds(1000)); // 1 sec timeout
 
       if (items[0].revents & ZMQ_POLLIN) {
-        zdata multipart;
-        if (multipart.recv(*_socket, ZMQ_NOBLOCK)) {
+        ZData multipart;
+        if (multipart.recv(*socket_, ZMQ_NOBLOCK)) {
 
           bool valid_msg = true;
           // If SUB, check topic match (implicit in ZMQ but good to be aware of
@@ -289,7 +289,7 @@ void zsocket::_receiver_worker() {
           // (which it should), effectively hiding the complexity from the user
           // callback.
 
-          if (_pattern == Pattern::SUBSCRIBE) {
+          if (pattern_ == Pattern::kSubscribe) {
             if (!multipart.empty()) {
               std::string topic = multipart.pop().to_string();
               // We trust ZMQ filtering, but if we want to hide it:
@@ -300,129 +300,129 @@ void zsocket::_receiver_worker() {
           }
 
           if (valid_msg) {
-            if (_callback) {
-              _callback(multipart);  // pass multipart_t directly, zero-copy
+            if (callback_) {
+              callback_(multipart);  // pass multipart_t directly, zero-copy
             }
           }
         }
       }
     } catch (const zmq::error_t &e) {
       if (e.num() == ETERM || e.num() == ENOTSOCK) {
-        logger::debug("Context/Socket terminated for {}", _socket_id);
+        logger::debug("Context/Socket terminated for {}", socket_id_);
         break;
       } else {
-        logger::error("Pipeline error on {}: {}", _socket_id, e.what());
+        logger::error("Pipeline error on {}: {}", socket_id_, e.what());
       }
     }
   }
-  logger::debug("Receiver thread stopped for socket {}", _socket_id);
+  logger::debug("Receiver thread stopped for socket {}", socket_id_);
 }
 
 // -------------------------------------------------------------------------
 // ZPipe Implementation
 // -------------------------------------------------------------------------
 
-std::shared_ptr<ZPipe> ZPipe::_instance = nullptr;
-std::mutex ZPipe::_mutex;
+std::shared_ptr<ZPipe> ZPipe::instance_ = nullptr;
+std::mutex ZPipe::mutex_;
 
-std::shared_ptr<ZPipe> ZPipe::get_instance() {
-  std::lock_guard<std::mutex> lock(_mutex);
-  if (!_instance) {
-    _instance = std::shared_ptr<ZPipe>(new ZPipe());
+std::shared_ptr<ZPipe> ZPipe::instance() {
+  std::lock_guard<std::mutex> lock(mutex_);
+  if (!instance_) {
+    instance_ = std::shared_ptr<ZPipe>(new ZPipe());
   }
-  return _instance;
+  return instance_;
 }
 
-void ZPipe::destroy_instance() {
+void ZPipe::destroyInstance() {
   std::shared_ptr<ZPipe> inst;
   {
-    std::lock_guard<std::mutex> lock(_mutex);
-    inst = _instance;
-    _instance = nullptr;
+    std::lock_guard<std::mutex> lock(mutex_);
+    inst = instance_;
+    instance_ = nullptr;
   }
 
   if (inst) {
     // Closes all sockets
-    std::map<std::string, std::shared_ptr<zsocket>> temp_sockets;
+    std::map<std::string, std::shared_ptr<ZSocket>> temp_sockets;
     {
-      std::lock_guard<std::mutex> sock_lock(inst->_socket_mutex);
-      temp_sockets = inst->_sockets; // Copy to iterate safely
-      inst->_sockets.clear();
+      std::lock_guard<std::mutex> sock_lock(inst->socket_mutex_);
+      temp_sockets = inst->sockets_; // Copy to iterate safely
+      inst->sockets_.clear();
     }
 
     for (auto &pair : temp_sockets) {
       pair.second->close();
     }
 
-    if (inst->_context) {
-      inst->_context->shutdown();
+    if (inst->context_) {
+      inst->context_->shutdown();
     }
   }
 }
 
 ZPipe::~ZPipe() {
-  // We intentionally leak _context here.
+  // We intentionally leak context_ here.
   // Deleting it invokes zmq_ctx_term() which blocks until all associated
   // background sockets/threads (e.g. OpenCV) terminate. This causes SIGSEGV
   // races during process exit if other threads are still alive.
-  // We already called shutdown() in destroy_instance(), and the OS will reap
+  // We already called shutdown() in DestroyInstance(), and the OS will reap
   // the rest.
 }
 
 bool ZPipe::init(int io_threads) {
-  if (!_context) {
-    _context = new zmq::context_t(io_threads);
+  if (!context_) {
+    context_ = new zmq::context_t(io_threads);
     logger::debug("Created ZPipe with {} IO threads", io_threads);
     return true;
   }
   return false;
 }
 
-zmq::context_t *ZPipe::get_context() { return _context; }
+zmq::context_t *ZPipe::getContext() { return context_; }
 
-bool ZPipe::register_socket(std::shared_ptr<zsocket> socket) {
-  std::lock_guard<std::mutex> lock(_socket_mutex);
-  if (_sockets.find(socket->get_id()) != _sockets.end()) {
-    logger::warn("Socket {} already registered", socket->get_id());
+bool ZPipe::registerSocket(std::shared_ptr<ZSocket> socket) {
+  std::lock_guard<std::mutex> lock(socket_mutex_);
+  if (sockets_.find(socket->getId()) != sockets_.end()) {
+    logger::warn("Socket {} already registered", socket->getId());
     return false;
   }
-  _sockets[socket->get_id()] = socket;
-  logger::debug("Registered socket {}", socket->get_id());
+  sockets_[socket->getId()] = socket;
+  logger::debug("Registered socket {}", socket->getId());
   return true;
 }
 
-bool ZPipe::unregister_socket(const std::string &socket_id) {
-  std::lock_guard<std::mutex> lock(_socket_mutex);
-  auto it = _sockets.find(socket_id);
-  if (it != _sockets.end()) {
-    _sockets.erase(it);
+bool ZPipe::unregisterSocket(const std::string &socket_id) {
+  std::lock_guard<std::mutex> lock(socket_mutex_);
+  auto it = sockets_.find(socket_id);
+  if (it != sockets_.end()) {
+    sockets_.erase(it);
     logger::debug("Unregistered socket {}", socket_id);
     return true;
   }
   return false;
 }
 
-std::shared_ptr<zsocket> ZPipe::get_socket(const std::string &socket_id) {
-  std::lock_guard<std::mutex> lock(_socket_mutex);
-  auto it = _sockets.find(socket_id);
-  if (it != _sockets.end()) {
+std::shared_ptr<ZSocket> ZPipe::getSocket(const std::string &socket_id) {
+  std::lock_guard<std::mutex> lock(socket_mutex_);
+  auto it = sockets_.find(socket_id);
+  if (it != sockets_.end()) {
     return it->second;
   }
   return nullptr;
 }
 
 // Global helper functions
-std::shared_ptr<ZPipe> create_pipe(int io_threads) {
-  auto pipe = ZPipe::get_instance();
+std::shared_ptr<ZPipe> createPipe(int io_threads) {
+  auto pipe = ZPipe::instance();
   pipe->init(io_threads);
   return pipe;
 }
 
-void destroy_pipe() { ZPipe::destroy_instance(); }
+void destroyPipe() { ZPipe::destroyInstance(); }
 
-std::shared_ptr<zsocket> get_socket(const std::string &socket_id) {
-  auto pipe = ZPipe::get_instance();
-  return pipe->get_socket(socket_id);
+std::shared_ptr<ZSocket> getSocket(const std::string &socket_id) {
+  auto pipe = ZPipe::instance();
+  return pipe->getSocket(socket_id);
 }
 
 } // namespace pipe

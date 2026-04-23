@@ -24,73 +24,73 @@ namespace pipe {
 class ZPipe; // Forward declaration
 
 enum class Pattern {
-  PUBLISH,
-  SUBSCRIBE,
-  PUSH,
-  PULL,
-  DEALER,
-  ROUTER,
-  SERVER_PAIR,
-  CLIENT_PAIR
+  kPublish,
+  kSubscribe,
+  kPush,
+  kPull,
+  kDealer,
+  kRouter,
+  kServerPair,
+  kClientPair
 };
 
-enum class Transport { TCP, INPROC, IPC, PGM, EPGM };
+enum class Transport { kTcp, kInproc, kIpc, kPgm, kEpgm };
 
-/* zdata: standard multipart message carrier within flame::pipe */
-using zdata = zmq::multipart_t;
+/* ZData: standard multipart message carrier within flame::pipe */
+using ZData = zmq::multipart_t;
 
-std::string transport2str(Transport t);
+std::string transport2Str(Transport t);
 
-class zsocket : public std::enable_shared_from_this<zsocket> {
+class ZSocket : public std::enable_shared_from_this<ZSocket> {
 public:
-  zsocket(const std::string &socket_id, Pattern pattern);
-  virtual ~zsocket();
+  ZSocket(const std::string &socket_id, Pattern pattern);
+  virtual ~ZSocket();
 
   bool create(std::shared_ptr<ZPipe> pipeline = nullptr);
   bool join(Transport transport, const std::string &address = "localhost",
             int port = 5555);
   void close();
 
-  // Callback: called with received zdata (topic frame already stripped for SUB)
-  typedef std::function<void(zdata&)> callback_t;
-  bool set_message_callback(callback_t callback);
+  // Callback: called with received ZData (topic frame already stripped for SUB)
+  typedef std::function<void(ZData&)> CallbackFunc;
+  bool setMessageCallback(CallbackFunc callback);
 
-  // Send zdata (non-const: send() consumes the frames)
-  bool dispatch(zdata& data);
+  // Send ZData (non-const: Send() consumes the frames)
+  bool dispatch(ZData& data);
 
-  std::string get_id() const { return _socket_id; }
-
-private:
-  void _start_receiver_thread();
-  void _receiver_worker();
+  std::string getId() const { return socket_id_; }
 
 private:
-  std::string _socket_id;
-  Pattern _pattern;
-  std::shared_ptr<zmq::socket_t> _socket;
-  bool _is_server;
-  bool _is_created;
-  bool _is_joined;
+  void startReceiverThread();
+  void receiverWorker();
+
+private:
+  std::string socket_id_;
+  Pattern pattern_;
+  std::shared_ptr<zmq::socket_t> socket_;
+  bool is_server_;
+  bool is_created_;
+  bool is_joined_;
 
   // Threading for receiver
-  std::thread *_worker_thread;
-  std::atomic<bool> _stop_event;
-  callback_t _callback;
+  std::thread *worker_thread_;
+  std::atomic<bool> stop_event_;
+  CallbackFunc callback_;
 };
 
 class ZPipe : public std::enable_shared_from_this<ZPipe> {
 public:
-  static std::shared_ptr<ZPipe> get_instance();
-  static void destroy_instance();
+  static std::shared_ptr<ZPipe> instance();
+  static void destroyInstance();
 
   // Initialize with io_threads
   bool init(int io_threads = 1);
 
-  zmq::context_t *get_context();
+  zmq::context_t *getContext();
 
-  bool register_socket(std::shared_ptr<zsocket> socket);
-  bool unregister_socket(const std::string &socket_id);
-  std::shared_ptr<zsocket> get_socket(const std::string &socket_id);
+  bool registerSocket(std::shared_ptr<ZSocket> socket);
+  bool unregisterSocket(const std::string &socket_id);
+  std::shared_ptr<ZSocket> getSocket(const std::string &socket_id);
 
   ~ZPipe();
 
@@ -100,18 +100,18 @@ private:
   ZPipe &operator=(const ZPipe &) = delete;
 
 private:
-  static std::shared_ptr<ZPipe> _instance;
-  static std::mutex _mutex;
+  static std::shared_ptr<ZPipe> instance_;
+  static std::mutex mutex_;
 
-  zmq::context_t *_context = nullptr;
-  std::map<std::string, std::shared_ptr<zsocket>> _sockets;
-  std::mutex _socket_mutex;
+  zmq::context_t *context_ = nullptr;
+  std::map<std::string, std::shared_ptr<ZSocket>> sockets_;
+  std::mutex socket_mutex_;
 };
 
 // Global helper functions
-std::shared_ptr<ZPipe> create_pipe(int io_threads = 1);
-void destroy_pipe();
-std::shared_ptr<zsocket> get_socket(const std::string &socket_id);
+std::shared_ptr<ZPipe> createPipe(int io_threads = 1);
+void destroyPipe();
+std::shared_ptr<ZSocket> getSocket(const std::string &socket_id);
 
 } // namespace pipe
 } // namespace flame

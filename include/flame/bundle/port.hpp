@@ -16,35 +16,33 @@
 #include <zmq_addon.hpp>
 #include <flame/arch/singleton.hpp>
 
-using dataport = zmq::context_t;
-
 namespace flame::bundle {
 
-    class dataport : public flame::arch::singleton<dataport> {
+    class DataPort : public flame::arch::Singleton<DataPort> {
         public:
-            dataport(){
-                _bundle_ctx = new zmq::context_t(1);
+            DataPort(){
+                bundle_ctx_ = new zmq::context_t(1);
             }
-            virtual ~dataport(){
-                _bundle_ctx->close();
-                delete _bundle_ctx;
+            virtual ~DataPort(){
+                bundle_ctx_->close();
+                delete bundle_ctx_;
             }
 
         protected:
-            zmq::context_t* get_context() const {
-                return _bundle_ctx;
+            zmq::context_t* getContext() const {
+                return bundle_ctx_;
             }
 
         private:
-            zmq::context_t* _bundle_ctx { nullptr };
+            zmq::context_t* bundle_ctx_ { nullptr };
     }; /* class */
 
-    class serviceport : public flame::arch::singleton<serviceport> {
+    class ServicePort : public flame::arch::Singleton<ServicePort> {
         public:
-            serviceport() {
+            ServicePort() {
 
             }
-            virtual ~serviceport() {
+            virtual ~ServicePort() {
 
             }
 
