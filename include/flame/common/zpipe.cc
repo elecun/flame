@@ -17,21 +17,21 @@ namespace pipe {
 // -------------------------------------------------------------------------
 std::string pattern2Str(Pattern p) {
   switch (p) {
-  case Pattern::kPublish:
+  case Pattern::Publish:
     return "publish";
-  case Pattern::kSubscribe:
+  case Pattern::Subscribe:
     return "subscribe";
-  case Pattern::kPush:
+  case Pattern::Push:
     return "push";
-  case Pattern::kPull:
+  case Pattern::Pull:
     return "pull";
-  case Pattern::kDealer:
+  case Pattern::Dealer:
     return "dealer";
-  case Pattern::kRouter:
+  case Pattern::Router:
     return "router";
-  case Pattern::kServerPair:
+  case Pattern::ServerPair:
     return "server_pair";
-  case Pattern::kClientPair:
+  case Pattern::ClientPair:
     return "client_pair";
   default:
     return "unknown";
@@ -40,15 +40,15 @@ std::string pattern2Str(Pattern p) {
 
 std::string transport2Str(Transport t) {
   switch (t) {
-  case Transport::kTcp:
+  case Transport::Tcp:
     return "tcp";
-  case Transport::kInproc:
+  case Transport::Inproc:
     return "inproc";
-  case Transport::kIpc:
+  case Transport::Ipc:
     return "ipc";
-  case Transport::kPgm:
+  case Transport::Pgm:
     return "pgm";
-  case Transport::kEpgm:
+  case Transport::Epgm:
     return "epgm";
   default:
     return "unknown";
@@ -81,32 +81,32 @@ bool ZSocket::create(std::shared_ptr<ZPipe> pipeline) {
     }
 
     switch (pattern_) {
-    case Pattern::kPublish:
+    case Pattern::Publish:
       socket_ =
           std::make_shared<zmq::socket_t>(*context, zmq::socket_type::pub);
       break;
-    case Pattern::kSubscribe:
+    case Pattern::Subscribe:
       socket_ =
           std::make_shared<zmq::socket_t>(*context, zmq::socket_type::sub);
       break;
-    case Pattern::kPush:
+    case Pattern::Push:
       socket_ =
           std::make_shared<zmq::socket_t>(*context, zmq::socket_type::push);
       break;
-    case Pattern::kPull:
+    case Pattern::Pull:
       socket_ =
           std::make_shared<zmq::socket_t>(*context, zmq::socket_type::pull);
       break;
-    case Pattern::kRouter:
+    case Pattern::Router:
       socket_ =
           std::make_shared<zmq::socket_t>(*context, zmq::socket_type::router);
       break;
-    case Pattern::kDealer:
+    case Pattern::Dealer:
       socket_ =
           std::make_shared<zmq::socket_t>(*context, zmq::socket_type::dealer);
       break;
-    case Pattern::kServerPair:
-    case Pattern::kClientPair:
+    case Pattern::ServerPair:
+    case Pattern::ClientPair:
       socket_ =
           std::make_shared<zmq::socket_t>(*context, zmq::socket_type::pair);
       break;
@@ -115,15 +115,15 @@ bool ZSocket::create(std::shared_ptr<ZPipe> pipeline) {
     // Configure socket options
     socket_->set(zmq::sockopt::linger, 0);
 
-    if (pattern_ == Pattern::kSubscribe || pattern_ == Pattern::kPull ||
-        pattern_ == Pattern::kDealer || pattern_ == Pattern::kServerPair) {
+    if (pattern_ == Pattern::Subscribe || pattern_ == Pattern::Pull ||
+        pattern_ == Pattern::Dealer || pattern_ == Pattern::ServerPair) {
       socket_->set(zmq::sockopt::rcvhwm, 100);
       socket_->set(zmq::sockopt::rcvtimeo, 100);
       socket_->set(zmq::sockopt::reconnect_ivl, 500);
     }
 
-    if (pattern_ == Pattern::kPublish || pattern_ == Pattern::kPush ||
-        pattern_ == Pattern::kRouter || pattern_ == Pattern::kClientPair) {
+    if (pattern_ == Pattern::Publish || pattern_ == Pattern::Push ||
+        pattern_ == Pattern::Router || pattern_ == Pattern::ClientPair) {
       socket_->set(zmq::sockopt::sndhwm, 100);
       socket_->set(zmq::sockopt::sndtimeo, 100);
       socket_->set(zmq::sockopt::reconnect_ivl, 500);
@@ -135,8 +135,8 @@ bool ZSocket::create(std::shared_ptr<ZPipe> pipeline) {
     logger::debug("Created socket {} with pattern {}", socket_id_,
                   pattern2Str(pattern_));
 
-    // Auto-subscribe if pattern is kSubscribe
-    if (pattern_ == Pattern::kSubscribe) {
+    // Auto-subscribe if pattern is Subscribe
+    if (pattern_ == Pattern::Subscribe) {
       socket_->set(zmq::sockopt::subscribe, socket_id_);
       logger::debug("Socket {} auto-subscribed to topic '{}'", socket_id_,
                     socket_id_);
@@ -164,14 +164,14 @@ bool ZSocket::join(Transport transport, const std::string &address,
   try {
     std::string transport_str = transport2Str(transport);
     std::string conn_str;
-    if (transport == Transport::kInproc || transport == Transport::kIpc) {
+    if (transport == Transport::Inproc || transport == Transport::Ipc) {
       conn_str = transport_str + "://" + address;
     } else {
       conn_str = transport_str + "://" + address + ":" + std::to_string(port);
     }
 
-    if (pattern_ == Pattern::kPublish || pattern_ == Pattern::kPull ||
-        pattern_ == Pattern::kRouter || pattern_ == Pattern::kServerPair) {
+    if (pattern_ == Pattern::Publish || pattern_ == Pattern::Pull ||
+        pattern_ == Pattern::Router || pattern_ == Pattern::ServerPair) {
       is_server_ = true;
       socket_->bind(conn_str);
       logger::debug("Socket {} ({}) bound to: {}", socket_id_,
@@ -185,10 +185,10 @@ bool ZSocket::join(Transport transport, const std::string &address,
 
     is_joined_ = true;
 
-    if ((pattern_ == Pattern::kSubscribe || pattern_ == Pattern::kPull ||
-         pattern_ == Pattern::kRouter || pattern_ == Pattern::kDealer ||
-         pattern_ == Pattern::kClientPair ||
-         pattern_ == Pattern::kServerPair) &&
+    if ((pattern_ == Pattern::Subscribe || pattern_ == Pattern::Pull ||
+         pattern_ == Pattern::Router || pattern_ == Pattern::Dealer ||
+         pattern_ == Pattern::ClientPair ||
+         pattern_ == Pattern::ServerPair) &&
         callback_) {
       startReceiverThread();
     }
@@ -243,8 +243,8 @@ bool ZSocket::dispatch(ZData& data) {
   }
 
   try {
-    // Auto-prepend topic if pattern is kPublish
-    if (pattern_ == Pattern::kPublish) {
+    // Auto-prepend topic if pattern is Publish
+    if (pattern_ == Pattern::Publish) {
       data.pushmem(socket_id_.data(), socket_id_.size());
     }
     data.send(*socket_);
@@ -289,7 +289,7 @@ void ZSocket::receiverWorker() {
           // (which it should), effectively hiding the complexity from the user
           // callback.
 
-          if (pattern_ == Pattern::kSubscribe) {
+          if (pattern_ == Pattern::Subscribe) {
             if (!multipart.empty()) {
               std::string topic = multipart.pop().to_string();
               // We trust ZMQ filtering, but if we want to hide it:

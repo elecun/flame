@@ -76,22 +76,22 @@ private:
       const string address,
       int port) {
       
-      flame::pipe::Pattern pattern = flame::pipe::Pattern::kPublish;
+      flame::pipe::Pattern pattern = flame::pipe::Pattern::Publish;
       switch(sock_type) {
-          case flame::SocketType::kPub: pattern = flame::pipe::Pattern::kPublish; break;
-          case flame::SocketType::kSub: pattern = flame::pipe::Pattern::kSubscribe; break;
-          case flame::SocketType::kPush: pattern = flame::pipe::Pattern::kPush; break;
-          case flame::SocketType::kPull: pattern = flame::pipe::Pattern::kPull; break;
-          case flame::SocketType::kReq: pattern = flame::pipe::Pattern::kClientPair; break;
-          case flame::SocketType::kRep: pattern = flame::pipe::Pattern::kServerPair; break;
+          case flame::SocketType::Pub: pattern = flame::pipe::Pattern::Publish; break;
+          case flame::SocketType::Sub: pattern = flame::pipe::Pattern::Subscribe; break;
+          case flame::SocketType::Push: pattern = flame::pipe::Pattern::Push; break;
+          case flame::SocketType::Pull: pattern = flame::pipe::Pattern::Pull; break;
+          case flame::SocketType::Req: pattern = flame::pipe::Pattern::ClientPair; break;
+          case flame::SocketType::Rep: pattern = flame::pipe::Pattern::ServerPair; break;
           default: break;
       }
 
-      flame::pipe::Transport transport = flame::pipe::Transport::kTcp;
-      if (transport_str == "epgm") transport = flame::pipe::Transport::kEpgm;
-      else if (transport_str == "pgm") transport = flame::pipe::Transport::kPgm;
-      else if (transport_str == "ipc") transport = flame::pipe::Transport::kIpc;
-      else if (transport_str == "inproc") transport = flame::pipe::Transport::kInproc;
+      flame::pipe::Transport transport = flame::pipe::Transport::Tcp;
+      if (transport_str == "epgm") transport = flame::pipe::Transport::Epgm;
+      else if (transport_str == "pgm") transport = flame::pipe::Transport::Pgm;
+      else if (transport_str == "ipc") transport = flame::pipe::Transport::Ipc;
+      else if (transport_str == "inproc") transport = flame::pipe::Transport::Inproc;
 
       auto socket = std::make_shared<flame::pipe::ZSocket>(socket_name, pattern);
       if (socket->create()) {

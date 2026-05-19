@@ -24,17 +24,17 @@ namespace pipe {
 class ZPipe; // Forward declaration
 
 enum class Pattern {
-  kPublish,
-  kSubscribe,
-  kPush,
-  kPull,
-  kDealer,
-  kRouter,
-  kServerPair,
-  kClientPair
+  Publish,
+  Subscribe,
+  Push,
+  Pull,
+  Dealer,
+  Router,
+  ServerPair,
+  ClientPair
 };
 
-enum class Transport { kTcp, kInproc, kIpc, kPgm, kEpgm };
+enum class Transport { Tcp, Inproc, Ipc, Pgm, Epgm };
 
 /* ZData: standard multipart message carrier within flame::pipe */
 using ZData = zmq::multipart_t;
@@ -47,8 +47,7 @@ public:
   virtual ~ZSocket();
 
   bool create(std::shared_ptr<ZPipe> pipeline = nullptr);
-  bool join(Transport transport, const std::string &address = "localhost",
-            int port = 5555);
+  bool join(Transport transport, const std::string &address = "localhost",int port = 5555);
   void close();
 
   // Callback: called with received ZData (topic frame already stripped for SUB)

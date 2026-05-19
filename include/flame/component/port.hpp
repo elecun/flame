@@ -23,35 +23,35 @@ namespace flame {
 
 
     enum class SocketType : int {
-        kPair = 0,
-        kPub,
-        kSub,
-        kReq,
-        kRep,
-        kDealer,
-        kRouter,
-        kPull,
-        kPush,
-        kXPub,
-        kXSub,
-        kStream
+        Pair = 0,
+        Pub,
+        Sub,
+        Req,
+        Rep,
+        Dealer,
+        Router,
+        Pull,
+        Push,
+        XPub,
+        XSub,
+        Stream
     };
 
 
     inline SocketType str2Type(const std::string& str_type) {
         const std::unordered_map<std::string, SocketType> s_type = {
-            {"pair", flame::SocketType::kPair},
-            {"pub", flame::SocketType::kPub},
-            {"sub", flame::SocketType::kSub},
-            {"req", flame::SocketType::kReq},
-            {"rep", flame::SocketType::kRep},
-            {"dealer", flame::SocketType::kDealer},
-            {"router", flame::SocketType::kRouter},
-            {"pull", flame::SocketType::kPull},
-            {"push", flame::SocketType::kPush},
-            {"xpub", flame::SocketType::kXPub},
-            {"xsub", flame::SocketType::kXSub},
-            {"stream", flame::SocketType::kStream}
+            {"pair", flame::SocketType::Pair},
+            {"pub", flame::SocketType::Pub},
+            {"sub", flame::SocketType::Sub},
+            {"req", flame::SocketType::Req},
+            {"rep", flame::SocketType::Rep},
+            {"dealer", flame::SocketType::Dealer},
+            {"router", flame::SocketType::Router},
+            {"pull", flame::SocketType::Pull},
+            {"push", flame::SocketType::Push},
+            {"xpub", flame::SocketType::XPub},
+            {"xsub", flame::SocketType::XSub},
+            {"stream", flame::SocketType::Stream}
         };
 
         auto it = s_type.find(str_type);

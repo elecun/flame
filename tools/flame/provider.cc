@@ -64,7 +64,7 @@ void StateProvider::publishLoop(){
 
   auto pipe = flame::pipe::ZPipe::instance();
   auto sock = std::make_shared<flame::pipe::ZSocket>(
-      "state_pub", flame::pipe::Pattern::kRouter);
+      "state_pub", flame::pipe::Pattern::Router);
 
   if(sock->create(pipe)){
     // Parse IPC address
@@ -96,7 +96,7 @@ void StateProvider::publishLoop(){
       }
     });
 
-    if(sock->join(flame::pipe::Transport::kIpc, address)){
+    if(sock->join(flame::pipe::Transport::Ipc, address)){
       logger::info("State Provider Started : {}", ipc_addr_);
 
       while(run_service_){
@@ -114,7 +114,7 @@ void StateProvider::publishLoop(){
 void StateProvider::connect(){
   auto pipe = flame::pipe::ZPipe::instance();
   auto sock = std::make_shared<flame::pipe::ZSocket>(
-      "cli_dealer", flame::pipe::Pattern::kDealer);
+      "cli_dealer", flame::pipe::Pattern::Dealer);
 
   if(sock->create(pipe)){
     std::string ipc_addr = ipc_addr_;
@@ -132,7 +132,7 @@ void StateProvider::connect(){
       }
     });
 
-    if(sock->join(flame::pipe::Transport::kIpc, address)){
+    if(sock->join(flame::pipe::Transport::Ipc, address)){
       zmq::multipart_t req;
       req.addstr("");      // empty delimiter
       req.addstr("Hello"); // Request
