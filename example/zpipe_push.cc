@@ -1,7 +1,7 @@
 /**
- * @file zpipe_pub.cc
+ * @file zpipe_push.cc
  * @author Byunghun Hwang <bh.hwang@iae.re.kr>
- * @brief Publisher Example based Zpipe
+ * @brief Push Example based Zpipe
  * @version 0.1
  * @date 2026-05-19
  * 
@@ -19,32 +19,31 @@ int main() {
     // 1. Create Pipe
     auto pipe = flame::pipe::createPipe(1);
 
-    // 2. Create Publisher Socket
-    auto pub_socket = std::make_shared<flame::pipe::ZSocket>("topic1", flame::pipe::Pattern::Publish);
-    if (!pub_socket->create(pipe)) {
+    // 2. Create Push Socket
+    auto push_socket = std::make_shared<flame::pipe::ZSocket>("pusher1", flame::pipe::Pattern::Push);
+    if (!push_socket->create(pipe)) {
         std::cerr << "Failed to create socket" << std::endl;
         return -1;
     }
 
     // 3. Bind
-    if (!pub_socket->join(flame::pipe::Transport::Tcp, "*", 5555)) {
+    if (!push_socket->join(flame::pipe::Transport::Tcp, "*", 5556)) {
         std::cerr << "Failed to join" << std::endl;
         return -1;
     }
 
-    std::cout << "Publisher started on tcp://*:5555" << std::endl;
+    std::cout << "Pusher started on tcp://*:5556" << std::endl;
 
-    // 4. Publish loop
+    // 4. Push loop
     int count = 0;
     while (true) {
         flame::pipe::ZData msg;
-        // Topic is auto-appended based on socket_id ("topic1")
-        msg.addstr("Message " + std::to_string(count));
+        msg.addstr("Task " + std::to_string(count));
 
-        if (pub_socket->dispatch(msg)) {
-            std::cout << "Sent: Message " << count << std::endl;
+        if (push_socket->dispatch(msg)) {
+            std::cout << "Pushed: Task " << count << std::endl;
         } else {
-            std::cerr << "Failed to send" << std::endl;
+            std::cerr << "Failed to push" << std::endl;
         }
 
         count++;
