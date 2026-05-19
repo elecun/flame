@@ -220,6 +220,12 @@ void ZSocket::close() {
 
 bool ZSocket::setMessageCallback(CallbackFunc callback) {
   callback_ = callback;
+  if (is_joined_ && 
+      (pattern_ == Pattern::Subscribe || pattern_ == Pattern::Pull ||
+       pattern_ == Pattern::Router || pattern_ == Pattern::Dealer ||
+       pattern_ == Pattern::ClientPair || pattern_ == Pattern::ServerPair)) {
+    startReceiverThread();
+  }
   return true;
 }
 
@@ -370,11 +376,11 @@ zmq::context_t *ZPipe::getContext() { return context_; }
 bool ZPipe::registerSocket(std::shared_ptr<ZSocket> socket) {
   std::lock_guard<std::mutex> lock(socket_mutex_);
   if (sockets_.find(socket->getId()) != sockets_.end()) {
-    logger::warn("Socket {} already registered", socket->getId());
+    logger::warn("Socket ID {} already registered", socket->getId());
     return false;
   }
   sockets_[socket->getId()] = socket;
-  logger::debug("Registered socket {}", socket->getId());
+  logger::debug("Registered socket ID {}", socket->getId());
   return true;
 }
 
