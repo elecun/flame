@@ -17,41 +17,26 @@ namespace pipe {
 // -------------------------------------------------------------------------
 std::string pattern2Str(Pattern p) {
   switch (p) {
-  case Pattern::Publish:
-    return "publish";
-  case Pattern::Subscribe:
-    return "subscribe";
-  case Pattern::Push:
-    return "push";
-  case Pattern::Pull:
-    return "pull";
-  case Pattern::Dealer:
-    return "dealer";
-  case Pattern::Router:
-    return "router";
-  case Pattern::ServerPair:
-    return "server_pair";
-  case Pattern::ClientPair:
-    return "client_pair";
-  default:
-    return "unknown";
+  case Pattern::Publish: return "publish";
+  case Pattern::Subscribe: return "subscribe";
+  case Pattern::Push: return "push";
+  case Pattern::Pull: return "pull";
+  case Pattern::Dealer: return "dealer";
+  case Pattern::Router: return "router";
+  case Pattern::ServerPair: return "server_pair";
+  case Pattern::ClientPair: return "client_pair";
+  default:return "unknown";
   }
 }
 
 std::string transport2Str(Transport t) {
   switch (t) {
-  case Transport::Tcp:
-    return "tcp";
-  case Transport::Inproc:
-    return "inproc";
-  case Transport::Ipc:
-    return "ipc";
-  case Transport::Pgm:
-    return "pgm";
-  case Transport::Epgm:
-    return "epgm";
-  default:
-    return "unknown";
+  case Transport::Tcp: return "tcp";
+  case Transport::Inproc: return "inproc";
+  case Transport::Ipc: return "ipc";
+  case Transport::Pgm: return "pgm";
+  case Transport::Epgm: return "epgm";
+  default: return "unknown";
   }
 }
 
