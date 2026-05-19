@@ -43,7 +43,7 @@ std::string transport2Str(Transport t);
 
 class ZSocket : public std::enable_shared_from_this<ZSocket> {
 public:
-  ZSocket(const std::string &socket_id, Pattern pattern);
+  ZSocket(const std::string &socket_id, Pattern pattern, const std::string &topic = "");
   virtual ~ZSocket();
 
   bool create(std::shared_ptr<ZPipe> pipeline = nullptr);
@@ -58,6 +58,7 @@ public:
   bool dispatch(ZData& data);
 
   std::string getId() const { return socket_id_; }
+  std::string getTopic() const { return topic_; }
 
 private:
   void startReceiverThread();
@@ -65,6 +66,7 @@ private:
 
 private:
   std::string socket_id_;
+  std::string topic_;
   Pattern pattern_;
   std::shared_ptr<zmq::socket_t> socket_;
   bool is_server_;

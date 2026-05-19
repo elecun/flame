@@ -31,7 +31,7 @@ namespace fs = std::filesystem;
 namespace flame::component {
     class Driver : public component::Interface {
         public:
-            Driver(fs::path component_path); //without extension
+            Driver(fs::path component_path, string uid = ""); //without extension
             virtual ~Driver();
 
             /* common component interfaces */

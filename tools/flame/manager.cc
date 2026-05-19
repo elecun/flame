@@ -62,10 +62,11 @@ namespace flame {
             // 2. check components profiles to create and manage inproc context
             for(auto& comp : component_list){
                 string cname = comp.filename().string();
-                component_uid_map_.insert(unordered_map<string, util::UuidT>::value_type(cname, uuid_gen_.generate()));
-                bundle_container_.insert(BundleContainerT::value_type(component_uid_map_[cname], new component::Driver(comp)));
+                util::UuidT uid = uuid_gen_.generate();
+                component_uid_map_.insert(unordered_map<string, util::UuidT>::value_type(cname, uid));
+                bundle_container_.insert(BundleContainerT::value_type(uid, new component::Driver(comp, uid.str())));
 
-                logger::info("Installing component : {} (UID:{})", cname, component_uid_map_[cname].str());
+                logger::info("Installing component : {} (UID:{})", cname, uid.str());
             }
 
             // 3. call onInit function for all components

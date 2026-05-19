@@ -20,7 +20,7 @@ static int SIG_RUNTIME_TRIGGER = (SIGRTMIN);
 
 namespace flame::component {
 
-Driver::Driver(path component_path) : is_running_(false) {
+Driver::Driver(path component_path, string uid) : is_running_(false) {
   try {
     fs::path cobject = component_path.replace_extension(def::kComponentExt);
     fs::path cprofile = component_path.replace_extension(def::kProfileExt);
@@ -31,6 +31,7 @@ Driver::Driver(path component_path) : is_running_(false) {
       /* set important parameters and profile first */
       component_impl_->profile_ = make_unique<component::Profile>(cprofile);
       component_impl_->name_ = component_path.stem().string();
+      component_impl_->uid_ = uid;
       component_impl_->status_ = DTypeStatus::kStopped;
 
       /* get dataport descriptions in profile */

@@ -44,10 +44,12 @@ std::string transport2Str(Transport t) {
 // ZSocket Implementation
 // -------------------------------------------------------------------------
 
-ZSocket::ZSocket(const std::string &socket_id, Pattern pattern)
-    : socket_id_(socket_id), pattern_(pattern), socket_(nullptr),
-      is_server_(false), is_created_(false), is_joined_(false),
-      worker_thread_(nullptr), stop_event_(false), callback_(nullptr) {}
+ZSocket::ZSocket(const std::string &socket_id, Pattern pattern,
+                 const std::string &topic)
+    : socket_id_(socket_id), topic_(topic), pattern_(pattern),
+      socket_(nullptr), is_server_(false), is_created_(false),
+      is_joined_(false), worker_thread_(nullptr), stop_event_(false),
+      callback_(nullptr) {}
 
 ZSocket::~ZSocket() { close(); }
 
@@ -122,9 +124,9 @@ bool ZSocket::create(std::shared_ptr<ZPipe> pipeline) {
 
     // Auto-subscribe if pattern is Subscribe
     if (pattern_ == Pattern::Subscribe) {
-      socket_->set(zmq::sockopt::subscribe, socket_id_);
+      socket_->set(zmq::sockopt::subscribe, topic_);
       logger::debug("Socket {} auto-subscribed to topic '{}'", socket_id_,
-                    socket_id_);
+                    topic_);
     }
 
     return true;
@@ -230,7 +232,7 @@ bool ZSocket::dispatch(ZData& data) {
   try {
     // Auto-prepend topic if pattern is Publish
     if (pattern_ == Pattern::Publish) {
-      data.pushmem(socket_id_.data(), socket_id_.size());
+      data.pushmem(topic_.data(), topic_.size());
     }
     data.send(*socket_);
     return true;
@@ -276,7 +278,7 @@ void ZSocket::receiverWorker() {
 
           if (pattern_ == Pattern::Subscribe) {
             if (!multipart.empty()) {
-              std::string topic = multipart.pop().to_string();
+              std::string received_topic = multipart.pop().to_string();
               // We trust ZMQ filtering, but if we want to hide it:
               // continue to extract data
             } else {

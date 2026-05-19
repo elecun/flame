@@ -49,10 +49,11 @@ protected:
 
   /* get ZSocket from portname */
   std::shared_ptr<flame::pipe::ZSocket> getPort(const string portname) {
-    if (socket_map_.contains(portname))
-      return socket_map_[portname];
+    string internal_id = fmt::format("{}:{}", uid_, portname);
+    if (socket_map_.contains(internal_id))
+      return socket_map_[internal_id];
     else
-      throw std::runtime_error(fmt::format("{} does not exist.", portname));
+      throw std::runtime_error(fmt::format("{} does not exist.", internal_id));
     return nullptr;
   }
 
@@ -93,10 +94,11 @@ private:
       else if (transport_str == "ipc") transport = flame::pipe::Transport::Ipc;
       else if (transport_str == "inproc") transport = flame::pipe::Transport::Inproc;
 
-      auto socket = std::make_shared<flame::pipe::ZSocket>(socket_name, pattern);
+      string internal_id = fmt::format("{}:{}", uid_, socket_name);
+      auto socket = std::make_shared<flame::pipe::ZSocket>(internal_id, pattern, socket_name);
       if (socket->create()) {
           if (socket->join(transport, address, port)) {
-              socket_map_[socket_name] = socket;
+              socket_map_[internal_id] = socket;
               logger::info("[{}] Created ZSocket port({}) : {}://{}:{}", name_,
                            static_cast<int>(sock_type), transport_str, address, port);
               return socket;
@@ -117,6 +119,7 @@ private:
 private:
   DTypeStatus status_{DTypeStatus::kStopped};
   string name_ = {"noname"};
+  string uid_ = {"nouid"};
   unique_ptr<Profile> profile_;
 
   std::unordered_map<string, std::shared_ptr<flame::pipe::ZSocket>> socket_map_;
