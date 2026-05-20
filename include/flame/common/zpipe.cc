@@ -294,6 +294,7 @@ void ZSocket::receiverWorker() {
 
           if (valid_msg) {
             if (callback_) {
+              multipart.from = topic_;
               callback_(multipart);  // pass multipart_t directly, zero-copy
             }
           }

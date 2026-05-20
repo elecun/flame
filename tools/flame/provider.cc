@@ -72,7 +72,7 @@ void StateProvider::publishLoop(){
     std::string address = ipc_addr.substr(ipc_addr.find("://") + 3);
 
     // server bind
-    sock->setMessageCallback([&](zmq::multipart_t& msg) {
+    sock->setMessageCallback([&](flame::pipe::ZData& msg) {
       if(!msg.empty()){
         // frame[0] : identity frame
         // frame[1] : empty frame
@@ -88,7 +88,7 @@ void StateProvider::publishLoop(){
         std::string rep_str = j_info.dump();
 
         // Send Reply
-        zmq::multipart_t reply;
+        flame::pipe::ZData reply;
         reply.addstr(identity);
         reply.addstr("");
         reply.addstr(rep_str);
@@ -121,7 +121,7 @@ void StateProvider::connect(){
     std::string address = ipc_addr.substr(ipc_addr.find("://") + 3);
 
     // client connect
-    sock->setMessageCallback([&](zmq::multipart_t& msg) {
+    sock->setMessageCallback([&](flame::pipe::ZData& msg) {
       if(!msg.empty()){
         // frame[0] : empty frame
         // frame[1] : data
@@ -133,7 +133,7 @@ void StateProvider::connect(){
     });
 
     if(sock->join(flame::pipe::Transport::Ipc, address)){
-      zmq::multipart_t req;
+      flame::pipe::ZData req;
       req.addstr("");      // empty delimiter
       req.addstr("Hello"); // Request
       sock->dispatch(req);

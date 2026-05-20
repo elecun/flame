@@ -18,6 +18,8 @@
 #include <zmq.hpp>
 #include <zmq_addon.hpp>
 
+using namespace std;
+
 namespace flame {
 namespace pipe {
 
@@ -37,7 +39,33 @@ enum class Pattern {
 enum class Transport { Tcp, Inproc, Ipc, Pgm, Epgm };
 
 /* ZData: standard multipart message carrier within flame::pipe */
-using ZData = zmq::multipart_t;
+class ZData : public zmq::multipart_t {
+public:
+  using zmq::multipart_t::multipart_t;
+
+  ZData() = default;
+  ~ZData() = default;
+
+  // Disable copying due to parent zmq::multipart_t behavior
+  ZData(const ZData&) = delete;
+  ZData& operator=(const ZData&) = delete;
+
+  // Enable moving
+  ZData(ZData&&) = default;
+  ZData& operator=(ZData&&) = default;
+
+  // Move constructor from parent zmq::multipart_t
+  ZData(zmq::multipart_t&& other) : zmq::multipart_t(std::move(other)) {}
+
+  // Move assignment from parent zmq::multipart_t
+  ZData& operator=(zmq::multipart_t&& other) {
+    zmq::multipart_t::operator=(std::move(other));
+    return *this;
+  }
+
+  string from; /* dataport name come from */
+  string meta; /* meta-data for real data */ 
+};
 
 std::string transport2Str(Transport t);
 

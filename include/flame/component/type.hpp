@@ -13,6 +13,7 @@
 
 #include <zmq.hpp>
 #include <zmq_addon.hpp>
+#include <flame/common/zpipe.hpp>
 
 namespace flame::component {
 
@@ -22,7 +23,7 @@ namespace flame::component {
      * Use addstr() for string/json frames, addmem() for binary frames.
      * Frame layout: [src_port, dst_port, payload_type, payload]
      */
-    using ZData = zmq::multipart_t;
+    using ZData = flame::pipe::ZData;
 
     enum class PayloadType { kString, kJson, kBinary, kNumber };
 
