@@ -19,6 +19,8 @@
 #include <sys/mman.h>
 #include <vector>
 
+#include <unistd.h>
+
 #include "instance.hpp"
 #include "provider.hpp"
 #include <dep/json.hpp>
@@ -29,7 +31,6 @@ using namespace std;
 using json = nlohmann::json;
 
 int main(int argc, char *argv[]) {
-
   cxxopts::Options options("Flame bundle executor options");
 
   /* program options */
@@ -86,7 +87,9 @@ int main(int argc, char *argv[]) {
     cleanup_and_exit();
   }
 
-  mlockall(MCL_CURRENT | MCL_FUTURE); // avoid memory swaping
+  if(geteuid() == 0){
+    mlockall(MCL_CURRENT | MCL_FUTURE); // avoid memory swaping
+  }
 
   /* logger configuration */
   string _verbose_level = optval["verbose"].as<string>();
