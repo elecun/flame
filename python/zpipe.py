@@ -1,6 +1,5 @@
 """
 ZMQ Pipeline Module (named ZPipe)
-Provides abstraction for ZMQ publish, subscribe, push, pull patterns
 @author Byunghun Hwang <bh.hwang@iae.re.kr>
 """
 
@@ -64,11 +63,21 @@ class AsyncZSocket:
                 self.socket.setsockopt(zmq.LINGER, 0)
                 self.socket.setsockopt(zmq.RECONNECT_IVL, 500)
                 
+                if self.pattern == 'dealer':
+                    # Send an empty message to the ROUTER upon connection
+                    self.socket.setsockopt(zmq.PROBE_ROUTER, 1)
+                
             if self.pattern in ['publish', 'push', 'router', 'client_pair']:
                 self.socket.setsockopt(zmq.SNDHWM, 100)
                 self.socket.setsockopt(zmq.SNDTIMEO, 100)
                 self.socket.setsockopt(zmq.LINGER, 0)
                 self.socket.setsockopt(zmq.RECONNECT_IVL, 500)
+                
+            if self.pattern == 'router':
+                # Enable ROUTER to receive events when peers connect/disconnect
+                self.socket.setsockopt(zmq.ROUTER_MANDATORY, 1)
+                if hasattr(zmq, 'MAP_ROUTER_MAC'):
+                    self.socket.setsockopt(zmq.MAP_ROUTER_MAC, 1) # Sometimes needed
                 
             # Register this socket with ZPipe for management
             pipeline.register_socket(self)
@@ -119,7 +128,12 @@ class AsyncZSocket:
             if transport in ['inproc', 'ipc']:
                 conn_str = f"{transport}://{address}"
             else:  # tcp, pgm, epgm
-                conn_str = f"{transport}://{address}:{port}"
+                # For binding, address='*' is valid relative to transport (tcp://*:port)
+                # For connecting, address='*' is invalid.
+                if self.is_server and address in ["*", "0.0.0.0"]:
+                     conn_str = f"{transport}://*:{port}"
+                else:
+                     conn_str = f"{transport}://{address}:{port}"
             
             # Bind or connect based on pattern
             if self.is_server:
