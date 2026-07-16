@@ -235,11 +235,22 @@ bool ZSocket::dispatch(ZData& data) {
     return false;
   }
 
+  if (data.from.empty()) {
+    logger::warn("Failed to dispatch: 'from' field is empty. Incomplete data frame created.");
+    return false;
+  }
+
   try {
-    // Auto-prepend topic if pattern is Publish
-    if (pattern_ == Pattern::Publish) {
-      data.pushmem(topic_.data(), topic_.size());
+    // Prepend meta first (defaulting to "{}" if empty)
+    if (!data.meta.empty()) {
+      data.pushstr(data.meta);
+    } else {
+      data.pushstr("{}");
     }
+
+    // Prepend from
+    data.pushstr(data.from);
+
     data.send(*socket_);
     return true;
   } catch (const zmq::error_t &e) {

@@ -61,6 +61,9 @@ protected:
   bool dispatch(const string portname, flame::component::ZData& data) {
     auto sock = getPort(portname);
     if (sock) {
+      if (data.from.empty()) {
+        data.from = portname;
+      }
       return sock->dispatch(data);
     }
     return false;
