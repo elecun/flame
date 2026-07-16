@@ -241,15 +241,27 @@ bool ZSocket::dispatch(ZData& data) {
   }
 
   try {
-    // Prepend meta first (defaulting to "{}" if empty)
-    if (!data.meta.empty()) {
-      data.pushstr(data.meta);
-    } else {
-      data.pushstr("{}");
+    // Check if the first two frames of the payload are already equal to data.from and data.meta
+    bool already_prepended = false;
+    if (data.size() >= 2) {
+      std::string first_frame = data.at(0).to_string();
+      std::string second_frame = data.at(1).to_string();
+      if (first_frame == data.from && (second_frame == data.meta || (data.meta.empty() && second_frame == "{}"))) {
+        already_prepended = true;
+      }
     }
 
-    // Prepend from
-    data.pushstr(data.from);
+    if (!already_prepended) {
+      // Prepend meta first (defaulting to "{}" if empty)
+      if (!data.meta.empty()) {
+        data.pushstr(data.meta);
+      } else {
+        data.pushstr("{}");
+      }
+
+      // Prepend from
+      data.pushstr(data.from);
+    }
 
     data.send(*socket_);
     return true;
