@@ -57,10 +57,10 @@ Driver::Driver(path component_path, string uid) : is_running_(false) {
             }
           }
 
-          /* create port(socket) for ipc, but not support yet */
+          /* create port(socket) for ipc */
           else if (!transport.compare("ipc")) {
-            logger::warn("ipc transport is not supported yet.");
-            auto sock = component_impl_->createZSocket(portname, str2Type(socket_type), transport, portname, 0);
+            string ipc_path = parameter.value("host", "/tmp/" + portname + ".ipc");
+            auto sock = component_impl_->createZSocket(portname, str2Type(socket_type), transport, ipc_path, 0);
             if (sock) {
                 sock->setMessageCallback([this](flame::pipe::ZData& data) {
                     this->onData(data);

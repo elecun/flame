@@ -148,9 +148,9 @@ bool ZSocket::join(Transport transport, const std::string &address,
     return true;
   }
 
+  std::string conn_str;
   try {
     std::string transport_str = transport2Str(transport);
-    std::string conn_str;
     if (transport == Transport::Inproc || transport == Transport::Ipc) {
       conn_str = transport_str + "://" + address;
     } else {
@@ -183,7 +183,7 @@ bool ZSocket::join(Transport transport, const std::string &address,
     return true;
 
   } catch (const zmq::error_t &e) {
-    logger::error("Failed to join socket {}: {}", socket_id_, e.what());
+    logger::error("Failed to join socket {} (uri: {}): {}", socket_id_, conn_str, e.what());
     return false;
   }
 }
