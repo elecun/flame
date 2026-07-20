@@ -26,6 +26,12 @@ StateProvider::StateProvider()
     : run_service_(false), service_thread_(nullptr),
       ipc_addr_(def::kFlameMonitorIpcAddrDefault) {
   if(CONFIG.isLoaded()){
+    std::string bundle_name = "flame";
+    if(CONFIG.getConfig().contains("bundle") && CONFIG.getConfig()["bundle"].contains("name")) {
+      bundle_name = CONFIG.getConfig()["bundle"]["name"].get<std::string>();
+    }
+    ipc_addr_ = "ipc:///tmp/" + bundle_name + ".ipc";
+
     if(CONFIG.getConfig().contains(def::kFlameConfMonitor)){
       if(CONFIG.getConfig()[def::kFlameConfMonitor].contains(
               def::kFlameConfMonitorAddr)){
