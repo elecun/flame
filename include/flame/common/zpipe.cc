@@ -8,6 +8,7 @@
 #include <algorithm>
 #include <iostream>
 #include <zmq_addon.hpp>
+#include <filesystem>
 
 namespace flame {
 namespace pipe {
@@ -160,6 +161,12 @@ bool ZSocket::join(Transport transport, const std::string &address,
     if (pattern_ == Pattern::Publish || pattern_ == Pattern::Pull ||
         pattern_ == Pattern::Router || pattern_ == Pattern::ServerPair) {
       is_server_ = true;
+      if (transport == Transport::Ipc) {
+        std::error_code ec;
+        if (std::filesystem::exists(address, ec)) {
+          std::filesystem::remove(address, ec);
+        }
+      }
       socket_->bind(conn_str);
       logger::debug("Socket {} ({}) bound to: {}", socket_id_,
                     pattern2Str(pattern_), conn_str);
