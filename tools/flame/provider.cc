@@ -25,29 +25,29 @@ namespace flame {
 StateProvider::StateProvider()
     : run_service_(false), service_thread_(nullptr),
       ipc_addr_(def::kFlameMonitorIpcAddrDefault) {
-  if(CONFIG.isLoaded()){
-    std::string bundle_name = "flame";
-    if(CONFIG.getConfig().contains("bundle") && CONFIG.getConfig()["bundle"].contains("name")) {
-      bundle_name = CONFIG.getConfig()["bundle"]["name"].get<std::string>();
-    }
-    ipc_addr_ = "ipc:///tmp/" + bundle_name + ".ipc";
-
-    if(CONFIG.getConfig().contains(def::kFlameConfMonitor)){
-      if(CONFIG.getConfig()[def::kFlameConfMonitor].contains(
-              def::kFlameConfMonitorAddr)){
-        ipc_addr_ = CONFIG
-                        .getConfig()[def::kFlameConfMonitor]
-                                     [def::kFlameConfMonitorAddr]
-                        .get<std::string>();
-      }
-    }
-  }
 }
 
 StateProvider::~StateProvider() { stop(); }
 
 void StateProvider::start(){
   if(!run_service_){
+    if(CONFIG.isLoaded()){
+      std::string bundle_name = "flame";
+      if(CONFIG.getConfig().contains("bundle") && CONFIG.getConfig()["bundle"].contains("name")) {
+        bundle_name = CONFIG.getConfig()["bundle"]["name"].get<std::string>();
+      }
+      ipc_addr_ = "ipc:///tmp/" + bundle_name + ".ipc";
+
+      if(CONFIG.getConfig().contains(def::kFlameConfMonitor)){
+        if(CONFIG.getConfig()[def::kFlameConfMonitor].contains(
+                def::kFlameConfMonitorAddr)){
+          ipc_addr_ = CONFIG
+                          .getConfig()[def::kFlameConfMonitor]
+                                       [def::kFlameConfMonitorAddr]
+                          .get<std::string>();
+        }
+      }
+    }
     run_service_ = true;
     service_thread_ = new std::thread(&StateProvider::publishLoop, this);
   }
